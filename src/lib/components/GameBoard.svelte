@@ -11,7 +11,7 @@
 		gridIndex?: number;
 	};
 
-	const DRAG_MIME = 'application/x-simicle-word';
+	const DRAG_MIME = 'application/x-lexlink-word';
 	const NODE_STATUS_EMOJI = {
 		correct: '🟩',
 		wrong: '🟥',
@@ -161,7 +161,7 @@
 			: `${game.correctCount}/9 words, ${game.correctEdgeCount}/${ADJACENCIES.length} links, ${game.moves} moves`;
 
 		const lines = [
-			`Simicle #${puzzleNumber}`,
+			`LexLink #${puzzleNumber}`,
 			statusLine,
 			shareRows()
 		];
@@ -190,7 +190,7 @@
 		try {
 			if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
 				await navigator.share({
-					title: `Simicle #${puzzleNumber}`,
+					title: `LexLink #${puzzleNumber}`,
 					text,
 					url
 				});
@@ -278,7 +278,6 @@
 		const status = game.getEdgeStatus(fromIdx, toIdx);
 		switch (status) {
 			case 'correct': return 'var(--green)';
-			case 'swapped': return 'var(--yellow)';
 			case 'wrong': return 'var(--red)';
 			default: return 'var(--border)';
 		}
@@ -389,8 +388,7 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span class="text-2xl">{cell.emoji}</span>
-						<span class="text-xs font-semibold">{cell.word}</span>
+						<span class="text-sm font-semibold">{cell.word}</span>
 					</div>
 				{:else if dragOverIndex === i}
 					<div class="flex h-[88px] w-[88px] items-center justify-center rounded-xl border-2 border-dashed border-[var(--accent)] bg-[var(--surface)] opacity-70"></div>
@@ -418,7 +416,7 @@
 				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
 					<div class="rounded-xl border border-[var(--border)] bg-[var(--surface-light)] px-3 py-3">
 						<p class="text-sm font-semibold">
-							{link.from.word} {link.from.emoji} - {link.to.word} {link.to.emoji}
+							{link.from.word} → {link.to.word}
 						</p>
 						<p class="mt-1 text-sm text-[var(--text-muted)]">{link.clue}</p>
 					</div>
@@ -454,7 +452,6 @@
 				ondragend={onDragEnd}
 				ontouchstart={(e) => onTouchStartInventory(e, word)}
 			>
-				<span class="text-lg">{word.emoji}</span>
 				<span class="text-sm font-semibold">{word.word}</span>
 			</div>
 		{/each}
@@ -486,7 +483,6 @@
 		class="fixed pointer-events-none z-50 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--accent)] text-white shadow-lg"
 		style="left: {touchGhost.x - 40}px; top: {touchGhost.y - 30}px;"
 	>
-		<span class="text-lg">{touchDragItem.word.emoji}</span>
 		<span class="text-sm font-semibold">{touchDragItem.word.word}</span>
 	</div>
 {/if}

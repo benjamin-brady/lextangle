@@ -6,6 +6,10 @@ import type { EdgeStatus, NodeStatus, Puzzle, WordItem } from './types';
 export function createGameState(puzzle: Puzzle) {
 	/** Current grid: null means empty slot */
 	let grid = $state<(WordItem | null)[]>(Array(9).fill(null));
+	const validEdgePairs = puzzle.edges.reduce<Record<string, true>>((lookup, edge) => {
+		lookup[edgeKey(puzzle.solution[edge.from].word, puzzle.solution[edge.to].word)] = true;
+		return lookup;
+	}, {});
 
 	/** Inventory: words not yet placed */
 	let inventory = $state<WordItem[]>(shuffleArray([...puzzle.solution]));
@@ -43,16 +47,8 @@ export function createGameState(puzzle: Puzzle) {
 		const toCell = grid[toIdx];
 		if (!fromCell || !toCell) return 'empty';
 
-		const correctFrom = puzzle.solution[fromIdx];
-		const correctTo = puzzle.solution[toIdx];
-
-		// Both in correct positions for this edge
-		if (fromCell.word === correctFrom.word && toCell.word === correctTo.word) {
+		if (validEdgePairs[edgeKey(fromCell.word, toCell.word)]) {
 			return 'correct';
-		}
-		// Swapped: each is in the other's correct position
-		if (fromCell.word === correctTo.word && toCell.word === correctFrom.word) {
-			return 'swapped';
 		}
 		return 'wrong';
 	}
@@ -134,6 +130,10 @@ export function createGameState(puzzle: Puzzle) {
 		swapGridCells,
 		reset,
 	};
+}
+
+function edgeKey(firstWord: string, secondWord: string): string {
+	return [firstWord, secondWord].sort().join('::');
 }
 
 function shuffleArray<T>(arr: T[]): T[] {

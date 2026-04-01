@@ -1,6 +1,5 @@
 export interface WordItem {
 	word: string;
-	emoji: string;
 }
 
 export interface Edge {
@@ -34,5 +33,5 @@ export const ADJACENCIES: [number, number][] = [
 	[3, 6], [4, 7], [5, 8],
 ];
 
-export type EdgeStatus = 'correct' | 'swapped' | 'wrong' | 'empty';
+export type EdgeStatus = 'correct' | 'wrong' | 'empty';
 export type NodeStatus = 'correct' | 'wrong' | 'empty';
