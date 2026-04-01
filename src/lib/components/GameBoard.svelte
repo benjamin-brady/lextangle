@@ -1,0 +1,492 @@
+<script lang="ts">
+	import type { GameState } from '../game.svelte';
+	import type { Puzzle, WordItem } from '../types';
+	import { ADJACENCIES } from '../types';
+
+	let { game, puzzleNumber, puzzle }: { game: GameState; puzzleNumber: number; puzzle: Puzzle } = $props();
+
+	type DragItem = {
+		word: WordItem;
+		source: 'inventory' | 'grid';
+		gridIndex?: number;
+	};
+
+	const DRAG_MIME = 'application/x-simicle-word';
+	const NODE_STATUS_EMOJI = {
+		correct: '🟩',
+		wrong: '🟥',
+		empty: '⬜'
+	} as const;
+
+	let draggedItem = $state<DragItem | null>(null);
+	let dragOverIndex = $state<number | null>(null);
+	let shareFeedback = $state('');
+	let shareFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
+	let solvedLinks = $derived(
+		puzzle.edges.map((edge) => ({
+			from: puzzle.solution[edge.from],
+			to: puzzle.solution[edge.to],
+			clue: edge.clue
+		}))
+	);
+
+	function onDragStartInventory(e: DragEvent, word: WordItem) {
+		startDrag(e, { word, source: 'inventory' });
+	}
+
+	function onDragStartGrid(e: DragEvent, index: number) {
+		const cell = game.grid[index];
+		if (!cell) return;
+		startDrag(e, { word: cell, source: 'grid', gridIndex: index });
+	}
+
+	function startDrag(e: DragEvent, item: DragItem) {
+		draggedItem = item;
+		if (!e.dataTransfer) {
+			return;
+		}
+
+		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData('text/plain', item.word.word);
+		e.dataTransfer.setData(
+			DRAG_MIME,
+			JSON.stringify({
+				word: item.word.word,
+				source: item.source,
+				gridIndex: item.gridIndex
+			})
+		);
+	}
+
+	function resolveDraggedItem(e?: DragEvent): DragItem | null {
+		if (draggedItem) {
+			return draggedItem;
+		}
+
+		const raw = e?.dataTransfer?.getData(DRAG_MIME);
+		if (!raw) {
+			return null;
+		}
+
+		try {
+			const parsed = JSON.parse(raw) as {
+				word: string;
+				source: 'inventory' | 'grid';
+				gridIndex?: number;
+			};
+			const word = findWord(parsed.word);
+			if (!word) {
+				return null;
+			}
+
+			return {
+				word,
+				source: parsed.source,
+				gridIndex: parsed.gridIndex
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	function findWord(wordName: string): WordItem | null {
+		const inventoryWord = game.inventory.find((item) => item.word === wordName);
+		if (inventoryWord) {
+			return inventoryWord;
+		}
+
+		const gridWord = game.grid.find((item) => item?.word === wordName);
+		return gridWord ?? null;
+	}
+
+	function onDragOver(e: DragEvent, index: number) {
+		e.preventDefault();
+		if (e.dataTransfer) {
+			e.dataTransfer.dropEffect = 'move';
+		}
+		dragOverIndex = index;
+	}
+
+	function onDragEnter(e: DragEvent, index: number) {
+		e.preventDefault();
+		dragOverIndex = index;
+	}
+
+	function onDragLeave() {
+		dragOverIndex = null;
+	}
+
+	function onDropGrid(e: DragEvent, index: number) {
+		e.preventDefault();
+		dragOverIndex = null;
+		const item = resolveDraggedItem(e);
+		if (!item) return;
+
+		if (item.source === 'grid' && item.gridIndex !== undefined) {
+			game.moveGridWord(item.gridIndex, index);
+		} else {
+			game.placeWord(index, item.word);
+		}
+		draggedItem = null;
+	}
+
+	function onDropInventory(e: DragEvent) {
+		e.preventDefault();
+		dragOverIndex = null;
+		const item = resolveDraggedItem(e);
+		if (!item) return;
+		if (item.source === 'grid' && item.gridIndex !== undefined) {
+			game.removeFromGrid(item.gridIndex);
+		}
+		draggedItem = null;
+	}
+
+	function onDragEnd() {
+		draggedItem = null;
+		dragOverIndex = null;
+	}
+
+	function shareRows(): string {
+		return Array.from({ length: 3 }, (_, rowIndex) => {
+			return Array.from({ length: 3 }, (_, colIndex) => {
+				const index = rowIndex * 3 + colIndex;
+				return NODE_STATUS_EMOJI[game.getNodeStatus(index)];
+			}).join('');
+		}).join('\n');
+	}
+
+	function buildShareText() {
+		const statusLine = game.solved
+			? `Solved in ${game.moves} moves`
+			: `${game.correctCount}/9 words, ${game.correctEdgeCount}/${ADJACENCIES.length} links, ${game.moves} moves`;
+
+		const lines = [
+			`Simicle #${puzzleNumber}`,
+			statusLine,
+			shareRows()
+		];
+
+		if (typeof window !== 'undefined') {
+			lines.push(window.location.href);
+		}
+
+		return lines.join('\n');
+	}
+
+	function setShareFeedback(message: string) {
+		shareFeedback = message;
+		if (shareFeedbackTimer) {
+			clearTimeout(shareFeedbackTimer);
+		}
+		shareFeedbackTimer = setTimeout(() => {
+			shareFeedback = '';
+		}, 2000);
+	}
+
+	async function shareResult() {
+		const text = buildShareText();
+		const url = typeof window !== 'undefined' ? window.location.href : undefined;
+
+		try {
+			if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+				await navigator.share({
+					title: `Simicle #${puzzleNumber}`,
+					text,
+					url
+				});
+				setShareFeedback('Shared');
+				return;
+			}
+		} catch (error) {
+			if (error instanceof DOMException && error.name === 'AbortError') {
+				return;
+			}
+		}
+
+		if (typeof navigator !== 'undefined' && navigator.clipboard) {
+			await navigator.clipboard.writeText(text);
+			setShareFeedback('Copied');
+			return;
+		}
+
+		setShareFeedback('Share unavailable');
+	}
+
+	// Touch drag support
+	let touchDragItem = $state<{ word: WordItem; source: 'inventory' | 'grid'; gridIndex?: number } | null>(null);
+	let touchGhost = $state<{ x: number; y: number } | null>(null);
+
+	function onTouchStartInventory(e: TouchEvent, word: WordItem) {
+		e.preventDefault();
+		touchDragItem = { word, source: 'inventory' };
+		const touch = e.touches[0];
+		touchGhost = { x: touch.clientX, y: touch.clientY };
+	}
+
+	function onTouchStartGrid(e: TouchEvent, index: number) {
+		const cell = game.grid[index];
+		if (!cell) return;
+		e.preventDefault();
+		touchDragItem = { word: cell, source: 'grid', gridIndex: index };
+		const touch = e.touches[0];
+		touchGhost = { x: touch.clientX, y: touch.clientY };
+	}
+
+	function onTouchMove(e: TouchEvent) {
+		if (!touchDragItem) return;
+		e.preventDefault();
+		const touch = e.touches[0];
+		touchGhost = { x: touch.clientX, y: touch.clientY };
+	}
+
+	function onTouchEnd(e: TouchEvent) {
+		if (!touchDragItem || !touchGhost) {
+			touchDragItem = null;
+			touchGhost = null;
+			return;
+		}
+
+		// Find which grid cell or inventory we're over
+		const el = document.elementFromPoint(touchGhost.x, touchGhost.y);
+		if (el) {
+			const gridCell = el.closest('[data-grid-index]');
+			const invZone = el.closest('[data-inventory]');
+
+			if (gridCell) {
+				const index = Number.parseInt(gridCell.getAttribute('data-grid-index') ?? '', 10);
+				if (Number.isNaN(index)) {
+					touchDragItem = null;
+					touchGhost = null;
+					return;
+				}
+
+				if (touchDragItem.source === 'grid' && touchDragItem.gridIndex !== undefined) {
+					game.moveGridWord(touchDragItem.gridIndex, index);
+				} else {
+					game.placeWord(index, touchDragItem.word);
+				}
+			} else if (invZone && touchDragItem.source === 'grid' && touchDragItem.gridIndex !== undefined) {
+				game.removeFromGrid(touchDragItem.gridIndex);
+			}
+		}
+
+		touchDragItem = null;
+		touchGhost = null;
+	}
+
+	function edgeColor(fromIdx: number, toIdx: number): string {
+		const status = game.getEdgeStatus(fromIdx, toIdx);
+		switch (status) {
+			case 'correct': return 'var(--green)';
+			case 'swapped': return 'var(--yellow)';
+			case 'wrong': return 'var(--red)';
+			default: return 'var(--border)';
+		}
+	}
+
+	function nodeOutline(index: number): string {
+		const status = game.getNodeStatus(index);
+		switch (status) {
+			case 'correct': return 'var(--green)';
+			case 'wrong': return 'var(--border)';
+			default: return 'var(--border)';
+		}
+	}
+
+	// Grid positioning helpers
+	const SLOT_SIZE = 112;
+	const NODE_SIZE = 88;
+	const GAP = 20;
+	const GRID_W = SLOT_SIZE * 3 + GAP * 2;
+	const GRID_H = SLOT_SIZE * 3 + GAP * 2;
+
+	function cellPos(index: number): { x: number; y: number } {
+		const row = Math.floor(index / 3);
+		const col = index % 3;
+		return {
+			x: col * (SLOT_SIZE + GAP),
+			y: row * (SLOT_SIZE + GAP),
+		};
+	}
+</script>
+
+<svelte:window
+	ontouchmove={onTouchMove}
+	ontouchend={onTouchEnd}
+/>
+
+<div class="flex flex-col items-center gap-6 select-none">
+	<div class="grid w-full max-w-sm grid-cols-3 gap-3">
+		<div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-center">
+			<p class="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Moves</p>
+			<p class="text-xl font-bold">{game.moves}</p>
+		</div>
+		<div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-center">
+			<p class="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Words</p>
+			<p class="text-xl font-bold">{game.correctCount}/9</p>
+		</div>
+		<div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-center">
+			<p class="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Links</p>
+			<p class="text-xl font-bold">{game.correctEdgeCount}/{ADJACENCIES.length}</p>
+		</div>
+	</div>
+
+	<!-- Grid -->
+	<div
+		class="relative"
+		style="width: {GRID_W}px; height: {GRID_H}px;"
+	>
+		<!-- Edges (SVG lines) -->
+		<svg
+			class="absolute inset-0 pointer-events-none"
+			width={GRID_W}
+			height={GRID_H}
+		>
+			{#each ADJACENCIES as [a, b] (`${a}-${b}`)}
+				{@const pa = cellPos(a)}
+				{@const pb = cellPos(b)}
+				<line
+					x1={pa.x + SLOT_SIZE / 2}
+					y1={pa.y + SLOT_SIZE / 2}
+					x2={pb.x + SLOT_SIZE / 2}
+					y2={pb.y + SLOT_SIZE / 2}
+					stroke={edgeColor(a, b)}
+					stroke-width="3"
+					stroke-linecap="round"
+				/>
+			{/each}
+		</svg>
+
+		<!-- Nodes -->
+		{#each Array(9) as _, i (i)}
+			{@const pos = cellPos(i)}
+			{@const cell = game.grid[i]}
+			<div
+				class="absolute flex items-center justify-center"
+				style="
+					left: {pos.x}px;
+					top: {pos.y}px;
+					width: {SLOT_SIZE}px;
+					height: {SLOT_SIZE}px;
+				"
+				data-grid-index={i}
+				role="button"
+				tabindex="0"
+				ondragenter={(e) => onDragEnter(e, i)}
+				ondragover={(e) => onDragOver(e, i)}
+				ondragleave={onDragLeave}
+				ondrop={(e) => onDropGrid(e, i)}
+			>
+				{#if cell}
+					<div
+						class="flex h-[88px] w-[88px] cursor-grab flex-col items-center justify-center gap-0.5 rounded-xl border-2 bg-[var(--surface-light)] transition-colors active:cursor-grabbing"
+						style="border-color: {nodeOutline(i)};"
+						role="button"
+						aria-label={`Move ${cell.word}`}
+						tabindex="-1"
+						draggable="true"
+						ondragstart={(e) => onDragStartGrid(e, i)}
+						ondragend={onDragEnd}
+						ontouchstart={(e) => onTouchStartGrid(e, i)}
+					>
+						<span class="text-2xl">{cell.emoji}</span>
+						<span class="text-xs font-semibold">{cell.word}</span>
+					</div>
+				{:else if dragOverIndex === i}
+					<div class="flex h-[88px] w-[88px] items-center justify-center rounded-xl border-2 border-dashed border-[var(--accent)] bg-[var(--surface)] opacity-70"></div>
+				{:else}
+					<div
+						class="h-[88px] w-[88px] rounded-xl border-2 bg-[var(--surface)] transition-colors"
+						style="border-color: {nodeOutline(i)};"
+					></div>
+				{/if}
+			</div>
+		{/each}
+	</div>
+
+	<!-- Status -->
+	{#if game.solved}
+		<div class="text-center">
+			<p class="text-lg font-bold text-[var(--green)]">Solved! 🎉</p>
+		</div>
+
+		<section class="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+			<h2 class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+				Why the links work
+			</h2>
+			<div class="mt-3 grid gap-3">
+				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
+					<div class="rounded-xl border border-[var(--border)] bg-[var(--surface-light)] px-3 py-3">
+						<p class="text-sm font-semibold">
+							{link.from.word} {link.from.emoji} - {link.to.word} {link.to.emoji}
+						</p>
+						<p class="mt-1 text-sm text-[var(--text-muted)]">{link.clue}</p>
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- Inventory -->
+	<div
+		class="flex flex-wrap justify-center gap-2 min-h-[60px] w-full p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+		data-inventory
+		role="list"
+		ondragover={(e) => {
+			e.preventDefault();
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = 'move';
+			}
+		}}
+		ondrop={onDropInventory}
+	>
+		{#if game.inventory.length === 0}
+			<p class="text-sm text-[var(--text-muted)] self-center">
+				{game.solved ? 'All words placed!' : 'Drag words back here to rearrange'}
+			</p>
+		{/if}
+		{#each game.inventory as word (word.word)}
+			<div
+				class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--surface-light)] border border-[var(--border)] cursor-grab active:cursor-grabbing hover:border-[var(--accent)] transition-colors"
+				draggable="true"
+				role="listitem"
+				ondragstart={(e) => onDragStartInventory(e, word)}
+				ondragend={onDragEnd}
+				ontouchstart={(e) => onTouchStartInventory(e, word)}
+			>
+				<span class="text-lg">{word.emoji}</span>
+				<span class="text-sm font-semibold">{word.word}</span>
+			</div>
+		{/each}
+	</div>
+
+	<div class="flex items-center gap-3">
+		<button
+			class="px-4 py-2 text-sm rounded-lg bg-[var(--surface-light)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+			onclick={shareResult}
+		>
+			Share
+		</button>
+		<button
+			class="px-4 py-2 text-sm rounded-lg bg-[var(--surface-light)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+			onclick={() => game.reset()}
+		>
+			Reset
+		</button>
+	</div>
+
+	{#if shareFeedback}
+		<p class="text-sm text-[var(--text-muted)]">{shareFeedback}</p>
+	{/if}
+</div>
+
+<!-- Touch drag ghost -->
+{#if touchDragItem && touchGhost}
+	<div
+		class="fixed pointer-events-none z-50 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--accent)] text-white shadow-lg"
+		style="left: {touchGhost.x - 40}px; top: {touchGhost.y - 30}px;"
+	>
+		<span class="text-lg">{touchDragItem.word.emoji}</span>
+		<span class="text-sm font-semibold">{touchDragItem.word.word}</span>
+	</div>
+{/if}
