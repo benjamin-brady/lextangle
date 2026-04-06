@@ -1,6 +1,6 @@
 ---
 name: emoji-puzzle-generator
-description: Generate LexLink emoji puzzles and 3x3 word-link grids. Use when asked to create, draft, expand, review, or add puzzles with word relationships such as common phrases, compounds, containment, rhyme, homophone, derivation, slang, category links, or other explainable word associations.
+description: Generate LexLink emoji puzzles and 3x3 word-link grids. Use when asked to create, draft, expand, review, or add standard or hard puzzles with word relationships such as common phrases, compounds, containment, rhyme, homophone, derivation, slang, secondary meanings, category links, or other explainable word associations.
 ---
 
 # Emoji Puzzle Generator
@@ -117,20 +117,27 @@ These are useful, but should be supported by clear clues and not dominate the wh
 - `thunder` / `lightning`
 - `trial` / `error`
 
+11. `x` has a secondary sense, figurative meaning, or alternate reading that links to `y`
+
+- `dirt` -> `gossip`
+- `tea` -> `gossip`
+- `cold` -> `illness`
+- `shade` -> `insult`
+
 ### Riskier relation families
 
 Use these sparingly. They can work, but they become flimsy quickly.
 
-11. Loose thematic association
+12. Loose thematic association
 
 - `beach` / `summer`
 - `school` / `pencil`
 
-12. Multi-step trivia or knowledge chains
+13. Multi-step trivia or knowledge chains
 
 - `Mercury` -> `messenger` -> `wings`
 
-13. Private slang, niche fandom references, or region-specific shorthand
+14. Private slang, niche fandom references, or region-specific shorthand
 
 - only use if the target audience would reliably know it
 
@@ -151,7 +158,40 @@ Prefer this order of confidence:
 3. Category-member or type-of link
 4. Clear derivation, containment, or sound relation
 5. Slang or cultural expression
-6. Loose thematic association
+6. Common secondary meaning or figurative sense
+7. Loose thematic association
+
+## Hard Puzzle Guidance
+
+Hard puzzles may use more complex relationships than standard puzzles, but they still need to feel fair after the reveal.
+
+Good hard-puzzle ingredients:
+
+- common double meanings
+- figurative or idiomatic senses
+- links drawn from familiar English-language sayings or proverbs
+- slang that is broad enough to be widely recognized
+- words that can link through different parts of speech
+- slightly less obvious compounds or cultural pairings
+
+Examples:
+
+- `dirt` -> `gossip`
+- `tea` -> `gossip`
+- `shade` -> `insult`
+- `cold` -> `illness`
+- `watch` -> `guard` via noun/verb overlap
+- `pig` -> `lipstick` from "you can't put lipstick on a pig"
+- `oil` -> `door` from a familiar squeaky-door / oiling-the-door saying pattern
+
+Hard puzzle constraints:
+
+- Prefer common alternate meanings, not dictionary archaeology.
+- Prefer sayings and idioms that are widely recognizable, not regional or private turns of phrase.
+- A player should be able to say "that is fair" once the clue is shown.
+- Do not stack obscurity with ambiguity.
+- If a word has several meanings, the intended one should still be recoverable from the local neighborhood.
+- Hard should come from layered reasoning, not from vague words that fit everywhere.
 
 ## Puzzle Composition Rules
 
@@ -165,6 +205,36 @@ When generating a candidate puzzle:
 6. Avoid duplicate words, near-duplicates, or trivial inflections unless they are the point.
 7. Avoid a board where too many edges are just “both are in the same general topic.”
 8. Avoid clues that are riddles. Clues are post-solve explanations.
+
+## Review For Ambiguity
+
+After generating a candidate puzzle, review not only the intended 12 links but also the unintended links players might plausibly see.
+
+Reject or revise a board if:
+
+- one word can plausibly connect to too many other words in the set
+- a very generic adjective, noun, or verb acts like a universal connector
+- multiple unintended compounds are as strong as the intended ones
+- a word has several senses and the board does not sufficiently narrow which sense matters
+- two or more alternate full solutions seem plausible
+
+Words that often need extra scrutiny:
+
+- broad modifiers like `big`, `small`, `good`, `bad`, `high`, `low`
+- general-purpose nouns like `thing`, `place`, `man`, `people`, `time`
+- compound-friendly words like `house`, `line`, `water`, `fire`, `light`, `ball`
+
+Example failure mode:
+
+- `big` can pair naturally with many nouns in the same set, so even if one edge is intended, the word creates too many believable alternatives.
+
+Ambiguity review process:
+
+1. For each word, list every other word in the set it could plausibly link with.
+2. Flag any word that has too many plausible partners compared with the rest of the board.
+3. Check whether any unintended link is as strong as an intended link.
+4. Check whether swapping two or three words could still create a convincing alternate network.
+5. Replace or narrow overly flexible words until the intended structure is more specific.
 
 ## Emoji Rules
 
@@ -198,8 +268,10 @@ When the user asks for a new puzzle, follow this process:
 4. Arrange the 9 words into a 3x3 so each of the 12 adjacencies is valid.
 5. Write short, natural-language clues for all 12 edges.
 6. Assign emojis to all 9 words.
-7. Check whether the puzzle feels fair, varied, and non-redundant.
-8. If asked to add it to the app, format it for `src/lib/puzzles.ts`.
+7. Review the board for unintended or overly flexible links.
+8. Replace overly broad words if they create too many plausible alternatives.
+9. Check whether the puzzle feels fair, varied, and non-redundant.
+10. If asked to add it to the app, format it for `src/lib/puzzles.ts`.
 
 ## Output Format
 
@@ -244,6 +316,9 @@ Before presenting or committing a puzzle, verify:
 - No clue accidentally depends on a third word elsewhere in the board.
 - The board uses at least 2 relation families.
 - The board has a few easy anchors and a few satisfying reveals.
+- Hard puzzles use trickier relations without becoming obscure or vague.
+- No word behaves like a catch-all connector with too many plausible partners.
+- No alternate arrangement creates a similarly convincing link network.
 - Each word has a suitable emoji.
 - The final result feels like a LexLink puzzle, not a random word web.
 
