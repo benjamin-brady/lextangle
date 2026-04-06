@@ -10,7 +10,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"test:unit": "bun test",
+		"test:unit": "bun test src",
 		"test:e2e": "playwright test",
 		"deploy": "bun run build && bunx wrangler deploy"
 	},
