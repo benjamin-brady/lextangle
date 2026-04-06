@@ -1,4 +1,4 @@
-import type { Puzzle } from '../../src/lib/types';
+import type { Puzzle } from '../types';
 
 export const HARD_BATCH_A: Puzzle[] = [
 	{
@@ -272,17 +272,3 @@ export const HARD_BATCH_A: Puzzle[] = [
 		],
 	},
 ];
-
-/*
-Themes and dominant hard-relation families:
-1. Retail / hospitality / legal workflow: compounds, semantic role links, institutional phrases.
-2. Nightlife and social behavior: idioms, genre labels, public-interest compounds, reverse compounds.
-3. Competition and legal language: race-track terms, card/game vocabulary, idiom ('day in court').
-4. Social entertainment stack: reverse compounds, chronology term, betting-line language, genre labels.
-5. Broadcast and energy: consumer-electronics compounds, emergency phrases, reverse compounds, performance vocabulary.
-6. Communication and security: figurative/modern phrase ('face time'), event vocabulary, bomb-sniffing and sports-role compounds.
-7. Parties, venues, and taxonomy: reverse compounds, mall/legal phrases, room/plant description, taxonomic rank.
-8. Club culture and performance: genre labels, cultural-scene language, invitation wording, betting-line phrasing.
-9. Competition, collectibles, and security: sports phrases, show-language figurative sense ('bomb'), K-9/security compounds.
-10. Sports/media timing: track-record language, digital-game phrasing, collectible-event wording, figurative failure phrase.
-*/

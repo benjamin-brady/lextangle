@@ -1,5 +1,7 @@
 import type { Puzzle } from './types';
 
+import { MERGED_HARD_PUZZLES, MERGED_STANDARD_PUZZLES } from './generated-puzzles';
+
 const DEFAULT_WORD_EMOJI = '✨';
 
 const WORD_EMOJIS: Record<string, string> = {
@@ -417,6 +419,7 @@ export const PUZZLES: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'Food service is logistics wearing an apron.' },
 		],
 	},
+	...MERGED_STANDARD_PUZZLES,
 ].map(applyWordEmojis);
 
 export const PRACTICE_PUZZLES: Puzzle[] = PUZZLES;
@@ -557,6 +560,7 @@ export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'An industry of aprons, invoices, and speed.' },
 		],
 	},
+	...MERGED_HARD_PUZZLES,
 ].map(applyWordEmojis);
 
 export function getTodaysPuzzle(): Puzzle {

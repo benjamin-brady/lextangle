@@ -1,4 +1,4 @@
-import type { Puzzle } from '../../src/lib/types';
+import type { Puzzle } from '../types';
 
 export const STANDARD_BATCH_A: Puzzle[] = [
 	{
@@ -272,16 +272,3 @@ export const STANDARD_BATCH_A: Puzzle[] = [
 		],
 	},
 ];
-
-/*
-1. Cafe Break: checked that Bag, Plate, and Mug were pinned by drinkware and snack compounds rather than swapping freely.
-2. Game Night: checked that Score and Business each had one dominant card/plan lane and did not create easy alternate rows.
-3. Travel Signs: checked that Road, Sign, and Post stayed directional rather than collapsing into a generic transport theme.
-4. Sky Lights: checked that Screen and Bulb were anchored to Light and Door, not drifting into vague tech-only links.
-5. Music Gear: checked that Stand and String stayed musical through their neighbors instead of becoming generic object words.
-6. Farm Morning: checked that the vertical farm clues stayed concrete homes/products rather than loose barnyard trivia.
-7. Message Desk: checked that Box/Board/Paper were supported by specific communication or paper-stock readings.
-8. Pet Home: checked that House, Cage, and Bowl were each tied to one pet-care role, limiting broad home-category swaps.
-9. Garden Plot: checked that Pot, Wall, and Vine stayed gardening-specific rather than turning into general household links.
-10. Birthday Tea: checked that Gift, Party, and Cake remained event-specific and did not open a broader shopping board.
-*/

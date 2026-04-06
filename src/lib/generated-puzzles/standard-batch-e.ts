@@ -1,4 +1,4 @@
-import type { Puzzle } from '../../src/lib/types';
+import type { Puzzle } from '../types';
 
 export const STANDARD_BATCH_E: Puzzle[] = [
 	{
@@ -299,5 +299,3 @@ export const STANDARD_BATCH_E: Puzzle[] = [
 		],
 	},
 ];
-
-// Review: I avoided highly flexible connectors like Line, Houseboat-style splitters, Game, Light, Water, and Ball where possible, because they create too many equally believable alternate links in standard boards.

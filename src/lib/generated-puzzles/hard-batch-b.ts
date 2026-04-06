@@ -1,4 +1,4 @@
-import type { Puzzle } from '../../src/lib/types';
+import type { Puzzle } from '../types';
 
 export const HARD_BATCH_B: Puzzle[] = [
 	{
@@ -28,7 +28,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'The puzzle genre with a timer.' },
 		],
 	},
-	// Note: Ball flips between dance and sport, but Snow, Foot, Room, and Game pin each reading.
 	{
 		solution: [
 			{ word: 'Sea', emoji: '🌊' },
@@ -56,7 +55,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'One counted unit.' },
 		],
 	},
-	// Note: Line splits between boundary, queue, and choreography; Coast, Life, Dance, and Up narrow it quickly.
 	{
 		solution: [
 			{ word: 'Watch', emoji: '👀' },
@@ -84,7 +82,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'A route of iron.' },
 		],
 	},
-	// Note: Watch and Guard can be noun or verb, but Night, Dog, Coast, and Rail force the security readings.
 	{
 		solution: [
 			{ word: 'Tea', emoji: '🍵' },
@@ -112,7 +109,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'A single counted move.' },
 		],
 	},
-	// Note: Party and Line both branch widely, but Tea, Music, Tree, and Up keep them in familiar compound lanes.
 	{
 		solution: [
 			{ word: 'Book', emoji: '📖' },
@@ -140,7 +136,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'The road a driver repeats.' },
 		],
 	},
-	// Note: Board and Service each have object/institution senses; Book, Game, Room, and Route keep them concrete.
 	{
 		solution: [
 			{ word: 'Tree', emoji: '🌳' },
@@ -168,7 +163,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'Genre, not metaphysics.' },
 		],
 	},
-	// Note: Soul is the only real double-sense pivot; Food and Music make the cuisine and genre readings immediate.
 	{
 		solution: [
 			{ word: 'Tower', emoji: '🗼' },
@@ -196,7 +190,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'Mascot on the kibble bag.' },
 		],
 	},
-	// Note: Plant flips between factory and organism; Power, Water, House, and Food separate those senses cleanly.
 	{
 		solution: [
 			{ word: 'Green', emoji: '🟩' },
@@ -224,7 +217,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'Produce under canvas.' },
 		],
 	},
-	// Note: Service shifts between hospitality and civics; Room, Food, and Public keep each reading from drifting.
 	{
 		solution: [
 			{ word: 'Skin', emoji: '🧴' },
@@ -252,7 +244,6 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'When the surge turns mean.' },
 		],
 	},
-	// Note: Roll swings between motion, music, and slogan; Drum, Boil, Tide, and Thunder keep the intended readings separate.
 	{
 		solution: [
 			{ word: 'Court', emoji: '⚖️' },
@@ -280,5 +271,4 @@ export const HARD_BATCH_B: Puzzle[] = [
 			{ from: 5, to: 8, clue: 'A quiet room built around a pot.' },
 		],
 	},
-	// Note: Light carries object, permission, and color senses; Traffic, Night, Green, House, and Court disambiguate each one.
 ];

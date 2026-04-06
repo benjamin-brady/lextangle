@@ -1,4 +1,4 @@
-import type { Puzzle } from '../../src/lib/types';
+import type { Puzzle } from '../types';
 
 export const STANDARD_BATCH_D: Puzzle[] = [
 	{
@@ -272,18 +272,3 @@ export const STANDARD_BATCH_D: Puzzle[] = [
 		],
 	},
 ];
-
-/*
-Concepts:
-1. Taxi, truck, and bus operations.
-2. Zoo entry, keeper jobs, and front-of-house hospitality.
-3. City traffic, signage, and bike-lane street life.
-4. Mounted police, horse care, and racing prep.
-5. River ferry traffic, harbor loading, and ship operations.
-6. Markets, civic spaces, nightlife, and street food.
-7. Buses, trains, coaches, and track-based travel.
-8. Transit stations, emergency services, and working dogs.
-9. School transport, classroom work, and support roles.
-10. Guest services, keeping roles, pet care, and retail.
-The strongest relation types across the batch are everyday compounds and fixed phrases, role-object or role-place links, and straightforward use relationships, with only light reliance on broader city-life theming.
-*/
