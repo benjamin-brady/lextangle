@@ -1,3 +1,4 @@
+import { evaluatePuzzleState, getEdgeStatus as getEvaluatedEdgeStatus } from './game-logic';
 import type { EdgeStatus, NodeStatus, Puzzle, WordItem } from './types';
 
 interface SavedState {
@@ -67,24 +68,15 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		});
 	});
 
+	let evaluation = $derived(evaluatePuzzleState(puzzle, grid, cellChecked));
+
 	/** Whether the puzzle is complete and all correct */
-	let solved = $derived(cellChecked.every(Boolean) && grid.every((cell, i) => {
-		if (!cell) return false;
-		const correct = puzzle.solution[i];
-		return cell.word === correct.word;
-	}));
+	let solved = $derived(evaluation.solved);
 
 	/** Number of correctly placed words (only counts checked cells) */
-	let correctCount = $derived(
-		grid.reduce((acc, cell, i) => {
-			if (!cell || !cellChecked[i]) return acc;
-			return acc + (cell.word === puzzle.solution[i].word ? 1 : 0);
-		}, 0)
-	);
+	let correctCount = $derived(evaluation.correctWords);
 
-	let correctEdgeCount = $derived(
-		puzzle.edges.reduce((acc, edge) => acc + (getEdgeStatus(edge.from, edge.to) === 'correct' ? 1 : 0), 0)
-	);
+	let correctEdgeCount = $derived(evaluation.correctLinks);
 
 	/** Mark specific cells as dirty when they change after a check */
 	function markCellsDirty(indices: number[]) {
@@ -107,28 +99,11 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 	}
 
 	function getNodeStatus(index: number): NodeStatus {
-		const cell = grid[index];
-		if (!cell) return 'empty';
-		if (!cellChecked[index]) return 'unchecked';
-		return cell.word === puzzle.solution[index].word ? 'correct' : 'wrong';
-	}
-
-	function getRawEdgeStatus(fromIdx: number, toIdx: number): EdgeStatus {
-		const fromCell = grid[fromIdx];
-		const toCell = grid[toIdx];
-		if (!fromCell || !toCell) return 'empty';
-
-		const fromCorrect = fromCell.word === puzzle.solution[fromIdx].word;
-		const toCorrect = toCell.word === puzzle.solution[toIdx].word;
-		return fromCorrect && toCorrect ? 'correct' : 'wrong';
+		return evaluation.nodeStatuses[index] ?? 'empty';
 	}
 
 	function getEdgeStatus(fromIdx: number, toIdx: number): EdgeStatus {
-		const fromCell = grid[fromIdx];
-		const toCell = grid[toIdx];
-		if (!fromCell || !toCell) return 'empty';
-		if (!cellChecked[fromIdx] || !cellChecked[toIdx]) return 'empty';
-		return getRawEdgeStatus(fromIdx, toIdx);
+		return getEvaluatedEdgeStatus(evaluation, fromIdx, toIdx);
 	}
 
 	function getEdgeClue(fromIdx: number, toIdx: number): string | undefined {

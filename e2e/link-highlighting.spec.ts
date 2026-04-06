@@ -33,10 +33,7 @@ test('solved hard puzzle highlights every rendered link green', async ({ page })
 	expect(strokes).toEqual(Array(12).fill(GREEN));
 });
 
-test('swapped words must not show false green edges', async ({ page }) => {
-	// Swap Tea (pos 0) and Top (pos 6). Both "Tea-Tree" and "Top-Tree"
-	// are valid pairs from other positions, so the current bug would
-	// falsely highlight edges 0-3 and 3-6 as green.
+test('swapped corner words still show valid off-position links in green', async ({ page }) => {
 	const swappedWords = ['Top', 'Party', 'Floor', 'Tree', 'Line', 'Dance', 'Tea', 'Up', 'Step'];
 
 	await page.addInitScript((seed) => {
@@ -50,9 +47,9 @@ test('swapped words must not show false green edges', async ({ page }) => {
 	// [0,1], [1,2], [3,4], [4,5], [6,7], [7,8],
 	// [0,3], [1,4], [2,5], [3,6], [4,7], [5,8]
 	//
-	// Position 0 is wrong (Top instead of Tea)  → edges 0-1, 0-3 are wrong
-	// Position 6 is wrong (Tea instead of Top)  → edges 6-7, 3-6 are wrong
-	// All other positions are correct.
+	// With link evaluation decoupled from exact tile position, the swapped
+	// corner words still preserve any neighboring pairs that belong to the
+	// puzzle's valid link set.
 	const expectedColors = [
 		RED,   // 0-1: wrong (pos 0 wrong)
 		GREEN, // 1-2: both correct
@@ -60,10 +57,10 @@ test('swapped words must not show false green edges', async ({ page }) => {
 		GREEN, // 4-5: both correct
 		RED,   // 6-7: wrong (pos 6 wrong)
 		GREEN, // 7-8: both correct
-		RED,   // 0-3: wrong (pos 0 wrong)
+		GREEN, // 0-3: Tree-Top is still a valid link
 		GREEN, // 1-4: both correct
 		GREEN, // 2-5: both correct
-		RED,   // 3-6: wrong (pos 6 wrong)
+		GREEN, // 3-6: Tea-Tree is still a valid link
 		GREEN, // 4-7: both correct
 		GREEN, // 5-8: both correct
 	];
@@ -76,5 +73,5 @@ test('swapped words must not show false green edges', async ({ page }) => {
 	expect(strokes).toEqual(expectedColors);
 
 	// The links counter must agree with the visual count
-	await expect(page.getByText('8/12').last()).toBeVisible();
+	await expect(page.getByText('10/12').last()).toBeVisible();
 });

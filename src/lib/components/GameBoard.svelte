@@ -34,6 +34,10 @@
 		}))
 	);
 
+	function wordEmoji(word: WordItem): string {
+		return word.emoji ?? '✨';
+	}
+
 	function baseEventParams(): Record<string, string | number | boolean> {
 		return {
 			puzzle_id: storageId,
@@ -433,7 +437,8 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span class="text-sm font-semibold">{cell.word}</span>
+						<span aria-hidden="true" class="text-2xl leading-none">{wordEmoji(cell)}</span>
+						<span class="px-1 text-center text-[11px] leading-tight font-semibold">{cell.word}</span>
 					</div>
 				{:else if dragOverIndex === i}
 					<div class="flex h-18 w-18 items-center justify-center rounded-xl border-2 border-dashed border-(--accent) bg-(--surface) opacity-70"></div>
@@ -461,7 +466,10 @@
 				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
 					<div class="rounded-xl border border-(--border) bg-(--surface-light) px-3 py-3">
 						<p class="text-sm font-semibold">
-							{link.from.word} → {link.to.word}
+							<span aria-hidden="true">{wordEmoji(link.from)}</span>
+							{link.from.word} →
+							<span aria-hidden="true">{wordEmoji(link.to)}</span>
+							{link.to.word}
 						</p>
 						<p class="mt-1 text-sm text-(--text-muted)">{link.clue}</p>
 					</div>
@@ -497,6 +505,7 @@
 				ondragend={onDragEnd}
 				ontouchstart={(e) => onTouchStartInventory(e, word)}
 			>
+				<span aria-hidden="true" class="text-base leading-none">{wordEmoji(word)}</span>
 				<span class="text-sm font-semibold">{word.word}</span>
 			</div>
 		{/each}
@@ -538,6 +547,7 @@
 		class="fixed z-50 flex items-center gap-1.5 rounded-lg bg-(--accent) px-3 py-2 text-white shadow-lg pointer-events-none"
 		style="left: {touchGhost.x - 40}px; top: {touchGhost.y - 30}px;"
 	>
+		<span aria-hidden="true" class="text-base leading-none">{wordEmoji(touchDragItem.word)}</span>
 		<span class="text-sm font-semibold">{touchDragItem.word.word}</span>
 	</div>
 {/if}
