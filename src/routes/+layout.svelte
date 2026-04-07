@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { asset } from '$app/paths';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import HowToPlay from '$lib/components/HowToPlay.svelte';
-	import { onMount } from 'svelte';
-	import { trackPageView } from '../lib/analytics';
 	import '../app.css';
 
 	let { children } = $props();
@@ -16,45 +13,6 @@
 	const socialImagePath = asset('/lexlink-social.png');
 	const canonicalUrl = $derived(page.url.href);
 	const socialImageUrl = $derived(new URL(socialImagePath, page.url).toString());
-
-	const gaMeasurementId = env.PUBLIC_GA_MEASUREMENT_ID ?? '';
-	const gaScriptId = 'ga4-google-tag';
-	let gaReady = $state(false);
-
-	onMount(() => {
-		if (!gaMeasurementId || typeof window === 'undefined') {
-			return;
-		}
-
-		window.dataLayer = window.dataLayer || [];
-
-		if (typeof window.gtag !== 'function') {
-			window.gtag = function gtag(command, target, params) {
-				window.dataLayer.push(arguments as unknown as never);
-			};
-		}
-
-		window.gtag('js', new Date());
-		window.gtag('config', gaMeasurementId, { send_page_view: false });
-
-		if (!document.getElementById(gaScriptId)) {
-			const script = document.createElement('script');
-			script.id = gaScriptId;
-			script.async = true;
-			script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
-			document.head.appendChild(script);
-		}
-
-		gaReady = true;
-	});
-
-	$effect(() => {
-		if (!gaReady || !gaMeasurementId || typeof window === 'undefined') {
-			return;
-		}
-
-		trackPageView(new URL(page.url.href), gaMeasurementId);
-	});
 </script>
 
 <svelte:head>
