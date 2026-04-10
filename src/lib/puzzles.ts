@@ -563,17 +563,26 @@ export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
 	...MERGED_HARD_PUZZLES,
 ].map(applyWordEmojis);
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+// 2026-04-08 is Daily #1, making 2026-04-10 Daily #3.
+const DAILY_PUZZLE_EPOCH_MS = Date.UTC(2026, 3, 8);
+
+function getDailyPuzzleIndex(timestamp = Date.now()): number {
+	const daysSincePuzzleEpoch = Math.floor(timestamp / MS_PER_DAY) - Math.floor(DAILY_PUZZLE_EPOCH_MS / MS_PER_DAY);
+	return Math.max(0, daysSincePuzzleEpoch);
+}
+
 export function getTodaysPuzzle(): Puzzle {
-	const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-	return PUZZLES[daysSinceEpoch % PUZZLES.length];
+	const dailyPuzzleIndex = getDailyPuzzleIndex();
+	return PUZZLES[dailyPuzzleIndex % PUZZLES.length];
 }
 
 export function getTodaysPuzzleInfo(): { puzzle: Puzzle; puzzleNumber: number; cycleIndex: number } {
-	const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+	const dailyPuzzleIndex = getDailyPuzzleIndex();
 	return {
-		puzzle: PUZZLES[daysSinceEpoch % PUZZLES.length],
-		puzzleNumber: daysSinceEpoch + 1,
-		cycleIndex: daysSinceEpoch % PUZZLES.length,
+		puzzle: PUZZLES[dailyPuzzleIndex % PUZZLES.length],
+		puzzleNumber: dailyPuzzleIndex + 1,
+		cycleIndex: dailyPuzzleIndex % PUZZLES.length,
 	};
 }
 

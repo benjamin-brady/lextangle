@@ -23,6 +23,7 @@
 	let draggedItem = $state<DragItem | null>(null);
 	let dragOverIndex = $state<number | null>(null);
 	let shareFeedback = $state('');
+	let shareButtonLabel = $state('Share Result');
 	let shareFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 	let hasObservedSolvedState = false;
 	let previousSolved = false;
@@ -234,12 +235,30 @@
 
 	function setShareFeedback(message: string) {
 		shareFeedback = message;
+		shareButtonLabel = message === 'copied!' ? 'copied!' : 'Share Result';
 		if (shareFeedbackTimer) {
 			clearTimeout(shareFeedbackTimer);
 		}
 		shareFeedbackTimer = setTimeout(() => {
 			shareFeedback = '';
+			shareButtonLabel = 'Share Result';
 		}, 2000);
+	}
+
+	function canUseNativeShare(): boolean {
+		if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
+			return false;
+		}
+
+		const mobileFlag = (
+			navigator as Navigator & { userAgentData?: { mobile?: boolean } }
+		).userAgentData?.mobile;
+		if (typeof mobileFlag === 'boolean') {
+			return mobileFlag;
+		}
+
+		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+			|| (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent));
 	}
 
 	function handleCheck() {
@@ -252,7 +271,7 @@
 		const url = typeof window !== 'undefined' ? window.location.href : undefined;
 
 		try {
-			if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+			if (canUseNativeShare()) {
 				await navigator.share({
 					title: `LexLink ${shareLabel}`,
 					text,
@@ -277,7 +296,7 @@
 				...baseEventParams(),
 				method: 'clipboard'
 			});
-			setShareFeedback('Copied');
+			setShareFeedback('copied!');
 			return;
 		}
 
@@ -523,9 +542,9 @@
 					class="mt-2 w-full cursor-pointer rounded-xl bg-(--green) px-5 py-3 text-base font-black uppercase tracking-[0.18em] text-white shadow-[0_12px_30px_rgba(34,197,94,0.32)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(34,197,94,0.38)] active:translate-y-0"
 					onclick={shareResult}
 				>
-					Share Result
+					{shareButtonLabel}
 				</button>
-				{#if shareFeedback}
+				{#if shareFeedback && shareFeedback !== 'copied!'}
 					<p class="mt-1 text-sm text-(--text-muted)">{shareFeedback}</p>
 				{/if}
 			</div>
