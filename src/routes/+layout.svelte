@@ -2,8 +2,11 @@
 	import { afterNavigate } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import HowToPlay from '$lib/components/HowToPlay.svelte';
+	import { getTodaysPuzzleInfo } from '$lib/puzzles';
 	import { trackPageView } from '../lib/analytics';
 	import '../app.css';
+
+	const { puzzleNumber } = getTodaysPuzzleInfo();
 
 	let { children } = $props();
 
@@ -37,7 +40,10 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 		<div class="flex items-center justify-between max-w-lg mx-auto px-4">
 			<div class="w-10"></div>
 			<div class="text-center">
-				<h1 class="text-2xl font-bold tracking-tight">LexLink</h1>
+				<h1 class="text-2xl font-bold tracking-tight">
+					LexLink<span class="ml-1 align-super text-[0.5rem] font-semibold uppercase tracking-widest text-[var(--accent)] opacity-80">alpha</span>
+					<span class="ml-1 text-base font-normal text-[var(--text-muted)]">#{ puzzleNumber}</span>
+				</h1>
 			</div>
 			<HowToPlay />
 		</div>

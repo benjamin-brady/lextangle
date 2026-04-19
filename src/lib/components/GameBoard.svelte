@@ -6,6 +6,10 @@
 
 	let { game, shareLabel, puzzle, storageId }: { game: GameState; shareLabel: string; puzzle: Puzzle; storageId: string } = $props();
 
+	function wordEmoji(word: WordItem): string {
+		return word.emoji ?? '✨';
+	}
+
 	type DragItem = {
 		word: WordItem;
 		source: 'inventory' | 'grid';
@@ -452,6 +456,7 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
+						<span aria-hidden="true" class="text-base leading-none">{wordEmoji(cell)}</span>
 						<span class="text-sm font-semibold">{cell.word}</span>
 					</div>
 				{:else if dragOverIndex === i}
@@ -525,6 +530,7 @@
 				ondragend={onDragEnd}
 				ontouchstart={(e) => onTouchStartInventory(e, word)}
 			>
+				<span aria-hidden="true" class="text-base leading-none">{wordEmoji(word)}</span>
 				<span class="text-sm font-semibold">{word.word}</span>
 			</div>
 		{/each}
@@ -568,6 +574,7 @@
 		class="fixed z-50 flex items-center gap-1.5 rounded-lg bg-(--accent) px-3 py-2 text-white shadow-lg pointer-events-none"
 		style="left: {touchGhost.x - 40}px; top: {touchGhost.y - 30}px;"
 	>
+		<span aria-hidden="true" class="text-base leading-none">{wordEmoji(touchDragItem.word)}</span>
 		<span class="text-sm font-semibold">{touchDragItem.word.word}</span>
 	</div>
 {/if}
