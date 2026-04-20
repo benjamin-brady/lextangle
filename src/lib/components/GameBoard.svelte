@@ -354,7 +354,7 @@
 		const status = game.getNodeStatus(index);
 		switch (status) {
 			case 'correct': return 'var(--green)';
-			case 'wrong': return 'var(--border)';
+			case 'wrong': return 'var(--red)';
 			case 'unchecked': return 'var(--border)';
 			default: return 'var(--border)';
 		}
