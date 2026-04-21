@@ -590,8 +590,9 @@
 	<div class="flex flex-col gap-3">
 		{#if !game.solved}
 			<button
-				class="w-full cursor-pointer rounded-none border-2 border-(--ink) bg-(--ink) px-5 py-4 text-base font-black uppercase tracking-[0.25em] text-(--bg) shadow-[4px_4px_0_0_var(--accent)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_var(--accent)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+				class="w-full cursor-pointer rounded-none border-2 border-(--ink) bg-(--ink) px-5 py-4 text-base font-black uppercase tracking-[0.25em] text-(--bg) shadow-[4px_4px_0_0_var(--accent)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_var(--accent)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:active:translate-x-0 disabled:active:translate-y-0"
 				onclick={handleCheck}
+				disabled={!game.canCheck}
 			>
 				Check
 			</button>

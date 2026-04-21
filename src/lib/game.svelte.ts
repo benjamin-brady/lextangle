@@ -93,6 +93,11 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		puzzle.edges.reduce((acc, edge) => acc + (getEdgeStatus(edge.from, edge.to) === 'correct' ? 1 : 0), 0)
 	);
 
+	/** Whether the board has changed since the last check (or has any word if never checked). */
+	let canCheck = $derived(
+		grid.some((cell, i) => (cell?.word ?? null) !== checkedSnapshot[i])
+	);
+
 	/** Mark specific cells as dirty when they change after a check */
 	function markCellsDirty(indices: number[]) {
 		for (const idx of indices) {
@@ -228,6 +233,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		get correctEdgeCount() { return correctEdgeCount; },
 		get checks() { return checks; },
 		get cellChecked() { return cellChecked; },
+		get canCheck() { return canCheck; },
 		getNodeStatus,
 		getEdgeStatus,
 		getEdgeClue,
