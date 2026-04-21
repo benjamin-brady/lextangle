@@ -293,32 +293,91 @@
       <circle cx={anchorRX} cy={CLIFF_H + 3} r="3" fill="var(--ink)" />
     </svg>
 
-    <!-- Plaited ropes -->
+    <!-- Plaited threads — fine fibre style -->
     <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 {boardWidth} {H}" preserveAspectRatio="none">
       {#if phase !== 'snapped'}
-        <!-- Thread-width decreases with strain -->
-        {@const tw = Math.max(1.4, 3.6 - stepsUsed * 0.2)}
-        {@const colour = threadStrain > 0.75 ? 'var(--red)' : threadStrain > 0.45 ? '#b45309' : '#8b4513'}
+        <!-- As more words hang, the main strand thins and more fray appears. -->
+        {@const strain = threadStrain}
+        {@const mainW = Math.max(0.55, 1.8 - strain * 1.1)}
+        {@const wispW = Math.max(0.35, 1.1 - strain * 0.7)}
+        {@const mainColour = strain > 0.75 ? 'var(--red)' : strain > 0.45 ? '#6b4423' : '#3f2a1a'}
+        {@const wispColour = strain > 0.75 ? '#ef4444' : '#78716c'}
 
-        <!-- For each tile i, draw two ropes to its anchors (ceiling or prior tiles). -->
+        {#snippet thread(x1: number, y1: number, x2: number, y2: number, seed: number, ceiling: boolean)}
+          {@const dx = x2 - x1}
+          {@const dy = y2 - y1}
+          {@const len = Math.max(1, Math.sqrt(dx * dx + dy * dy))}
+          {@const px = -dy / len}
+          {@const py = dx / len}
+          {@const rnd = (k: number) => (((seed * 9301 + k * 49297) % 233280) / 233280)}
+          <!-- Main taut strand -->
+          <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={mainColour} stroke-width={mainW} stroke-linecap="round" opacity="0.95" />
+          <!-- Two wispy side fibres with slight bow so the thread looks stranded, not ruled -->
+          {@const bow = 0.6 + strain * 1.2}
+          {@const cx1 = (x1 + x2) / 2 + px * bow}
+          {@const cy1 = (y1 + y2) / 2 + py * bow}
+          {@const cx2 = (x1 + x2) / 2 - px * bow}
+          {@const cy2 = (y1 + y2) / 2 - py * bow}
+          <path d="M{x1} {y1} Q{cx1} {cy1} {x2} {y2}" stroke={wispColour} stroke-width={wispW} fill="none" stroke-linecap="round" opacity="0.75" />
+          <path d="M{x1} {y1} Q{cx2} {cy2} {x2} {y2}" stroke={wispColour} stroke-width={wispW} fill="none" stroke-linecap="round" opacity="0.6" />
+          <!-- Fray hairs: density grows with strain; ceiling segments fray extra -->
+          {@const frayN = Math.min(26, Math.round((ceiling ? 4 : 2) + strain * (ceiling ? 22 : 10)))}
+          {#each Array(frayN) as _, k}
+            {@const t = (k + 0.5 + rnd(k) * 0.8) / (frayN + 1)}
+            {@const fx = x1 + dx * t}
+            {@const fy = y1 + dy * t}
+            {@const side = rnd(k + 7) < 0.5 ? -1 : 1}
+            {@const flen = 1.2 + rnd(k + 13) * (2.5 + strain * 3.5)}
+            {@const jx = (rnd(k + 29) - 0.5) * 1.4}
+            {@const jy = (rnd(k + 31) - 0.5) * 1.4}
+            <line
+              x1={fx}
+              y1={fy}
+              x2={fx + px * flen * side + jx}
+              y2={fy + py * flen * side + jy}
+              stroke={strain > 0.75 && rnd(k + 41) > 0.55 ? '#b91c1c' : '#a8a29e'}
+              stroke-width={0.4 + rnd(k + 53) * 0.4}
+              stroke-linecap="round"
+              opacity={0.55 + strain * 0.35}
+            />
+          {/each}
+          <!-- A few loose flyaway hairs near the ceiling anchor -->
+          {#if ceiling}
+            {#each Array(Math.min(6, Math.round(1 + strain * 5))) as _, k}
+              {@const t = rnd(k + 61) * 0.25}
+              {@const fx = x1 + dx * t}
+              {@const fy = y1 + dy * t}
+              {@const curlX = fx + (rnd(k + 73) - 0.5) * 8}
+              {@const curlY = fy + 4 + rnd(k + 79) * 8}
+              <path
+                d="M{fx} {fy} Q{fx + (rnd(k + 83) - 0.5) * 4} {fy + 2} {curlX} {curlY}"
+                stroke="#a8a29e"
+                stroke-width="0.5"
+                fill="none"
+                opacity="0.7"
+                stroke-linecap="round"
+              />
+            {/each}
+          {/if}
+        {/snippet}
+
+        <!-- Draw two threads per tile (same-column grandparent + crossing parent). -->
         {#each chain as _, i}
           {@const nt = nearTop(i)}
           {@const ft = farTop(i)}
-          <!-- Same-side rope: connects to tile[i-2] on same column (or ceiling for i<2) -->
           {#if i >= 2}
             {@const src = nearBottom(i - 2)}
-            <line x1={src.x} y1={src.y} x2={nt.x} y2={nt.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
+            {@render thread(src.x, src.y, nt.x, nt.y, i * 11 + 1, false)}
           {:else}
             {@const src = ceilingNear(i)}
-            <line x1={src.x} y1={src.y} x2={nt.x} y2={nt.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
+            {@render thread(src.x, src.y, nt.x, nt.y, i * 11 + 1, true)}
           {/if}
-          <!-- Crossing rope: connects to tile[i-1] on opposite column (or opposite ceiling for i=0) -->
           {#if i >= 1}
             {@const src = farBottom(i - 1)}
-            <line x1={src.x} y1={src.y} x2={ft.x} y2={ft.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
+            {@render thread(src.x, src.y, ft.x, ft.y, i * 11 + 7, i === 0)}
           {:else}
             {@const src = ceilingFar(i)}
-            <line x1={src.x} y1={src.y} x2={ft.x} y2={ft.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
+            {@render thread(src.x, src.y, ft.x, ft.y, i * 11 + 7, true)}
           {/if}
         {/each}
       {/if}
