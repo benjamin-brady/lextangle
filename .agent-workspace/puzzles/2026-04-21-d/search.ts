@@ -34,6 +34,12 @@ const banned = new Set([
   'chain'
 ]);
 
+const excluded = new Set([
+  'ball', 'bone', 'brush', 'bottle', 'bus', 'cab', 'coach', 'delivery', 'driver', 'flower',
+  'garden', 'head', 'holder', 'hose', 'pin', 'pot', 'rack', 'rail', 'route', 'seat', 'spin',
+  'stand', 'station', 'stop', 'stone', 'tail', 'taxi', 'team', 'track', 'train', 'truck', 'water', 'work'
+]);
+
 const gridAdj: [number, number][] = [
   [0, 1], [1, 2],
   [3, 4], [4, 5],
@@ -59,7 +65,7 @@ function addRelation(leftRaw: string, rightRaw: string, type: string, tier: Tier
   const left = leftRaw.trim().toLowerCase();
   const right = rightRaw.trim().toLowerCase();
 
-  if (!left || !right || left === right || banned.has(left) || banned.has(right)) {
+  if (!left || !right || left === right || banned.has(left) || banned.has(right) || excluded.has(left) || excluded.has(right)) {
     return;
   }
 

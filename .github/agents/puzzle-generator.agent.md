@@ -87,6 +87,7 @@ Precedence when two types apply: `compound-phrase` > `material-made-of` > `part-
 - Every word in ≥1 A-tier edge.
 - No word plausibly connects to >4 others.
 - No plausible alternate arrangement.
+- Blind pair audit: no off-grid A-tier pair, and at most 2 off-grid B-tier pairs when you inspect the 9 words without the intended grid.
 - ≥2 anchor edges a casual solver gets in <10s.
 
 ## Workflow
@@ -94,10 +95,11 @@ Precedence when two types apply: `compound-phrase` > `material-made-of` > `part-
 Operate sequentially, one puzzle at a time. For each puzzle:
 
 1. **Pre-flight** — in a brief chat note, list the 9 candidate words and the pairings you intend to use (you don't need all 36 pairs, just enough to check for generic connectors).
-2. **Draft** — create `candidate-<N>.json` directly on disk using the schema above. Fill in `solution`, `edges` (with `type`+`tier`), `stats`, `anchors`. Status = `draft`.
-3. **Self-review** — read the file you just wrote, walk each edge against the hard reject rules, and walk the board against the gates. Write `review-<N>.json` with per-edge PASS/WEAK/REJECT and an overall verdict (ACCEPT / CLUE_FIX / REVISE / REJECT).
-4. **Fix in place** — if CLUE_FIX or REVISE, patch `candidate-<N>.json` (don't rewrite the whole file — use targeted edits). Re-review the changed edges only. Max 3 fix cycles per puzzle; if still failing, mark status `rejected` and log the reason in `notes.md`, then move on.
-5. **Accept** — set status `accepted`.
+2. **Blind pair audit** — ignore the intended grid and enumerate every plausible A-tier pair plus the strongest B-tier extras from the 9-word set. If you find an off-grid A-tier pair, or more than 2 off-grid B-tier pairs, reject the set before drafting.
+3. **Draft** — create `candidate-<N>.json` directly on disk using the schema above. Fill in `solution`, `edges` (with `type`+`tier`), `stats`, `anchors`. Status = `draft`.
+4. **Self-review** — read the file you just wrote, but first re-solve the word set from scratch before trusting your own edge list. Walk each edge against the hard reject rules, and walk the board against the gates. Write `review-<N>.json` with per-edge PASS/WEAK/REJECT and an overall verdict (ACCEPT / CLUE_FIX / REVISE / REJECT).
+5. **Fix in place** — if CLUE_FIX or REVISE, patch `candidate-<N>.json` (don't rewrite the whole file — use targeted edits). Re-review the changed edges only. Max 3 fix cycles per puzzle; if still failing, mark status `rejected` and log the reason in `notes.md`, then move on.
+6. **Accept** — set status `accepted`.
 
 When all requested puzzles are either accepted or rejected, write `batch.json` containing only the accepted puzzles as an array, each entry shaped like the repo's `Puzzle` type (`solution` + `edges` only — strip `type`, `tier`, `stats`, etc.). Respect `WORD_EMOJIS`: omit inline `emoji` for words already mapped there (read the map first).
 
@@ -132,6 +134,7 @@ Only when the user explicitly says "merge" or "add to puzzles.ts":
 | `tea` + `tree` via "tea tree oil" | Third-word dependency (needs `oil`). |
 | `Tree` + `Party` clued via "party line" | Endpoint mismatch (clue is really `Party` + `Line`). |
 | `House` + `Green` clued "read backwards" | Reverse-compound hedge. |
+| `Guest / Book / Club / Gate / Keeper / Shop / House / Pet / Food` | Blind audit fails: `guest house`, `club house`, and `pet shop` make the intended grid arbitrary. |
 
 ## Checklist before setting status to `accepted`
 
@@ -141,4 +144,5 @@ Only when the user explicitly says "merge" or "add to puzzles.ts":
 - [ ] Every word in ≥1 A-tier edge.
 - [ ] ≥2 anchor edges.
 - [ ] No generic connectors; no alternate arrangement.
+- [ ] Blind pair audit found no off-grid A-tier pair and at most 2 off-grid B-tier pairs.
 - [ ] Emojis consistent with `WORD_EMOJIS`.

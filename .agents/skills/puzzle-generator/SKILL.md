@@ -307,6 +307,7 @@ A complete puzzle must pass ALL of these before it's accepted:
 6. **No word connects plausibly to more than 4 other words** in the set (intended + unintended).
 7. **No plausible alternate solution** — swapping 2-3 words should not produce an equally convincing board.
 8. **The board has anchors** — at least 2 A-tier edges that a casual solver can identify in under 10 seconds. Compound/Phrase and Cultural Pair are the typical anchors; Part-Whole (wheel/car) and Object-Role (king/crown) also qualify when the pair is iconic.
+9. **Blind pair audit passes** — if you ignore the intended grid and inspect only the 9 words, there are no off-grid A-tier pairs and at most 2 off-grid B-tier pairs.
 
 Note: 6 A-tier + 4 B-tier + 2 C-tier = 12 exactly. The math is tight. If a puzzle has 6 A, 5 B, 1 C, that's still valid (at most 6 of one type, at most 2 C-tier). Aim for 7-8 A-tier if possible — it leaves room to drop a weak edge during review.
 
@@ -387,6 +388,8 @@ BEFORE arranging any grid, list the candidate pairings you intend to use plus 3�
 - **Standard boards:** at least 12 A/B-tier candidate edges, no single word appearing in 5+ plausible pairs.
 - **Hard boards:** at least 10 A/B-tier candidate edges plus up to 4 C-tier candidates, same generic-connector ceiling.
 
+Then do a **blind word-set audit**: ignore your intended layout, scan the 9 words as an unordered set, and enumerate every plausible A-tier pair plus the strongest B-tier extras. If you find an off-grid A-tier pair, or more than 2 off-grid B-tier pairs, reject the set before grid placement.
+
 You do not need to enumerate all 36 pairs — just enough to judge the generic-connector rule. If the word set can't support the bar, pick new words before grid placement.
 
 ### Generating a single puzzle
@@ -409,16 +412,18 @@ Launch a subagent via `runSubagent` with the prompt:
 > RULES:
 > 1. Pick 9 concrete, emoji-friendly English words.
 > 2. Before placing: list the pairings you'd actually use plus a few alternates. Confirm no word is a generic connector (appears in 5+ plausible pairs).
-> 3. Arrange them in the 3x3 grid so every horizontal and vertical adjacency has a strong relationship.
-> 4. For EACH of the 12 edges, state:
+> 3. Do a blind word-set audit before locking the grid: enumerate every plausible A-tier pair plus the strongest B-tier extras among the 9 words. If an off-grid A-tier pair appears, or more than 2 off-grid B-tier pairs appear, reject the set.
+> 4. Arrange them in the 3x3 grid so every horizontal and vertical adjacency has a strong relationship.
+> 5. For EACH of the 12 edges, state:
 >    - The two words
 >    - The primary relation type from the taxonomy in the skill file (and a secondary if two cleanly apply)
 >    - The tier (A, B, or C)
 >    - A one-sentence clue that describes the two endpoint words directly — no reference to a third word on the board, no reversed-compound hedges
-> 5. After drafting the clues, re-read each one and restate the two endpoint words. If the clue is really about a different pair on the board, rewrite it.
-> 6. Minimum 6 A-tier edges, max 2 C-tier, at least 3 distinct relation types (minimum 4 A-tier and up to 4 C-tier for hard boards).
-> 7. At least 2 anchor edges a casual solver can identify in under 10 seconds.
-> 8. Assign one emoji per word.
+> 6. After drafting the clues, re-read each one and restate the two endpoint words. If the clue is really about a different pair on the board, rewrite it.
+> 7. Before finalizing, hide your own adjacency list and re-solve the word set from scratch. If any non-edge pair is cleaner than the weakest intended edge, reject and rebuild.
+> 8. Minimum 6 A-tier edges, max 2 C-tier, at least 3 distinct relation types (minimum 4 A-tier and up to 4 C-tier for hard boards).
+> 9. At least 2 anchor edges a casual solver can identify in under 10 seconds.
+> 10. Assign one emoji per word.
 >
 > {Insert any user-specified theme, difficulty, or constraints here.}
 >
@@ -451,6 +456,8 @@ Launch a SEPARATE subagent with the generated puzzle and this prompt:
 > Review this LexLink puzzle candidate:
 > {paste the puzzle + classification table from Step 1}
 >
+> Before you trust the intended adjacency list, look only at the 9 words and enumerate the strongest plausible A-tier pairs plus the strongest B-tier extras. If you find an off-grid A-tier pair, or more than 2 off-grid B-tier pairs, the board fails the blind audit.
+>
 > For EACH of the 12 edges, answer:
 > 1. **Restate the two endpoint words** before reading the clue. Then read the clue. Is it really about a different pair on the board? If yes, REJECT.
 > 2. Is the stated relation type correct under the taxonomy's precedence rules? If not, what is it really?
@@ -467,12 +474,12 @@ Launch a SEPARATE subagent with the generated puzzle and this prompt:
 >
 > Then check board-level gates:
 > - At least 3 distinct relation types?
-> - No type on more than 6/12 edges?
 > - At least 6 A-tier edges?
 > - No more than 2 C-tier?
 > - Every word in at least 1 A-tier edge?
 > - Any word a generic connector (links to 5+ others plausibly)?
 > - Any plausible alternate solution from swapping 2-3 words?
+> - Blind pair audit result: any off-grid A-tier pairs? More than 2 off-grid B-tier pairs?
 > - At least 2 obvious anchor edges?
 >
 > Return:
@@ -493,7 +500,7 @@ Based on the review:
 
 ### Generating multiple puzzles
 
-When asked for N puzzles, launch N generator subagents in parallel (Step 1). Then review each result (Step 2 — can also be parallelized). Fix individually. This is much faster than sequential generation. For batches of 5+, skip the candidate-pair dump and rely on the structure verdict to catch generic connectors.
+When asked for N puzzles, launch N generator subagents in parallel (Step 1). Then review each result (Step 2 — can also be parallelized). Fix individually. This is much faster than sequential generation. Do not skip the blind word-set audit for batch speed; that is exactly how alternate-solution boards slip through.
 
 ### Generating hard puzzles
 
@@ -510,29 +517,29 @@ When returning a puzzle candidate for this repo, match the 2-space indentation u
 ```ts
 {
   solution: [
-    { word: 'Tea' },
-    { word: 'Green' },
-    { word: 'Power' },
-    { word: 'Tree' },
-    { word: 'House' },
-    { word: 'Plant' },
-    { word: 'Line' },
-    { word: 'Party' },
-    { word: 'Food' }
+    { word: 'Cab' },
+    { word: 'Taxi' },
+    { word: 'Stand' },
+    { word: 'Truck' },
+    { word: 'Driver' },
+    { word: 'Bus' },
+    { word: 'Delivery' },
+    { word: 'Route' },
+    { word: 'Stop' }
   ],
   edges: [
-    { from: 0, to: 1, clue: 'Green tea is the gentler cup.' },
-    { from: 1, to: 2, clue: 'Green power comes from cleaner sources.' },
-    { from: 3, to: 4, clue: 'A tree house belongs above ground level.' },
-    { from: 4, to: 5, clue: 'A houseplant lives indoors.' },
-    { from: 6, to: 7, clue: 'A party line once shared a neighborhood phone.' },
-    { from: 7, to: 8, clue: 'Party food disappears first.' },
-    { from: 0, to: 3, clue: 'A tea tree is known more for its oil than cups.' },
-    { from: 3, to: 6, clue: 'A tree line marks where growth gives up.' },
-    { from: 1, to: 4, clue: 'Greenhouse is the compound hiding in plain sight.' },
-    { from: 4, to: 7, clue: 'A house party gets louder than intended.' },
-    { from: 2, to: 5, clue: 'A power plant makes the grid hum.' },
-    { from: 5, to: 8, clue: 'Plant food keeps the leaves honest.' }
+    { from: 0, to: 1, clue: 'A taxi cab is the same ride by another name.' },
+    { from: 1, to: 2, clue: 'A taxi stand is where cabs queue for fares.' },
+    { from: 3, to: 4, clue: 'A truck driver moves freight from depot to depot.' },
+    { from: 4, to: 5, clue: 'A bus driver follows the route and the schedule.' },
+    { from: 6, to: 7, clue: 'A delivery route strings many stops into one run.' },
+    { from: 7, to: 8, clue: 'A route is made up of planned stops.' },
+    { from: 0, to: 3, clue: 'The cab is the front section of a truck.' },
+    { from: 3, to: 6, clue: 'A delivery truck drops parcels block by block.' },
+    { from: 1, to: 4, clue: 'A taxi driver works city streets for hire.' },
+    { from: 4, to: 7, clue: 'A driver follows an assigned route through the city.' },
+    { from: 2, to: 5, clue: 'A stand gives the bus queue a place to gather.' },
+    { from: 5, to: 8, clue: 'A bus stop marks where riders board and exit.' }
   ]
 }
 ```
@@ -541,20 +548,20 @@ Example classification table for that puzzle:
 
 | Edge | Words | Type | Tier |
 |------|-------|------|------|
-| 0→1 | Tea + Green | compound/phrase | A |
-| 1→2 | Green + Power | compound/phrase | A |
-| 3→4 | Tree + House | compound/phrase | A |
-| 4→5 | House + Plant | compound/phrase | A |
-| 6→7 | Line + Party | compound/phrase | A |
-| 7→8 | Party + Food | compound/phrase | A |
-| 0→3 | Tea + Tree | compound/phrase | B |
-| 3→6 | Tree + Line | compound/phrase | A |
-| 1→4 | Green + House | compound/phrase | A |
-| 4→7 | House + Party | compound/phrase | A |
-| 2→5 | Power + Plant | compound/phrase | A |
-| 5→8 | Plant + Food | compound/phrase | A |
+| 0→1 | Cab + Taxi | compound/phrase | A |
+| 1→2 | Taxi + Stand | compound/phrase | A |
+| 3→4 | Truck + Driver | object-role | A |
+| 4→5 | Driver + Bus | object-role | A |
+| 6→7 | Delivery + Route | compound/phrase | A |
+| 7→8 | Route + Stop | part-whole | A |
+| 0→3 | Cab + Truck | part-whole | A |
+| 3→6 | Truck + Delivery | compound/phrase | A |
+| 1→4 | Taxi + Driver | object-role | A |
+| 4→7 | Driver + Route | object-role | A |
+| 2→5 | Stand + Bus | object-role | A |
+| 5→8 | Bus + Stop | compound/phrase | A |
 
-Count: 11 A-tier, 1 B-tier, 0 C-tier. Gate 2 (diversity floor) requires adding a B/C relation type for a compound-only board of this density — see the Board-Level Quality Gates. Use this board as a structural template and diversify at least 2 edges when you adapt it.
+Count: 12 A-tier, 0 B-tier, 0 C-tier. The blind word-set audit should also confirm there are no off-grid A-tier pairs and no overloaded connector words before you copy this structure.
 
 ---
 
@@ -574,6 +581,7 @@ Before presenting or committing a puzzle, verify:
 - [ ] The board has 2+ obvious anchor edges.
 - [ ] No word is a catch-all connector with too many plausible partners.
 - [ ] No plausible alternate arrangement.
+- [ ] Blind word-set audit found no off-grid A-tier pair and at most 2 off-grid B-tier pairs.
 - [ ] Each word has a suitable emoji.
 - [ ] Hard puzzles feel fair after reveal, not obscure.
 - [ ] The final result feels like a LexLink puzzle, not a random word web.

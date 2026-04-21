@@ -690,7 +690,11 @@ export const PUZZLES: Puzzle[] = [
   },
 ].map(applyWordEmojis);
 
-export const PRACTICE_PUZZLES: Puzzle[] = PUZZLES;
+const PRACTICE_EXCLUDED_PUZZLE_INDICES = new Set([5, 12]);
+
+export const PRACTICE_PUZZLES: Puzzle[] = PUZZLES.filter(
+  (_, index) => !PRACTICE_EXCLUDED_PUZZLE_INDICES.has(index)
+);
 
 export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
   {

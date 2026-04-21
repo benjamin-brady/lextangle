@@ -574,7 +574,7 @@
 			>
 				{#if cell}
 					<div
-						class="polaroid cursor-grab flex flex-col items-center justify-center active:cursor-grabbing {isSelected ? 'tile-wiggle' : ''}"
+						class="polaroid cursor-grab flex flex-col items-center justify-center active:cursor-grabbing relative {isSelected ? 'tile-wiggle' : ''}"
 						style="
 							width: {NODE_SIZE}px;
 							height: {NODE_SIZE + 14}px;
@@ -589,7 +589,7 @@
 										: 'var(--tile-surface)')
 								: 'var(--tile-surface)'};
 							outline: 3px {isDropTarget ? 'dashed var(--crayon-red)' : `solid ${nodeOutline(i)}`};
-							opacity: {isDropTarget ? '0.7' : '1'};
+							opacity: {isDropTarget ? '0.85' : '1'};
 							outline-offset: -3px;
 						"
 						role="button"
@@ -601,11 +601,10 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
+						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px; {isDropTarget ? 'opacity: 0.35;' : ''}">{wordEmoji(cell)}</span>
+						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark); {isDropTarget ? 'opacity: 0.35;' : ''}">{cell.word}</span>
 						{#if isDropTarget}
-							<span class="font-display font-bold leading-none" style="font-size: {NODE_FONT * 1.6}px; color: var(--crayon-red);">swap</span>
-						{:else}
-							<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
-							<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
+							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {NODE_FONT * 0.95}px; color: var(--crayon-red); bottom: 4px; right: 6px; transform: rotate(-4deg);">swap</span>
 						{/if}
 					</div>
 				{:else if isDropTarget}
@@ -613,7 +612,7 @@
 						class="polaroid flex items-center justify-center"
 						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
 					>
-						<span class="font-display font-bold leading-none" style="font-size: {NODE_FONT * 1.6}px; color: var(--crayon-red);">swap</span>
+						<span class="font-display font-bold leading-none" style="font-size: {NODE_FONT * 1.1}px; color: var(--crayon-red); opacity: 0.75;">swap</span>
 					</div>
 				{:else}
 					<div
