@@ -192,6 +192,23 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		grid[toIdx] = temp;
 	}
 
+	function flipGrid(pairs: [number, number][]) {
+		const next = [...grid];
+		for (const [a, b] of pairs) {
+			[next[a], next[b]] = [next[b], next[a]];
+		}
+		grid = next;
+		markCellsDirty(pairs.flat());
+	}
+
+	function flipHorizontal() {
+		flipGrid([[0, 2], [3, 5], [6, 8]]);
+	}
+
+	function flipVertical() {
+		flipGrid([[0, 6], [1, 7], [2, 8]]);
+	}
+
 	function reset() {
 		inventory = shuffleArray([...puzzle.solution]);
 		grid = Array(9).fill(null);
@@ -220,6 +237,8 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		removeFromGrid,
 		moveGridWord,
 		swapGridCells,
+		flipHorizontal,
+		flipVertical,
 		reset,
 	};
 }

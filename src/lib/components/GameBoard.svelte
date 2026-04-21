@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { trackEvent } from '$lib/analytics';
 	import FeedbackDialog from './FeedbackDialog.svelte';
+	import FlipHorizontal2 from 'lucide-svelte/icons/flip-horizontal-2';
+	import FlipVertical2 from 'lucide-svelte/icons/flip-vertical-2';
 	import type { GameState } from '../game.svelte';
 	import type { Puzzle, WordItem } from '../types';
 	import { ADJACENCIES } from '../types';
@@ -581,6 +583,26 @@
 					onclick={shareResult}
 				>
 					{shareButtonLabel}
+				</button>
+			{/if}
+			{#if !game.solved}
+				<button
+					type="button"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) p-2 transition-colors hover:border-(--accent)"
+					onclick={() => game.flipHorizontal()}
+					title="Flip board horizontally"
+					aria-label="Flip board horizontally"
+				>
+					<FlipHorizontal2 class="h-4 w-4" />
+				</button>
+				<button
+					type="button"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) p-2 transition-colors hover:border-(--accent)"
+					onclick={() => game.flipVertical()}
+					title="Flip board vertically"
+					aria-label="Flip board vertically"
+				>
+					<FlipVertical2 class="h-4 w-4" />
 				</button>
 			{/if}
 			<button
