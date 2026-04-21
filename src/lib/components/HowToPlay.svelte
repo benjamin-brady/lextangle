@@ -7,10 +7,20 @@
 
 	const TUTORIAL_SOLUTION = ['MOON', 'LIGHT', 'HOUSE', 'ROCK', 'STAR', 'DOG', 'PET', 'FISH', 'CAT'] as const;
 	const TUTORIAL_START = ['CAT', 'LIGHT', 'HOUSE', 'ROCK', 'STAR', 'DOG', 'PET', 'FISH', 'MOON'] as const;
-	const TUTORIAL_EXAMPLE_LINKS = ['moonlight', 'lighthouse', 'pet rock', 'starfish', 'catdog'] as const;
-	const TUTORIAL_SLOT_SIZE = 68;
-	const TUTORIAL_NODE_SIZE = 56;
-	const TUTORIAL_GAP = 12;
+	const TUTORIAL_EMOJI: Record<string, string> = {
+		MOON: '🌙',
+		LIGHT: '💡',
+		HOUSE: '🏠',
+		ROCK: '🪨',
+		STAR: '⭐',
+		DOG: '🐶',
+		PET: '🐾',
+		FISH: '🐟',
+		CAT: '🐱'
+	};
+	const TUTORIAL_SLOT_SIZE = 72;
+	const TUTORIAL_NODE_SIZE = 60;
+	const TUTORIAL_GAP = 10;
 	const TUTORIAL_GRID_W = TUTORIAL_SLOT_SIZE * 3 + TUTORIAL_GAP * 2;
 	const TUTORIAL_GRID_H = TUTORIAL_SLOT_SIZE * 3 + TUTORIAL_GAP * 2;
 	const tutorialValidPairs = new Set(
@@ -134,23 +144,23 @@
 <svelte:document onkeydown={handleDocumentKeydown} />
 
 <button
-		type="button"
-		class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-(--border) bg-(--surface) text-(--accent) transition-colors hover:border-(--accent) hover:bg-(--surface-light)"
-		onclick={openModal}
-		aria-controls="how-to-play-dialog"
-		aria-expanded={isOpen}
-		aria-haspopup="dialog"
-		aria-label="How to play"
-		title="How to play"
-	>
-		<Info size={18} strokeWidth={2.25} aria-hidden="true" />
+	type="button"
+	class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-none border-2 border-(--ink) bg-(--surface) text-(--ink) shadow-[2px_2px_0_0_var(--ink)] transition-all hover:bg-(--surface-light) active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)]"
+	onclick={openModal}
+	aria-controls="how-to-play-dialog"
+	aria-expanded={isOpen}
+	aria-haspopup="dialog"
+	aria-label="How to play"
+	title="How to play"
+>
+	<Info size={18} strokeWidth={2.25} aria-hidden="true" />
 </button>
 
 {#if isOpen}
 	<div class="fixed inset-0 z-50 grid place-items-center p-4 sm:p-6">
 		<button
 			type="button"
-			class="absolute inset-0 cursor-pointer bg-[rgba(7,11,20,0.82)] backdrop-blur-[2px]"
+			class="absolute inset-0 cursor-pointer bg-[rgba(26,26,46,0.55)]"
 			onclick={closeModal}
 			aria-label="Close how to play"
 			transition:fade={{ duration: 120 }}
@@ -161,194 +171,122 @@
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="how-to-play-title"
-			class="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto rounded-3xl border border-(--border) bg-(--surface) p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-6"
+			class="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto border-2 border-(--ink) bg-(--bg-raised) shadow-[6px_6px_0_0_var(--ink)]"
 			transition:fade={{ duration: 160 }}
 		>
-			<div class="flex items-start justify-between gap-4">
-				<div>
-					<p class="text-xs font-bold uppercase tracking-[0.18em] text-(--text-muted)">
-						Need a refresher?
-					</p>
-					<h2 id="how-to-play-title" class="mt-1 text-lg font-bold text-(--text)">
-						How to play
-					</h2>
-				</div>
-
+			<div class="flex items-center justify-between gap-4 border-b-2 border-(--ink) px-5 py-3">
+				<h2 id="how-to-play-title" class="font-display text-xl font-black italic tracking-tight">
+					How to play
+				</h2>
 				<button
 					type="button"
-					class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--border) bg-(--surface-light) text-(--text-muted) transition-colors hover:border-(--accent) hover:text-(--text)"
+					class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-none border-2 border-(--ink) bg-(--surface) transition-colors hover:bg-(--surface-light)"
 					onclick={closeModal}
 					aria-label="Close how to play"
 				>
-					<X size={18} strokeWidth={2.25} aria-hidden="true" />
+					<X size={16} strokeWidth={2.5} aria-hidden="true" />
 				</button>
 			</div>
 
-			<div class="mt-5 grid gap-6 text-sm text-(--text) lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-				<section class="grid gap-4">
-					<p class="max-w-2xl leading-6 text-(--text-muted)">
-						Arrange the nine word tiles so every horizontal and vertical neighbor forms one of the puzzle's intended links. Some links are phrases, some are categories, and some are wordplay.
+			<div class="px-5 py-5 space-y-5 text-sm leading-relaxed">
+				<p class="text-(--text)">
+					Nine words. Arrange them on a 3×3 grid so every horizontal and vertical neighbour forms a <strong>link</strong> — a phrase, compound, category, or wordplay.
+				</p>
+
+				<ol class="space-y-3">
+					<li class="flex gap-3">
+						<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-(--ink) bg-(--accent) font-display text-xs font-black text-white">1</span>
+						<p><strong>Drag</strong> a word from the tray into any grid square.</p>
+					</li>
+					<li class="flex gap-3">
+						<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-(--ink) bg-(--accent) font-display text-xs font-black text-white">2</span>
+						<p>Every touching pair should form a link. Move words around until it all fits.</p>
+					</li>
+					<li class="flex gap-3">
+						<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-(--ink) bg-(--accent) font-display text-xs font-black text-white">3</span>
+						<p>Hit <strong>Check</strong>. Green = right. Red = wrong. Keep going.</p>
+					</li>
+				</ol>
+
+				<div class="border-t-2 border-(--ink) pt-4">
+					<p class="font-display text-xs font-bold uppercase tracking-[0.2em] text-(--text-muted) mb-3">
+						Try it · two corners are swapped
 					</p>
 
-					<div class="grid gap-3 sm:grid-cols-2">
-						<div class="rounded-2xl border border-(--border) bg-(--surface-light) p-4">
-							<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">Words counter</p>
-							<p class="mt-2 text-base font-semibold text-(--text)">Exact homes only</p>
-							<p class="mt-2 leading-6 text-(--text-muted)">
-								A word only counts here when it is sitting in its final correct spot.
-							</p>
-						</div>
-						<div class="rounded-2xl border border-(--border) bg-(--surface-light) p-4">
-							<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">Links counter</p>
-							<p class="mt-2 text-base font-semibold text-(--text)">Green neighboring pairs</p>
-							<p class="mt-2 leading-6 text-(--text-muted)">
-								This counts every valid connection between touching tiles. A 3x3 board always has 12 possible links, so the links total can move separately from the words total.
-							</p>
-						</div>
-					</div>
-
-					<section class="rounded-[22px] border border-(--border) bg-(--surface) p-4 sm:p-5">
-						<div class="flex flex-wrap items-start justify-between gap-3">
-							<div>
-								<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">
-									Interactive example
-								</p>
-								<h3 class="mt-1 text-base font-bold text-(--text)">
-									Why 7/9 words can still show 8/12 links
-								</h3>
-								<p class="mt-2 max-w-xl leading-6 text-(--text-muted)">
-									This sample board has two words swapped. Tap one tile, then another tile, to swap them. Start with the two red corners.
-								</p>
-							</div>
-
-							<button
-								type="button"
-								class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-(--border) bg-(--surface-light) text-(--text-muted) transition-colors hover:border-(--accent) hover:text-(--accent)"
-								onclick={resetTutorial}
-								aria-label="Reset tutorial example"
-								title="Reset tutorial example"
+					<div class="flex justify-center">
+						<div
+							class="relative"
+							style="width: {TUTORIAL_GRID_W}px; height: {TUTORIAL_GRID_H}px;"
+							role="group"
+							aria-label="Interactive tutorial board"
+						>
+							<svg
+								class="absolute inset-0 pointer-events-none"
+								width={TUTORIAL_GRID_W}
+								height={TUTORIAL_GRID_H}
 							>
-								<RotateCcw size={16} strokeWidth={2.25} aria-hidden="true" />
-							</button>
-						</div>
+								{#each ADJACENCIES as [from, to] (`${from}-${to}`)}
+									{@const fromPos = tutorialCellPos(from)}
+									{@const toPos = tutorialCellPos(to)}
+									<line
+										x1={fromPos.x + TUTORIAL_SLOT_SIZE / 2}
+										y1={fromPos.y + TUTORIAL_SLOT_SIZE / 2}
+										x2={toPos.x + TUTORIAL_SLOT_SIZE / 2}
+										y2={toPos.y + TUTORIAL_SLOT_SIZE / 2}
+										stroke={tutorialEdgeColor(from, to)}
+										stroke-width="3"
+										stroke-linecap="round"
+									/>
+								{/each}
+							</svg>
 
-						<div class="mt-3 flex flex-wrap gap-2 text-xs text-(--text-muted)">
-							{#each TUTORIAL_EXAMPLE_LINKS as label (label)}
-								<span class="rounded-full border border-(--border) bg-(--surface-light) px-2.5 py-1">
-									{label}
-								</span>
+							{#each tutorialGrid as word, i (i)}
+								{@const pos = tutorialCellPos(i)}
+								<div
+									class="absolute flex items-center justify-center"
+									style="left: {pos.x}px; top: {pos.y}px; width: {TUTORIAL_SLOT_SIZE}px; height: {TUTORIAL_SLOT_SIZE}px;"
+								>
+									<button
+										type="button"
+										class="flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border-2 bg-(--surface) text-[10px] font-bold tracking-wide text-(--text) shadow-[2px_2px_0_0_var(--ink)] transition-all hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)]"
+										style="width: {TUTORIAL_NODE_SIZE}px; height: {TUTORIAL_NODE_SIZE}px; border-color: {tutorialTileBorder(i)}; {tutorialSelectedIndex === i ? 'outline: 3px solid var(--accent); outline-offset: 2px;' : ''}"
+										onclick={() => handleTutorialTileClick(i)}
+										aria-pressed={tutorialSelectedIndex === i}
+										aria-label={tutorialTileLabel(i)}
+									>
+										<span aria-hidden="true" class="text-base leading-none">{TUTORIAL_EMOJI[word]}</span>
+										<span>{word}</span>
+									</button>
+								</div>
 							{/each}
 						</div>
-
-						<div class="mt-4 grid gap-4 xl:grid-cols-[auto_minmax(0,1fr)] xl:items-start">
-							<div class="mx-auto w-full max-w-57">
-								<div
-									class="relative mx-auto"
-									style="width: {TUTORIAL_GRID_W}px; height: {TUTORIAL_GRID_H}px;"
-									role="group"
-									aria-label="Interactive tutorial board"
-								>
-									<svg
-										class="absolute inset-0 pointer-events-none"
-										width={TUTORIAL_GRID_W}
-										height={TUTORIAL_GRID_H}
-									>
-										{#each ADJACENCIES as [from, to] (`${from}-${to}`)}
-											{@const fromPos = tutorialCellPos(from)}
-											{@const toPos = tutorialCellPos(to)}
-											<line
-												x1={fromPos.x + TUTORIAL_SLOT_SIZE / 2}
-												y1={fromPos.y + TUTORIAL_SLOT_SIZE / 2}
-												x2={toPos.x + TUTORIAL_SLOT_SIZE / 2}
-												y2={toPos.y + TUTORIAL_SLOT_SIZE / 2}
-												stroke={tutorialEdgeColor(from, to)}
-												stroke-width="3"
-												stroke-linecap="round"
-											/>
-										{/each}
-									</svg>
-
-									{#each tutorialGrid as word, i (i)}
-										{@const pos = tutorialCellPos(i)}
-										<div
-											class="absolute flex items-center justify-center"
-											style="left: {pos.x}px; top: {pos.y}px; width: {TUTORIAL_SLOT_SIZE}px; height: {TUTORIAL_SLOT_SIZE}px;"
-										>
-											<button
-												type="button"
-												class="flex cursor-pointer items-center justify-center rounded-xl border-2 bg-(--surface-light) px-1 text-center text-[11px] font-bold tracking-[0.08em] text-(--text) transition-transform hover:-translate-y-0.5"
-												style="width: {TUTORIAL_NODE_SIZE}px; height: {TUTORIAL_NODE_SIZE}px; border-color: {tutorialTileBorder(i)}; box-shadow: {tutorialSelectedIndex === i ? '0 0 0 3px var(--surface), 0 0 0 5px var(--accent)' : 'none'};"
-												onclick={() => handleTutorialTileClick(i)}
-												aria-pressed={tutorialSelectedIndex === i}
-												aria-label={tutorialTileLabel(i)}
-											>
-												<span>{word}</span>
-											</button>
-										</div>
-									{/each}
-								</div>
-							</div>
-
-							<div class="grid gap-3">
-								<div class="grid gap-3 sm:grid-cols-2">
-									<div class="rounded-2xl border border-(--border) bg-(--surface-light) p-3">
-										<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">Words</p>
-										<p class="mt-1 text-2xl font-bold text-(--text)">{tutorialCorrectWords}/9</p>
-										<p class="mt-1 text-xs leading-5 text-(--text-muted)">Counts exact positions only.</p>
-									</div>
-									<div class="rounded-2xl border border-(--border) bg-(--surface-light) p-3">
-										<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">Links</p>
-										<p class="mt-1 text-2xl font-bold text-(--text)">{tutorialCorrectLinks}/{ADJACENCIES.length}</p>
-										<p class="mt-1 text-xs leading-5 text-(--text-muted)">Counts green neighboring pairs.</p>
-									</div>
-								</div>
-
-								<p
-									class="rounded-2xl border border-(--border) bg-(--surface-light) px-4 py-3 leading-6 text-(--text-muted)"
-									aria-live="polite"
-								>
-									{tutorialMessage()}
-								</p>
-
-								<div class="rounded-2xl border border-(--border) bg-(--surface) p-4">
-									<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">
-										How to read this example
-									</p>
-									<div class="mt-3 grid gap-2 leading-6 text-(--text-muted)">
-										<p><strong class="text-(--text)">Green tile border</strong> means that word is in the right spot.</p>
-										<p><strong class="text-(--text)">Green line</strong> means that neighboring pair counts as a valid link.</p>
-										<p><strong class="text-(--text)">Red line</strong> means that pair does not work in the current layout.</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</section>
-				</section>
-
-				<section class="grid gap-4 content-start">
-					<div class="rounded-2xl border border-(--border) bg-(--surface-light) p-4">
-						<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">When to check</p>
-						<h3 class="mt-1 text-base font-bold text-(--text)">Check grades your current layout</h3>
-						<div class="mt-3 grid gap-2 leading-6 text-(--text-muted)">
-							<p>Press <strong class="text-(--text)">Check</strong> whenever you want feedback on the board as it sits right now.</p>
-							<p>Green borders mark words in their final homes. Green lines mark neighboring pairs that make a valid link.</p>
-							<p>Move any tile afterward and that feedback clears until you check again.</p>
-						</div>
 					</div>
 
-					<div class="rounded-2xl border border-(--border) bg-(--surface-light) p-4">
-						<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">Practical tips</p>
-						<div class="mt-3 grid gap-2 leading-6 text-(--text-muted)">
-							<p>Start by finding easy local pairs, then build outward from them.</p>
-							<p>A high links count means some structure is right, even if a few words are still misplaced.</p>
-							<p>Drag a word back to the tray any time you want to reopen space and rearrange.</p>
-						</div>
+					<div class="mt-4 flex items-center justify-center gap-4 text-xs">
+						<span class="font-bold tabular-nums">Words <span class="ml-1 font-display text-base">{tutorialCorrectWords}/9</span></span>
+						<span class="text-(--border-strong)">·</span>
+						<span class="font-bold tabular-nums">Links <span class="ml-1 font-display text-base">{tutorialCorrectLinks}/{ADJACENCIES.length}</span></span>
+						<button
+							type="button"
+							class="ml-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-none border-2 border-(--ink) bg-(--surface) transition-colors hover:bg-(--surface-light)"
+							onclick={resetTutorial}
+							aria-label="Reset tutorial example"
+							title="Reset"
+						>
+							<RotateCcw size={12} strokeWidth={2.5} aria-hidden="true" />
+						</button>
 					</div>
 
-					<p class="rounded-2xl border border-(--border) bg-(--surface) px-4 py-3 leading-6 text-(--text-muted)">
-						After you solve the real puzzle, the game shows every link explanation so you can see the full chain.
+					<p class="mt-3 text-xs leading-relaxed text-(--text-muted)" aria-live="polite">
+						{tutorialMessage()}
 					</p>
-				</section>
+				</div>
+
+				<div class="border-t-2 border-(--ink) pt-4 space-y-2 text-xs text-(--text-muted) leading-relaxed">
+					<p><strong class="text-(--text)">Words</strong> counts tiles in their final correct spot.</p>
+					<p><strong class="text-(--text)">Links</strong> counts valid neighbouring pairs — it can be ahead of Words while you're still arranging.</p>
+					<p>When you solve it, every link gets an explanation so you can see the chain.</p>
+				</div>
 			</div>
 		</div>
 	</div>

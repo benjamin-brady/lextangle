@@ -472,7 +472,7 @@
 					<div class="flex h-18 w-18 items-center justify-center rounded-lg border-2 border-dashed border-(--accent) bg-(--accent-soft)"></div>
 				{:else}
 					<div
-						class="h-18 w-18 rounded-lg border-2 border-dashed bg-(--bg-raised)/50 transition-colors"
+						class="h-18 w-18 rounded-lg border-2 border-dashed bg-(--surface) transition-colors"
 						style="border-color: {nodeOutline(i)};"
 					></div>
 				{/if}
