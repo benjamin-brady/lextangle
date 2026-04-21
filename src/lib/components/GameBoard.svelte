@@ -34,6 +34,12 @@
 
 	let draggedItem = $state<DragItem | null>(null);
 	let dragOverIndex = $state<number | null>(null);
+	// Tap-to-swap selection. When set, all other valid targets show the drop-target
+	// style and the selected tile wiggles. Tapping the same tile again clears it.
+	type Selection =
+		| { source: 'grid'; gridIndex: number }
+		| { source: 'inventory'; word: string };
+	let selected = $state<Selection | null>(null);
 	let feedbackOpen = $state(false);
 	let feedbackSentiment = $state<'up' | 'down'>('down');
 	let shareFeedback = $state('');
@@ -72,6 +78,7 @@
 
 	function startDrag(e: DragEvent, item: DragItem) {
 		draggedItem = item;
+		selected = null;
 		if (!e.dataTransfer) {
 			return;
 		}
@@ -174,6 +181,71 @@
 	function onDragEnd() {
 		draggedItem = null;
 		dragOverIndex = null;
+	}
+
+	// ---- Tap-to-swap -------------------------------------------------------
+
+	function onTapGrid(index: number) {
+		const cell = game.grid[index];
+		if (!selected) {
+			// Can only start a selection from an occupied tile.
+			if (!cell) return;
+			selected = { source: 'grid', gridIndex: index };
+			return;
+		}
+		if (selected.source === 'grid' && selected.gridIndex === index) {
+			selected = null;
+			return;
+		}
+		if (selected.source === 'grid') {
+			game.moveGridWord(selected.gridIndex, index);
+		} else {
+			const targetWord = selected.word;
+			const word = game.inventory.find((w) => w.word === targetWord);
+			if (word) game.placeWord(index, word);
+		}
+		selected = null;
+	}
+
+	function onTapInventory(word: WordItem) {
+		if (!selected) {
+			selected = { source: 'inventory', word: word.word };
+			return;
+		}
+		if (selected.source === 'inventory' && selected.word === word.word) {
+			selected = null;
+			return;
+		}
+		if (selected.source === 'grid') {
+			// Tap a grid tile then an inventory word: send that grid word back.
+			game.removeFromGrid(selected.gridIndex);
+			selected = null;
+			return;
+		}
+		// Switching between inventory words.
+		selected = { source: 'inventory', word: word.word };
+	}
+
+	function onTapInventoryZone() {
+		if (selected?.source === 'grid') {
+			game.removeFromGrid(selected.gridIndex);
+			selected = null;
+		}
+	}
+
+	function isSelectedGrid(i: number): boolean {
+		return selected?.source === 'grid' && selected.gridIndex === i;
+	}
+
+	function isSelectedInventory(word: string): boolean {
+		return selected?.source === 'inventory' && selected.word === word;
+	}
+
+	function isTapTarget(i: number): boolean {
+		// Any tile other than the selected one becomes a valid target.
+		if (!selected) return false;
+		if (selected.source === 'grid' && selected.gridIndex === i) return false;
+		return true;
 	}
 
 	function shareRows(): string {
@@ -479,7 +551,9 @@
 			{@const tilt = TILT_ANGLES[i]}
 			{@const isDragSource =
 				draggedItem?.source === 'grid' && draggedItem.gridIndex === i}
-			{@const isDropTarget = dragOverIndex === i && !isDragSource}
+			{@const isSelected = isSelectedGrid(i)}
+			{@const isTapHint = isTapTarget(i) && !isDragSource}
+			{@const isDropTarget = (dragOverIndex === i && !isDragSource) || isTapHint}
 			<div
 				class="absolute flex items-center justify-center"
 				style="
@@ -495,10 +569,12 @@
 				ondragover={(e) => onDragOver(e, i)}
 				ondragleave={onDragLeave}
 				ondrop={(e) => onDropGrid(e, i)}
+				onclick={() => onTapGrid(i)}
+				onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTapGrid(i); } }}
 			>
 				{#if cell}
 					<div
-						class="polaroid cursor-grab flex flex-col items-center justify-center active:cursor-grabbing"
+						class="polaroid cursor-grab flex flex-col items-center justify-center active:cursor-grabbing {isSelected ? 'tile-wiggle' : ''}"
 						style="
 							width: {NODE_SIZE}px;
 							height: {NODE_SIZE + 14}px;
@@ -518,20 +594,27 @@
 						"
 						role="button"
 						aria-label={`Move ${cell.word}`}
+						aria-pressed={isSelected}
 						tabindex="-1"
 						draggable="true"
 						ondragstart={(e) => onDragStartGrid(e, i)}
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
-						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
+						{#if isDropTarget}
+							<span class="font-display font-bold leading-none" style="font-size: {NODE_FONT * 1.6}px; color: var(--crayon-red);">swap</span>
+						{:else}
+							<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
+							<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
+						{/if}
 					</div>
 				{:else if isDropTarget}
 					<div
-						class="polaroid"
+						class="polaroid flex items-center justify-center"
 						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
-					></div>
+					>
+						<span class="font-display font-bold leading-none" style="font-size: {NODE_FONT * 1.6}px; color: var(--crayon-red);">swap</span>
+					</div>
 				{:else}
 					<div
 						class="polaroid"
@@ -610,13 +693,16 @@
 	{/if}
 
 	<!-- Inventory: scattered stickers -->
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="flex min-h-16 flex-wrap justify-center gap-2 p-3"
 		data-inventory
 		role="list"
-		style="background: rgba(255,253,246,0.5); outline: 3px dashed var(--border-strong); outline-offset: -6px; border-radius: 6px;"
+		style="background: rgba(255,253,246,0.5); outline: 3px dashed {selected?.source === 'grid' ? 'var(--crayon-red)' : 'var(--border-strong)'}; outline-offset: -6px; border-radius: 6px; cursor: {selected?.source === 'grid' ? 'pointer' : 'default'};"
 		ondragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
 		ondrop={onDropInventory}
+		onclick={onTapInventoryZone}
+		onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTapInventoryZone(); } }}
 	>
 		{#if game.inventory.length === 0}
 			<p class="self-center font-display" style="font-size: 1.2rem; color: var(--text-muted);">
@@ -624,14 +710,19 @@
 			</p>
 		{/if}
 		{#each game.inventory as word, idx (word.word)}
+			{@const invSelected = isSelectedInventory(word.word)}
 			<div
-				class="sticker-chip"
+				class="sticker-chip {invSelected ? 'tile-wiggle' : ''}"
 				style="transform: rotate({INVENTORY_TILTS[idx % INVENTORY_TILTS.length]}deg);"
 				draggable="true"
-				role="listitem"
+				role="button"
+				tabindex="0"
+				aria-pressed={invSelected}
 				ondragstart={(e) => onDragStartInventory(e, word)}
 				ondragend={onDragEnd}
 				ontouchstart={(e) => onTouchStartInventory(e, word)}
+				onclick={(e) => { e.stopPropagation(); onTapInventory(word); }}
+				onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onTapInventory(word); } }}
 			>
 				<span aria-hidden="true" style="font-size: 1.15rem; line-height: 1;">{wordEmoji(word)}</span>
 				<span class="font-display" style="font-size: 1.3rem; line-height: 1; color: var(--ink-dark);">{word.word}</span>
@@ -752,3 +843,15 @@
 	{puzzle}
 	{storageId}
 />
+
+<style>
+	@keyframes tile-wiggle {
+		0%, 100% { transform: rotate(-2.5deg); }
+		25%      { transform: rotate(0deg); }
+		50%      { transform: rotate(2.5deg); }
+		75%      { transform: rotate(0deg); }
+	}
+	:global(.tile-wiggle) {
+		animation: tile-wiggle 0.45s ease-in-out infinite;
+	}
+</style>
