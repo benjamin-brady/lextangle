@@ -44,22 +44,26 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	const persisted = new PersistedState<SavedState>(storageKey(storageId), freshState(puzzle));
 
-	// Session-only undo stack. Snapshots are taken before each move mutation.
-	// History is cleared on check (checks cannot be undone) and on reset.
-	type Snapshot = { grid: (string | null)[]; inventory: string[] };
-	let history = $state<Snapshot[]>([]);
+	// Session-only undo stack. Snapshots are full SavedState copies taken
+	// BEFORE each move mutation. History is cleared on check (checks cannot
+	// be undone) and on reset. Reactive counter drives `canUndo` so the
+	// Undo button state stays in sync.
+	const history: SavedState[] = [];
+	let historyVersion = $state(0);
 	const MAX_HISTORY = 50;
 
-	function snapshot(): Snapshot {
-		return {
-			grid: [...persisted.current.grid],
-			inventory: [...persisted.current.inventory],
-		};
-	}
-
 	function pushHistory() {
-		history.push(snapshot());
+		// Deep-clone current state so later mutations don't leak into the snapshot.
+		const current = persisted.current;
+		history.push({
+			grid: [...current.grid],
+			inventory: [...current.inventory],
+			checks: current.checks,
+			cellChecked: [...current.cellChecked],
+			checkedSnapshot: [...current.checkedSnapshot],
+		});
 		if (history.length > MAX_HISTORY) history.shift();
+		historyVersion++;
 	}
 
 	// Discard stale saves that reference words no longer in this puzzle (e.g. after a puzzle
@@ -122,17 +126,25 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		s.cellChecked = Array(9).fill(true);
 		s.checkedSnapshot = [...s.grid];
 		// Checks cannot be undone.
-		history = [];
+		history.length = 0;
+		historyVersion++;
 	}
 
 	function undo() {
 		const prev = history.pop();
-		if (!prev) return;
+		if (!prev) {
+			historyVersion++;
+			return;
+		}
+		// Restore via individual proxy mutations so the proxy's update hooks
+		// fire and subscribers re-read storage with the restored state.
 		const s = persisted.current;
 		s.grid = prev.grid;
 		s.inventory = prev.inventory;
-		// Recompute checked flags against the last checked snapshot.
-		s.cellChecked = s.grid.map((w, i) => w != null && w === s.checkedSnapshot[i]);
+		s.cellChecked = prev.cellChecked;
+		s.checkedSnapshot = prev.checkedSnapshot;
+		s.checks = prev.checks;
+		historyVersion++;
 	}
 
 	function isCellChecked(index: number): boolean {
@@ -239,7 +251,8 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	function reset() {
 		persisted.current = freshState(puzzle);
-		history = [];
+		history.length = 0;
+		historyVersion++;
 	}
 
 	return {
@@ -268,6 +281,8 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 			return canCheck;
 		},
 		get canUndo() {
+			// Depend on reactive version so the Undo button updates.
+			historyVersion;
 			return history.length > 0;
 		},
 		getNodeStatus,
