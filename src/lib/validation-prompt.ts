@@ -34,7 +34,11 @@ CRITICAL RULES:
 Word A: "{a}"
 Word B: "{b}"
 
+COMPOUND DIRECTION CHECK (do this FIRST before anything else):
+- Concatenate A+B → "{a}{b}". Is "{a}{b}" an English compound word? If yes, type=compound is allowed.
+- If "{a}{b}" is NOT a word, type=compound is FORBIDDEN — even if "{b}{a}" would be. Check other types instead.
+
 Reply with ONLY this JSON (no markdown, no extra text):
-{"valid":true,"type":"compound","reason":"one sentence"}
+{"compound_concat":"{a}{b}","compound_is_word":true_or_false,"valid":true,"type":"compound","reason":"one sentence"}
 or
-{"valid":false,"type":null,"reason":"one sentence"}`;
+{"compound_concat":"{a}{b}","compound_is_word":false,"valid":false,"type":null,"reason":"one sentence"}`;
