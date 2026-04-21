@@ -7,7 +7,7 @@ RELATIONSHIP TYPES (accept if ANY of these apply — check EVERY type before rej
 3. rhyme: clear rhyme → cat/hat, moon/spoon
 4. opposite: antonyms → hot/cold, up/down
 5. category-sibling: same named category → piano/guitar (instruments), apple/pear (fruits)
-6. part-whole: component relationship → wheel/car, petal/flower
+6. part-whole: A is a NAMED, CANONICAL part of B (or vice versa) → wheel/car, petal/flower, wing/bird, trunk/elephant. The part must be a specific, recognized component — not a generic size word. "chunk", "piece", "bit", "section", "fragment", "slab", "portion" are NOT valid parts of anything because you can say "a chunk of" literally anything physical. If the relationship is just "X can be broken into pieces called Y", REJECT.
 7. object-role: natural association → crown/king, bone/dog
 8. material: made from → flour/bread, grape/wine
 9. verb-object: action + target → chop/wood, ride/horse
@@ -29,7 +29,7 @@ CRITICAL RULES:
 - Must be known to >80% of English speakers.
 - If you can't name a specific type, reject.
 - Proper nouns OK if widely known.
-- When in doubt about compound, rhyme, opposite, category-sibling, part-whole, or cultural-pair: ACCEPT. When in doubt about collocation: REJECT.
+- When in doubt about compound, rhyme, opposite, category-sibling, or cultural-pair: ACCEPT. When in doubt about collocation or part-whole: REJECT.
 
 Word A: "{a}"
 Word B: "{b}"
