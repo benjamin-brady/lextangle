@@ -37,22 +37,22 @@
 	});
 </script>
 
-<div class="grid gap-4">
-	<section class="rounded-2xl border border-(--border) bg-(--surface) p-4">
-		<div class="flex items-center justify-between gap-3">
-			<h2 class="text-lg font-bold">Standard</h2>
-			<p class="text-sm text-(--text-muted)">{practiceIds.length} puzzles</p>
+<div class="flex flex-col gap-6">
+	<section>
+		<div class="flex items-baseline justify-between border-b border-(--border) pb-2">
+			<h2 class="text-lg font-black tracking-tight">Standard</h2>
+			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{practiceIds.length} puzzles</p>
 		</div>
 		<div class="mt-3 flex flex-wrap gap-2">
 			{#each practiceIds as id (id)}
 				{@const storageId = practiceStorageId(id)}
 				<a
 					href={`/practice/${id}`}
-					class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:border-(--accent)"
+					class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-bold transition-colors hover:border-(--accent)"
 					class:border-(--border)={!isSolved(storageId)}
-					class:bg-(--surface-light)={!isSolved(storageId)}
+					class:bg-(--surface)={!isSolved(storageId)}
 					class:border-(--green)={isSolved(storageId)}
-					class:bg-[color-mix(in_oklab,var(--green)_14%,white)]={isSolved(storageId)}
+					class:bg-[color-mix(in_oklab,var(--green)_18%,transparent)]={isSolved(storageId)}
 					aria-label={isSolved(storageId) ? `Puzzle ${id}, completed` : `Puzzle ${id}`}
 				>
 					{#if isSolved(storageId)}
@@ -64,21 +64,21 @@
 		</div>
 	</section>
 
-	<section class="rounded-2xl border border-(--border) bg-(--surface) p-4">
-		<div class="flex items-center justify-between gap-3">
-			<h2 class="text-lg font-bold">Hard</h2>
-			<p class="text-sm text-(--text-muted)">{hardIds.length} puzzles</p>
+	<section>
+		<div class="flex items-baseline justify-between border-b border-(--border) pb-2">
+			<h2 class="text-lg font-black tracking-tight">Hard</h2>
+			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{hardIds.length} puzzles</p>
 		</div>
 		<div class="mt-3 flex flex-wrap gap-2">
 			{#each hardIds as id (id)}
 				{@const storageId = hardPracticeStorageId(id)}
 				<a
 					href={`/practice/hard/${id}`}
-					class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:border-(--accent)"
+					class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-bold transition-colors hover:border-(--accent)"
 					class:border-(--border)={!isSolved(storageId)}
-					class:bg-(--surface-light)={!isSolved(storageId)}
+					class:bg-(--surface)={!isSolved(storageId)}
 					class:border-(--green)={isSolved(storageId)}
-					class:bg-[color-mix(in_oklab,var(--green)_14%,white)]={isSolved(storageId)}
+					class:bg-[color-mix(in_oklab,var(--green)_18%,transparent)]={isSolved(storageId)}
 					aria-label={isSolved(storageId) ? `Hard puzzle ${id}, completed` : `Hard puzzle ${id}`}
 				>
 					{#if isSolved(storageId)}

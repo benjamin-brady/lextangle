@@ -36,24 +36,25 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 	{/if}
 </svelte:head>
 
-<div class="min-h-dvh flex flex-col items-center bg-[var(--bg)] text-[var(--text)]">
-	<header class="w-full py-2 border-b border-[var(--border)]">
-		<div class="flex items-center justify-between max-w-lg mx-auto px-4">
-			<div class="w-10"></div>
-			<div class="text-center">
-				<h1 class="text-2xl font-bold tracking-tight">
-					LexLink<span class="ml-1 align-super text-[0.5rem] font-semibold uppercase tracking-widest text-[var(--accent)] opacity-80">alpha</span>
-					<span class="ml-1 text-base font-normal text-[var(--text-muted)]">#{ puzzleNumber}</span>
-				</h1>
-			</div>
+<div class="relative z-10 min-h-dvh flex flex-col items-center text-(--text)">
+	<header class="w-full border-b border-(--border) backdrop-blur-sm bg-(--bg)/40">
+		<div class="flex items-center justify-between w-full max-w-md mx-auto px-4 py-3">
+			<a href="/" class="flex items-baseline gap-1.5 group">
+				<span class="text-xl font-black tracking-tight">
+					<span class="text-(--text)">Lex</span><span class="text-(--accent)">Link</span>
+				</span>
+				<span class="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-(--accent) opacity-70">α</span>
+				<span class="ml-1 text-sm font-semibold text-(--text-muted)">#{puzzleNumber}</span>
+			</a>
 			<HowToPlay />
 		</div>
-		<nav class="mt-1 flex items-center justify-center gap-2 text-sm">
-			<a class="rounded-full px-3 py-1 transition-colors hover:bg-[var(--surface)]" href="/">Daily</a>
-			<a class="rounded-full px-3 py-1 transition-colors hover:bg-[var(--surface)]" href="/practice">Practice</a>
+		<nav class="flex items-center justify-center gap-1 pb-2 text-xs font-bold uppercase tracking-[0.15em]">
+			<a class="rounded-full px-3 py-1 text-(--text-muted) transition-colors hover:text-(--accent)" href="/">Daily</a>
+			<span class="text-(--border-strong)">·</span>
+			<a class="rounded-full px-3 py-1 text-(--text-muted) transition-colors hover:text-(--accent)" href="/practice">Practice</a>
 		</nav>
 	</header>
-	<main class="flex-1 w-full max-w-lg mx-auto px-4 py-3">
+	<main class="flex-1 w-full max-w-md mx-auto px-4 py-5">
 		{@render children()}
 	</main>
 </div>

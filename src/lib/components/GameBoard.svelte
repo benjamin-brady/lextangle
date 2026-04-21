@@ -387,27 +387,27 @@
 	ontouchend={onTouchEnd}
 />
 
-<div class="flex flex-col items-center gap-3 select-none touch-none">
-	<div class="grid w-full max-w-sm grid-cols-3 gap-3">
-		<div class="rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-center">
-			<p class="text-[11px] uppercase tracking-[0.18em] text-(--text-muted)">Checks</p>
-			<p class="text-xl font-bold">{game.checks}</p>
+<div class="flex flex-col items-stretch gap-5 select-none touch-none">
+	<!-- Stats strip -->
+	<div class="flex items-stretch justify-between rounded-2xl border border-(--border) bg-(--surface)/70 backdrop-blur px-1 py-2">
+		<div class="flex-1 px-2 text-center">
+			<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-(--text-muted)">Checks</p>
+			<p class="text-xl font-black tabular-nums">{game.checks}</p>
 		</div>
-		<div class="rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-center">
-			<p class="text-[11px] uppercase tracking-[0.18em] text-(--text-muted)">Words</p>
-			<p class="text-xl font-bold">{game.correctCount}/9</p>
+		<div class="w-px bg-(--border)"></div>
+		<div class="flex-1 px-2 text-center">
+			<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-(--text-muted)">Words</p>
+			<p class="text-xl font-black tabular-nums">{game.correctCount}<span class="text-(--text-muted) font-bold">/9</span></p>
 		</div>
-		<div class="rounded-xl border border-(--border) bg-(--surface) px-3 py-2 text-center">
-			<p class="text-[11px] uppercase tracking-[0.18em] text-(--text-muted)">Links</p>
-			<p class="text-xl font-bold">{game.correctEdgeCount}/{ADJACENCIES.length}</p>
+		<div class="w-px bg-(--border)"></div>
+		<div class="flex-1 px-2 text-center">
+			<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-(--text-muted)">Links</p>
+			<p class="text-xl font-black tabular-nums">{game.correctEdgeCount}<span class="text-(--text-muted) font-bold">/{ADJACENCIES.length}</span></p>
 		</div>
 	</div>
 
 	<!-- Grid -->
-	<div
-		class="relative"
-		style="width: {GRID_W}px; height: {GRID_H}px;"
-	>
+	<div class="relative self-center" style="width: {GRID_W}px; height: {GRID_H}px;">
 		<!-- Edges (SVG lines) -->
 		<svg
 			class="absolute inset-0 pointer-events-none"
@@ -451,7 +451,7 @@
 			>
 				{#if cell}
 					<div
-						class="flex h-18 w-18 cursor-grab flex-col items-center justify-center gap-0.5 rounded-xl border-2 bg-(--surface-light) transition-colors active:cursor-grabbing"
+						class="flex h-18 w-18 cursor-grab flex-col items-center justify-center gap-0.5 rounded-xl border-2 bg-(--surface-light) shadow-[0_4px_12px_rgba(0,0,0,0.25)] transition-all active:cursor-grabbing"
 						style="border-color: {nodeOutline(i)};"
 						role="button"
 						aria-label={`Move ${cell.word}`}
@@ -462,13 +462,13 @@
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
 						<span aria-hidden="true" class="text-base leading-none">{wordEmoji(cell)}</span>
-						<span class="text-sm font-semibold">{cell.word}</span>
+						<span class="text-sm font-bold">{cell.word}</span>
 					</div>
 				{:else if dragOverIndex === i}
-					<div class="flex h-18 w-18 items-center justify-center rounded-xl border-2 border-dashed border-(--accent) bg-(--surface) opacity-70"></div>
+					<div class="flex h-18 w-18 items-center justify-center rounded-xl border-2 border-dashed border-(--accent) bg-(--accent-soft)"></div>
 				{:else}
 					<div
-						class="h-18 w-18 rounded-xl border-2 bg-(--surface) transition-colors"
+						class="h-18 w-18 rounded-xl border-2 border-dashed bg-(--surface)/40 transition-colors"
 						style="border-color: {nodeOutline(i)};"
 					></div>
 				{/if}
@@ -479,17 +479,18 @@
 	<!-- Status -->
 	{#if game.solved}
 		<div class="text-center">
-			<p class="text-lg font-bold text-(--green)">Solved! 🎉</p>
-			<div class="mt-2 flex flex-wrap items-center justify-center gap-2">
+			<p class="text-2xl font-black tracking-tight text-(--green)">Solved</p>
+			<p class="mt-0.5 text-sm text-(--text-muted)">in {game.checks} {game.checks === 1 ? 'check' : 'checks'}</p>
+			<div class="mt-3 flex flex-wrap items-center justify-center gap-2">
 				<button
-					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-4 py-2 text-sm transition-colors hover:border-(--accent)"
+					class="cursor-pointer rounded-lg bg-(--accent) px-4 py-2 text-sm font-bold text-slate-950 shadow-[0_8px_24px_var(--accent-soft)] transition-transform hover:-translate-y-0.5"
 					onclick={shareResult}
 				>
 					{shareButtonLabel}
 				</button>
 				<button
 					type="button"
-					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-3 py-2 text-sm transition-colors hover:border-(--accent)"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 px-3 py-2 text-sm transition-colors hover:border-(--accent)"
 					title="I liked this puzzle"
 					aria-label="Thumbs up"
 					onclick={() => {
@@ -501,7 +502,7 @@
 				</button>
 				<button
 					type="button"
-					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-3 py-2 text-sm transition-colors hover:border-(--accent)"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 px-3 py-2 text-sm transition-colors hover:border-(--accent)"
 					title="Report a problem with this puzzle"
 					aria-label="Thumbs down"
 					onclick={() => {
@@ -517,26 +518,28 @@
 			{/if}
 		</div>
 
-		<section class="w-full rounded-2xl border border-(--border) bg-(--surface) p-4">
-			<h2 class="text-sm font-bold uppercase tracking-[0.18em] text-(--text-muted)">
+		<section>
+			<h2 class="text-[11px] font-bold uppercase tracking-[0.2em] text-(--text-muted) pb-2 border-b border-(--border)">
 				Why the links work
 			</h2>
-			<div class="mt-3 grid gap-3">
+			<ul class="divide-y divide-(--border)">
 				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
-					<div class="rounded-xl border border-(--border) bg-(--surface-light) px-3 py-3">
-						<p class="text-sm font-semibold">
-							{link.from.word} → {link.to.word}
+					<li class="py-3">
+						<p class="text-sm font-bold">
+							<span>{link.from.word}</span>
+							<span class="mx-1 text-(--accent)">→</span>
+							<span>{link.to.word}</span>
 						</p>
-						<p class="mt-1 text-sm text-(--text-muted)">{link.clue}</p>
-					</div>
+						<p class="mt-1 text-sm text-(--text-muted) leading-relaxed">{link.clue}</p>
+					</li>
 				{/each}
-			</div>
+			</ul>
 		</section>
 	{/if}
 
 	<!-- Inventory -->
 	<div
-		class="flex min-h-12 w-full flex-wrap justify-center gap-2 rounded-xl border border-(--border) bg-(--surface) p-2"
+		class="flex min-h-14 flex-wrap justify-center gap-2 rounded-2xl border border-dashed border-(--border-strong) bg-(--surface)/40 p-2"
 		data-inventory
 		role="list"
 		ondragover={(e) => {
@@ -548,13 +551,13 @@
 		ondrop={onDropInventory}
 	>
 		{#if game.inventory.length === 0}
-			<p class="self-center text-sm text-(--text-muted)">
-				{game.solved ? 'All words placed!' : 'Drag words back here to rearrange'}
+			<p class="self-center text-xs font-semibold uppercase tracking-[0.15em] text-(--text-muted)">
+				{game.solved ? 'All words placed' : 'Drag words back here'}
 			</p>
 		{/if}
 		{#each game.inventory as word (word.word)}
 			<div
-				class="flex cursor-grab items-center gap-1.5 rounded-lg border border-(--border) bg-(--surface-light) px-3 py-2 transition-colors hover:border-(--accent) active:cursor-grabbing"
+				class="flex cursor-grab items-center gap-1.5 rounded-lg border border-(--border) bg-(--surface-light) px-3 py-2 shadow-[0_2px_6px_rgba(0,0,0,0.2)] transition-colors hover:border-(--accent) active:cursor-grabbing"
 				draggable="true"
 				role="listitem"
 				ondragstart={(e) => onDragStartInventory(e, word)}
@@ -562,33 +565,31 @@
 				ontouchstart={(e) => onTouchStartInventory(e, word)}
 			>
 				<span aria-hidden="true" class="text-base leading-none">{wordEmoji(word)}</span>
-				<span class="text-sm font-semibold">{word.word}</span>
+				<span class="text-sm font-bold">{word.word}</span>
 			</div>
 		{/each}
 	</div>
 
-	<div class="grid gap-3">
+	<div class="flex flex-col gap-3">
 		{#if !game.solved}
 			<button
-				class="w-full cursor-pointer rounded-xl bg-(--yellow) px-5 py-4 text-base font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_12px_30px_rgba(234,179,8,0.32)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(234,179,8,0.38)] active:translate-y-0"
+				class="w-full cursor-pointer rounded-xl bg-(--yellow) px-5 py-4 text-base font-black uppercase tracking-[0.2em] text-slate-950 shadow-[0_12px_30px_rgba(234,179,8,0.32)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(234,179,8,0.45)] active:translate-y-0"
 				onclick={handleCheck}
 			>
 				Check
 			</button>
 		{/if}
-		<div class="flex items-center gap-3">
+		<div class="flex items-center gap-2">
 			{#if !game.solved}
 				<button
-					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-4 py-2 text-sm transition-colors hover:border-(--accent)"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 px-4 py-2 text-sm font-semibold transition-colors hover:border-(--accent)"
 					onclick={shareResult}
 				>
 					{shareButtonLabel}
 				</button>
-			{/if}
-			{#if !game.solved}
 				<button
 					type="button"
-					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) p-2 transition-colors hover:border-(--accent)"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 p-2 transition-colors hover:border-(--accent)"
 					onclick={() => game.flipHorizontal()}
 					title="Flip board horizontally"
 					aria-label="Flip board horizontally"
@@ -597,7 +598,7 @@
 				</button>
 				<button
 					type="button"
-					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) p-2 transition-colors hover:border-(--accent)"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 p-2 transition-colors hover:border-(--accent)"
 					onclick={() => game.flipVertical()}
 					title="Flip board vertically"
 					aria-label="Flip board vertically"
@@ -606,14 +607,14 @@
 				</button>
 			{/if}
 			<button
-				class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-4 py-2 text-sm transition-colors hover:border-(--accent)"
+				class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 px-4 py-2 text-sm font-semibold transition-colors hover:border-(--accent)"
 				onclick={() => game.reset()}
 			>
 				Reset
 			</button>
 			<button
 				type="button"
-				class="ml-auto cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) p-2 transition-colors hover:border-(--accent)"
+				class="ml-auto cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 p-2 transition-colors hover:border-(--accent)"
 				title="I liked this puzzle"
 				aria-label="Thumbs up"
 				onclick={() => {
@@ -625,7 +626,7 @@
 			</button>
 			<button
 				type="button"
-				class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) p-2 transition-colors hover:border-(--accent)"
+				class="cursor-pointer rounded-lg border border-(--border) bg-(--surface)/60 p-2 transition-colors hover:border-(--accent)"
 				title="Report a problem with this puzzle"
 				aria-label="Thumbs down"
 				onclick={() => {
@@ -639,7 +640,7 @@
 	</div>
 
 	{#if shareFeedback && shareFeedback !== 'copied!'}
-		<p class="text-sm text-(--text-muted)">{shareFeedback}</p>
+		<p class="text-center text-sm text-(--text-muted)">{shareFeedback}</p>
 	{/if}
 </div>
 
