@@ -477,6 +477,9 @@
 			{@const pos = cellPos(i)}
 			{@const cell = game.grid[i]}
 			{@const tilt = TILT_ANGLES[i]}
+			{@const isDragSource =
+				draggedItem?.source === 'grid' && draggedItem.gridIndex === i}
+			{@const isDropTarget = dragOverIndex === i && !isDragSource}
 			<div
 				class="absolute flex items-center justify-center"
 				style="
@@ -500,14 +503,17 @@
 							width: {NODE_SIZE}px;
 							height: {NODE_SIZE + 14}px;
 							transform: rotate({tilt}deg);
-							background: {game.isCellChecked(i)
+							background: {isDropTarget
+								? '#fce6e1'
+								: game.isCellChecked(i)
 								? (game.getNodeStatus(i) === 'correct'
 									? 'var(--tile-surface-correct)'
 									: game.getNodeStatus(i) === 'wrong'
 										? 'var(--tile-surface-wrong)'
 										: 'var(--tile-surface)')
 								: 'var(--tile-surface)'};
-							outline: 3px solid {nodeOutline(i)};
+							outline: 3px {isDropTarget ? 'dashed var(--crayon-red)' : `solid ${nodeOutline(i)}`};
+							opacity: {isDropTarget ? '0.7' : '1'};
 							outline-offset: -3px;
 						"
 						role="button"
@@ -521,7 +527,7 @@
 						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
 						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
 					</div>
-				{:else if dragOverIndex === i}
+				{:else if isDropTarget}
 					<div
 						class="polaroid"
 						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
