@@ -11,6 +11,7 @@
 	--paper-shadow: #ede1c2;
 	--ink-dark: #2a2a2e;
 	--crayon-red: #e74c3c;
+	--swap-label: #c0392b;
 	--crayon-yellow: #f1c40f;
 	--crayon-blue: #3498db;
 	--crayon-green: #27ae60;
@@ -289,6 +290,7 @@ body::before {
 	--green: #27ae60;
 	--yellow: #f1c40f;
 	--red: #e74c3c;
+	--swap-label: #fbe9a7;
 	color-scheme: dark;
 }
 

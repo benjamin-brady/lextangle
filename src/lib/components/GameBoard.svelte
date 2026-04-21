@@ -625,7 +625,7 @@
 						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
 						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
 						{#if isSwapSource}
-							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {NODE_FONT * 0.95}px; color: var(--crayon-red); bottom: 4px; right: 6px; transform: rotate(-4deg);">swap</span>
+							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {NODE_FONT * 0.95}px; color: var(--swap-label); bottom: 4px; right: 6px; transform: rotate(-4deg); text-shadow: 0 1px 0 rgba(0,0,0,0.25);">swap</span>
 						{/if}
 					</div>
 				{:else if isDropTarget}
@@ -747,7 +747,7 @@
 				<span aria-hidden="true" style="font-size: 1.15rem; line-height: 1;">{wordEmoji(word)}</span>
 				<span class="font-display" style="font-size: 1.3rem; line-height: 1; color: var(--ink-dark);">{word.word}</span>
 				{#if invSwapSource}
-					<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: 0.8rem; color: var(--crayon-red); bottom: -8px; right: -6px; transform: rotate(-4deg);">swap</span>
+					<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: 0.8rem; color: var(--swap-label); bottom: -8px; right: -6px; transform: rotate(-4deg); text-shadow: 0 1px 0 rgba(0,0,0,0.25);">swap</span>
 				{/if}
 			</div>
 		{/each}
