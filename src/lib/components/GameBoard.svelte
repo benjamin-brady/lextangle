@@ -40,6 +40,16 @@
 		| { source: 'grid'; gridIndex: number }
 		| { source: 'inventory'; word: string };
 	let selected = $state<Selection | null>(null);
+	// Indices of tiles that just participated in a move. Used to briefly animate them.
+	let swapAnim = $state<Set<number>>(new Set());
+	let swapAnimToken = 0;
+	function animateSwap(...indices: number[]) {
+		swapAnim = new Set(indices);
+		const token = ++swapAnimToken;
+		setTimeout(() => {
+			if (token === swapAnimToken) swapAnim = new Set();
+		}, 320);
+	}
 	let feedbackOpen = $state(false);
 	let feedbackSentiment = $state<'up' | 'down'>('down');
 	let shareFeedback = $state('');
@@ -160,9 +170,12 @@
 		if (!item) return;
 
 		if (item.source === 'grid' && item.gridIndex !== undefined) {
-			game.moveGridWord(item.gridIndex, index);
+			const from = item.gridIndex;
+			game.moveGridWord(from, index);
+			animateSwap(from, index);
 		} else {
 			game.placeWord(index, item.word);
+			animateSwap(index);
 		}
 		draggedItem = null;
 	}
@@ -198,11 +211,16 @@
 			return;
 		}
 		if (selected.source === 'grid') {
-			game.moveGridWord(selected.gridIndex, index);
+			const from = selected.gridIndex;
+			game.moveGridWord(from, index);
+			animateSwap(from, index);
 		} else {
 			const targetWord = selected.word;
 			const word = game.inventory.find((w) => w.word === targetWord);
-			if (word) game.placeWord(index, word);
+			if (word) {
+				game.placeWord(index, word);
+				animateSwap(index);
+			}
 		}
 		selected = null;
 	}
@@ -411,8 +429,10 @@
 
 				if (touchDragItem.source === 'grid' && touchDragItem.gridIndex !== undefined) {
 					game.moveGridWord(touchDragItem.gridIndex, index);
+					animateSwap(touchDragItem.gridIndex, index);
 				} else {
 					game.placeWord(index, touchDragItem.word);
+					animateSwap(index);
 				}
 			} else if (invZone && touchDragItem.source === 'grid' && touchDragItem.gridIndex !== undefined) {
 				game.removeFromGrid(touchDragItem.gridIndex);
@@ -556,7 +576,7 @@
 			{@const isTapHint = isTapTarget(i) && !isDragSource}
 			{@const isDropTarget = (dragOverIndex === i && !isDragSource) || isTapHint}
 			<div
-				class="absolute flex items-center justify-center"
+				class="absolute flex items-center justify-center {swapAnim.has(i) ? 'tile-swap' : ''}"
 				style="
 					left: {pos.x}px;
 					top: {pos.y}px;
@@ -856,5 +876,16 @@
 	}
 	:global(.tile-wiggle) {
 		animation: tile-wiggle 0.45s ease-in-out infinite;
+	}
+
+	@keyframes tile-swap {
+		0%   { transform: scale(1); }
+		40%  { transform: scale(1.12); }
+		70%  { transform: scale(0.96); }
+		100% { transform: scale(1); }
+	}
+	:global(.tile-swap) {
+		animation: tile-swap 0.3s ease-out;
+		z-index: 5;
 	}
 </style>
