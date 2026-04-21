@@ -271,7 +271,7 @@ body::before {
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
 
-	/* LexLink Crayon Scrapbook dark mode — craft paper */
+	/* Lextangle Crayon Scrapbook dark mode — craft paper */
 	--bg: #1f1710;
 	--bg-raised: #2a1f16;
 	--surface: #332619;

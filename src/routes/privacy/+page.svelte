@@ -1,8 +1,8 @@
 <svelte:head>
-	<title>Privacy Policy · LexLink</title>
+	<title>Privacy Policy · Lextangle</title>
 	<meta
 		name="description"
-		content="Privacy policy for LexLink, including analytics and cookie disclosures."
+		content="Privacy policy for Lextangle, including analytics and cookie disclosures."
 	/>
 </svelte:head>
 
@@ -11,7 +11,7 @@
 	<p class="text-xs text-(--text-muted)"><strong>Last updated: April 21, 2026</strong></p>
 
 	<p>
-		This Privacy Policy explains what information LexLink collects, how it is used, and the limited
+		This Privacy Policy explains what information Lextangle collects, how it is used, and the limited
 		third parties involved.
 	</p>
 
@@ -40,7 +40,7 @@
 
 	<h2 class="font-display text-lg font-bold pt-2">3. Analytics</h2>
 	<p>
-		LexLink uses Google Analytics (GA4) to measure aggregate usage trends and product performance.
+		Lextangle uses Google Analytics (GA4) to measure aggregate usage trends and product performance.
 		This may set cookies and collect technical and usage data (for example page views, session
 		behavior, browser/device details, and approximate location from IP).
 	</p>
@@ -76,7 +76,7 @@
 
 	<h2 class="font-display text-lg font-bold pt-2">8. Children</h2>
 	<p>
-		LexLink is a general-audience word game and is not directed to children under 13. We do not
+		Lextangle is a general-audience word game and is not directed to children under 13. We do not
 		knowingly collect personal information from children under 13.
 	</p>
 

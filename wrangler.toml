@@ -1,7 +1,12 @@
-name = "lexlink"
+name = "lextangle"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 main = ".svelte-kit/cloudflare/_worker.js"
+
+routes = [
+  { pattern = "lextangl.com", custom_domain = true },
+  { pattern = "www.lextangl.com", custom_domain = true }
+]
 
 [vars]
 PUBLIC_GA_MEASUREMENT_ID = "G-4HPSRG5QQ7"
@@ -14,6 +19,6 @@ binding = "ASSETS"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "lexlink-db"
+database_name = "lextangle-db"
 database_id = "432e0774-fe8b-409d-9186-a7ad111aa5c4"
 migrations_dir = "drizzle"

@@ -1,6 +1,6 @@
-# LexLink
+# Lextangle
 
-LexLink is a daily 3x3 word-grid puzzle. You get nine word tiles and need to place them so every horizontal and vertical connection makes sense.
+Lextangle is a daily 3x3 word-grid puzzle. You get nine word tiles and need to place them so every horizontal and vertical connection makes sense.
 
 ## How the game works
 

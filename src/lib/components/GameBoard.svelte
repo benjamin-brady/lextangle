@@ -24,7 +24,7 @@
 		gridIndex?: number;
 	};
 
-	const DRAG_MIME = 'application/x-lexlink-word';
+	const DRAG_MIME = 'application/x-lextangle-word';
 	const NODE_STATUS_EMOJI = {
 		correct: '🟩',
 		wrong: '🟥',
@@ -286,7 +286,7 @@
 			: `${game.correctCount}/9 words, ${game.correctEdgeCount}/${ADJACENCIES.length} links, ${game.checks} checks`;
 
 		const lines = [
-			`LexLink ${shareLabel}`,
+			`Lextangle ${shareLabel}`,
 			statusLine,
 			shareRows()
 		];
@@ -338,7 +338,7 @@
 		try {
 			if (canUseNativeShare()) {
 				await navigator.share({
-					title: `LexLink ${shareLabel}`,
+					title: `Lextangle ${shareLabel}`,
 					text,
 					url
 				});

@@ -150,7 +150,7 @@ export const POST: RequestHandler = async ({ request, platform, getClientAddress
 
 	const ip = getClientAddress();
 	const ua = request.headers.get('user-agent') ?? '';
-	const salt = platform.env.IP_HASH_SALT ?? 'lexlink-default-salt';
+	const salt = platform.env.IP_HASH_SALT ?? 'lextangle-default-salt';
 	const userHash = await hashUser(ip, ua, salt);
 	const country =
 		(platform.cf as { country?: string } | undefined)?.country ??

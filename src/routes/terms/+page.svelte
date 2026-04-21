@@ -1,8 +1,8 @@
 <svelte:head>
-	<title>Terms of Service · LexLink</title>
+	<title>Terms of Service · Lextangle</title>
 	<meta
 		name="description"
-		content="Terms of Service for LexLink, including acceptable use, account responsibilities, and legal terms."
+		content="Terms of Service for Lextangle, including acceptable use, account responsibilities, and legal terms."
 	/>
 </svelte:head>
 
@@ -11,20 +11,20 @@
 	<p class="text-xs text-(--text-muted)"><strong>Last updated: April 21, 2026</strong></p>
 
 	<p>
-		These Terms of Service ("Terms") govern your use of LexLink. By using the site, you agree to
+		These Terms of Service ("Terms") govern your use of Lextangle. By using the site, you agree to
 		these Terms.
 	</p>
 
 	<h2 class="font-display text-lg font-bold pt-2">1. Use of the Service</h2>
 	<ul class="list-disc pl-5 space-y-1">
-		<li>You may use LexLink for personal, non-commercial gameplay.</li>
+		<li>You may use Lextangle for personal, non-commercial gameplay.</li>
 		<li>You agree not to abuse, disrupt, or attempt to gain unauthorized access to the service.</li>
 		<li>You must comply with all applicable laws while using the site.</li>
 	</ul>
 
 	<h2 class="font-display text-lg font-bold pt-2">2. Content and Intellectual Property</h2>
 	<ul class="list-disc pl-5 space-y-1">
-		<li>Puzzles, site code, branding, and original LexLink content remain the property of the author.</li>
+		<li>Puzzles, site code, branding, and original Lextangle content remain the property of the author.</li>
 		<li>You may share screenshots and results for non-commercial purposes.</li>
 		<li>You may not copy, resell, or reverse engineer the service beyond lawful exceptions.</li>
 	</ul>
@@ -51,7 +51,7 @@
 
 	<h2 class="font-display text-lg font-bold pt-2">6. Limitation of Liability</h2>
 	<p>
-		To the maximum extent permitted by law, LexLink is not liable for indirect, incidental, special,
+		To the maximum extent permitted by law, Lextangle is not liable for indirect, incidental, special,
 		consequential, or punitive damages, or any loss of data, use, or profits arising from your use
 		of the service.
 	</p>
@@ -64,7 +64,7 @@
 
 	<h2 class="font-display text-lg font-bold pt-2">8. Privacy</h2>
 	<p>
-		Your use of LexLink is also governed by our <a class="text-(--accent) underline" href="/privacy">Privacy Policy</a>.
+		Your use of Lextangle is also governed by our <a class="text-(--accent) underline" href="/privacy">Privacy Policy</a>.
 	</p>
 
 	<h2 class="font-display text-lg font-bold pt-2">9. Contact</h2>

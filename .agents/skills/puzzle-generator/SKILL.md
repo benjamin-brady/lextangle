@@ -1,11 +1,11 @@
 ---
 name: puzzle-generator
-description: Generate LexLink emoji puzzles and 3x3 word-link grids. Use when asked to create, draft, expand, review, or add standard or hard puzzles with word relationships such as common phrases, compounds, containment, rhyme, homophone, slang, secondary meanings, category links, or other explainable word associations.
+description: Generate Lextangle emoji puzzles and 3x3 word-link grids. Use when asked to create, draft, expand, review, or add standard or hard puzzles with word relationships such as common phrases, compounds, containment, rhyme, homophone, slang, secondary meanings, category links, or other explainable word associations.
 ---
 
 # Puzzle Generator
 
-Use this skill when working on LexLink puzzle generation for this repository.
+Use this skill when working on Lextangle puzzle generation for this repository.
 
 The goal is to produce a 3x3 puzzle with:
 
@@ -398,7 +398,7 @@ You do not need to enumerate all 36 pairs — just enough to judge the generic-c
 
 Launch a subagent via `runSubagent` with the prompt:
 
-> Generate a LexLink puzzle candidate. You are writing a 3x3 word-link grid with 9 words and 12 edges.
+> Generate a Lextangle puzzle candidate. You are writing a 3x3 word-link grid with 9 words and 12 edges.
 >
 > GRID LAYOUT:
 > ```
@@ -453,7 +453,7 @@ Launch a SEPARATE subagent with the generated puzzle and this prompt:
 
 > You are a puzzle quality reviewer. Your job is to find weak edges and reject junk. Be harsh. Be specific. Do not approve slop.
 >
-> Review this LexLink puzzle candidate:
+> Review this Lextangle puzzle candidate:
 > {paste the puzzle + classification table from Step 1}
 >
 > Before you trust the intended adjacency list, look only at the 9 words and enumerate the strongest plausible A-tier pairs plus the strongest B-tier extras. If you find an off-grid A-tier pair, or more than 2 off-grid B-tier pairs, the board fails the blind audit.
@@ -584,7 +584,7 @@ Before presenting or committing a puzzle, verify:
 - [ ] Blind word-set audit found no off-grid A-tier pair and at most 2 off-grid B-tier pairs.
 - [ ] Each word has a suitable emoji.
 - [ ] Hard puzzles feel fair after reveal, not obscure.
-- [ ] The final result feels like a LexLink puzzle, not a random word web.
+- [ ] The final result feels like a Lextangle puzzle, not a random word web.
 
 ---
 
