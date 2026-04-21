@@ -37,24 +37,22 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 </svelte:head>
 
 <div class="relative z-10 min-h-dvh flex flex-col items-center text-(--text)">
-	<header class="w-full border-b border-(--border) backdrop-blur-sm bg-(--bg)/40">
-		<div class="flex items-center justify-between w-full max-w-md mx-auto px-4 py-3">
-			<a href="/" class="flex items-baseline gap-1.5 group">
-				<span class="text-xl font-black tracking-tight">
-					<span class="text-(--text)">Lex</span><span class="text-(--accent)">Link</span>
+	<header class="w-full border-b-2 border-(--ink) bg-(--bg-raised)">
+		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-4 pb-3">
+			<a href="/" class="flex items-baseline gap-2 group">
+				<span class="font-display text-3xl font-black tracking-tight leading-none">
+					<span>Lex</span><span class="italic text-(--accent)">Link</span>
 				</span>
-				<span class="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-(--accent) opacity-70">α</span>
-				<span class="ml-1 text-sm font-semibold text-(--text-muted)">#{puzzleNumber}</span>
+				<span class="text-[0.6rem] font-bold uppercase tracking-[0.25em] text-(--text-muted)">№{puzzleNumber}</span>
 			</a>
 			<HowToPlay />
 		</div>
-		<nav class="flex items-center justify-center gap-1 pb-2 text-xs font-bold uppercase tracking-[0.15em]">
-			<a class="rounded-full px-3 py-1 text-(--text-muted) transition-colors hover:text-(--accent)" href="/">Daily</a>
-			<span class="text-(--border-strong)">·</span>
-			<a class="rounded-full px-3 py-1 text-(--text-muted) transition-colors hover:text-(--accent)" href="/practice">Practice</a>
+		<nav class="flex items-center justify-center gap-4 pb-2 text-[11px] font-bold uppercase tracking-[0.22em]">
+			<a class="px-2 py-1 border-b-2 border-transparent text-(--text) transition-colors hover:border-(--accent)" href="/">Daily</a>
+			<a class="px-2 py-1 border-b-2 border-transparent text-(--text) transition-colors hover:border-(--accent)" href="/practice">Practice</a>
 		</nav>
 	</header>
-	<main class="flex-1 w-full max-w-md mx-auto px-4 py-5">
+	<main class="flex-1 w-full max-w-md mx-auto px-4 py-6">
 		{@render children()}
 	</main>
 </div>
