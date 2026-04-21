@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { trackEvent } from '$lib/analytics';
+	import FeedbackDialog from './FeedbackDialog.svelte';
 	import type { GameState } from '../game.svelte';
 	import type { Puzzle, WordItem } from '../types';
 	import { ADJACENCIES } from '../types';
@@ -26,6 +27,8 @@
 
 	let draggedItem = $state<DragItem | null>(null);
 	let dragOverIndex = $state<number | null>(null);
+	let feedbackOpen = $state(false);
+	let feedbackSentiment = $state<'up' | 'down'>('down');
 	let shareFeedback = $state('');
 	let shareButtonLabel = $state('Share');
 	let shareFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
@@ -475,12 +478,38 @@
 	{#if game.solved}
 		<div class="text-center">
 			<p class="text-lg font-bold text-(--green)">Solved! 🎉</p>
-			<button
-				class="mt-2 cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-4 py-2 text-sm transition-colors hover:border-(--accent)"
-				onclick={shareResult}
-			>
-				{shareButtonLabel}
-			</button>
+			<div class="mt-2 flex flex-wrap items-center justify-center gap-2">
+				<button
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-4 py-2 text-sm transition-colors hover:border-(--accent)"
+					onclick={shareResult}
+				>
+					{shareButtonLabel}
+				</button>
+				<button
+					type="button"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-3 py-2 text-sm transition-colors hover:border-(--accent)"
+					title="I liked this puzzle"
+					aria-label="Thumbs up"
+					onclick={() => {
+						feedbackSentiment = 'up';
+						feedbackOpen = true;
+					}}
+				>
+					👍
+				</button>
+				<button
+					type="button"
+					class="cursor-pointer rounded-lg border border-(--border) bg-(--surface-light) px-3 py-2 text-sm transition-colors hover:border-(--accent)"
+					title="Report a problem with this puzzle"
+					aria-label="Thumbs down"
+					onclick={() => {
+						feedbackSentiment = 'down';
+						feedbackOpen = true;
+					}}
+				>
+					👎
+				</button>
+			</div>
 			{#if shareFeedback && shareFeedback !== 'copied!'}
 				<p class="mt-1 text-sm text-(--text-muted)">{shareFeedback}</p>
 			{/if}
@@ -578,3 +607,10 @@
 		<span class="text-sm font-semibold">{touchDragItem.word.word}</span>
 	</div>
 {/if}
+
+<FeedbackDialog
+	bind:open={feedbackOpen}
+	sentiment={feedbackSentiment}
+	{puzzle}
+	{storageId}
+/>

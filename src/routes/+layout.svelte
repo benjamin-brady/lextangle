@@ -2,6 +2,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
 	import HowToPlay from '$lib/components/HowToPlay.svelte';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { getTodaysPuzzleInfo } from '$lib/puzzles';
 	import { trackPageView } from '../lib/analytics';
 	import '../app.css';
@@ -56,3 +57,5 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 		{@render children()}
 	</main>
 </div>
+
+<Toaster richColors position="bottom-center" />

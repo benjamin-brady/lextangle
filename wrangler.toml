@@ -5,7 +5,15 @@ main = ".svelte-kit/cloudflare/_worker.js"
 
 [vars]
 PUBLIC_GA_MEASUREMENT_ID = "G-4HPSRG5QQ7"
+PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAACtY-EV0vyR9188S"
+PUBLIC_DISCORD_INVITE_URL = "https://discord.gg/AWfvmFWBcA"
 
 [assets]
 directory = ".svelte-kit/cloudflare"
 binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lexlink-db"
+database_id = "432e0774-fe8b-409d-9186-a7ad111aa5c4"
+migrations_dir = "drizzle"
