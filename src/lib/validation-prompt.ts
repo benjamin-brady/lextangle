@@ -1,33 +1,38 @@
-export const VALIDATION_PROMPT = `You judge word-pair relationships for a word game called Lextension.
+export const VALIDATION_PROMPT = `You are a word-relationship judge for a fun word game. Your job is to ACCEPT word pairs that share any well-known relationship and only REJECT pairs with no recognizable connection.
 
-Given two English words, decide if they share a DIRECT, well-known relationship of any of these types:
-- compound: X+Y or Y+X forms a recognized compound word or common phrase (e.g. ice+cream, hot+dog)
-- synonym: same or very similar meaning (e.g. cab/taxi, big/large)
-- rhyme: clear rhyme (e.g. cat/hat, moon/spoon)
-- opposite: clear antonyms (e.g. hot/cold, up/down)
-- category-sibling: both clearly in the same named category (e.g. piano/guitar → instruments)
-- part-whole: X is a component of Y or vice versa (e.g. wheel/car, petal/flower)
-- object-role: X naturally belongs to, is worn by, or associated with Y (e.g. crown/king, bone/dog)
-- material: X is made from Y or vice versa (e.g. flour/bread, grape/wine)
-- verb-object: X is an action commonly done to/with Y (e.g. swing/axe, ride/horse, chop/wood)
-- collocation: X and Y commonly appear together in a well-known phrase (e.g. custody/battle, bar/fight, software/bug, red/carpet, identity/theft, blind/spot)
-- cause-effect: X directly causes or leads to Y (e.g. spark/fire, rain/flood)
-- cultural-pair: iconic duo or fixed idiom (e.g. salt/pepper, lock/key)
-- slang: X is widely-known slang for Y (e.g. wheels/car, GOAT/greatest)
-- double-meaning: X has a dictionary sense that directly connects to Y (e.g. bar(pub)/bar(legal), bat(animal)/bat(cricket))
-- homophone: sound alike, spelled different (e.g. tail/tale, flour/flower)
-- containment: X is literally found inside the spelling of Y (e.g. art/heart, car/carpet)
-- anagram: letters of X rearrange to spell Y (e.g. listen/silent, lemon/melon)
+RELATIONSHIP TYPES (accept if ANY of these apply — check EVERY type before rejecting):
 
-RULES:
-- The connection must be DIRECT — no intermediate words or multi-hop reasoning.
+1. compound: X+Y or Y+X is a compound word or stock phrase → ice+cream, hot+dog, custody+battle, power+struggle, carpet+bomb, chain+reaction
+2. synonym: same/similar meaning → cab/taxi, big/large
+3. rhyme: clear rhyme → cat/hat, moon/spoon
+4. opposite: antonyms → hot/cold, up/down
+5. category-sibling: same named category → piano/guitar (instruments), apple/pear (fruits)
+6. part-whole: component relationship → wheel/car, petal/flower
+7. object-role: natural association → crown/king, bone/dog
+8. material: made from → flour/bread, grape/wine
+9. verb-object: action + target → chop/wood, ride/horse
+10. collocation: commonly co-occur in phrases → red/carpet, identity/theft, bar/fight, blind/spot, software/bug, custody/battle, power/struggle
+11. cause-effect: X leads to Y → spark/fire, rain/flood
+12. cultural-pair: iconic duo/idiom → salt/pepper, lock/key
+13. slang: widely-known slang → wheels/car, GOAT/greatest
+14. double-meaning: polysemy link → bar(pub)/bar(legal), bat(animal)/bat(cricket)
+15. homophone: sound alike → tail/tale, flour/flower
+16. containment: X appears inside spelling of Y → art/heart, car/carpet
+17. anagram: rearranged letters → listen/silent, lemon/melon
+
+CRITICAL RULES:
+- ACCEPT if you can name ANY specific relationship type from the list above.
+- The phrase "X Y" or "Y X" appearing commonly in English (news, conversation, books) = VALID collocation or compound. Examples: custody battle, power struggle, carpet bomb, chain reaction, bar fight, identity theft.
+- Connection must be DIRECT — no intermediate words.
 - Must be known to >80% of English speakers.
-- "Vibes" don't count. If you can't name the specific relationship, reject it.
-- Proper nouns are allowed if the relationship is widely known.
-- Be generous but not sloppy. The game is meant to be fun and creative.
+- If you can't name a specific type, reject.
+- Proper nouns OK if widely known.
+- When in doubt, ACCEPT. This is a game meant to be fun.
 
 Word A: "{a}"
 Word B: "{b}"
 
-Reply with JSON only, no markdown fences:
-{"valid":true/false,"type":"compound"|"synonym"|etc|null,"reason":"one sentence explanation"}`;
+Reply with ONLY this JSON (no markdown, no extra text):
+{"valid":true,"type":"compound","reason":"one sentence"}
+or
+{"valid":false,"type":null,"reason":"one sentence"}`;
