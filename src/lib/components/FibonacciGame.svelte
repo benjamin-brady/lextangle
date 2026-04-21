@@ -185,6 +185,30 @@
     navigator.clipboard?.writeText(text);
     trackShare('fibonacci');
   }
+
+  // --- Feedback (thumbs-down) ---
+  let feedbackOpen: string | null = $state(null); // "idx-verdictIdx" key
+  let feedbackComment = $state('');
+  let feedbackSending = $state(false);
+  let feedbackSent = new Set<string>();
+
+  async function sendFeedback(key: string, a: string, b: string) {
+    feedbackSending = true;
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ a, b, comment: feedbackComment }),
+      });
+      feedbackSent.add(key);
+      feedbackOpen = null;
+      feedbackComment = '';
+    } catch {
+      // best-effort
+    } finally {
+      feedbackSending = false;
+    }
+  }
 </script>
 
 <div class="flex flex-col gap-4">
@@ -232,9 +256,63 @@
       </div>
       {#if i >= 2 && game.verdictPairs[i - 2]}
         {@const [vPrev2, vPrev1] = game.verdictPairs[i - 2]}
+        {@const key0 = i + '-0'}
+        {@const key1 = i + '-1'}
         <div class="ml-8 flex flex-col gap-0.5 text-[11px] text-(--text-muted) leading-tight">
-          <div>{getTypeEmoji(vPrev2.type)} {game.chain[i-2]} → {word}: {vPrev2.reason}</div>
-          <div>{getTypeEmoji(vPrev1.type)} {game.chain[i-1]} → {word}: {vPrev1.reason}</div>
+          <div class="flex items-center gap-1">
+            <span class="flex-1">{getTypeEmoji(vPrev2.type)} {game.chain[i-2]} → {word}: {vPrev2.reason}</span>
+            {#if !feedbackSent.has(key0)}
+              <button
+                onclick={() => { feedbackOpen = feedbackOpen === key0 ? null : key0; feedbackComment = ''; }}
+                class="text-sm opacity-30 hover:opacity-100 transition-opacity"
+                title="Report bad link"
+              >👎</button>
+            {:else}
+              <span class="text-sm opacity-30">✓</span>
+            {/if}
+          </div>
+          {#if feedbackOpen === key0}
+            <div class="flex gap-1 items-center mb-1">
+              <input
+                bind:value={feedbackComment}
+                placeholder="What's wrong? (optional)"
+                class="flex-1 px-2 py-1 border border-(--border) bg-(--surface) text-xs focus:outline-none focus:border-(--accent)"
+              />
+              <button
+                onclick={() => sendFeedback(key0, vPrev2.a, vPrev2.b)}
+                disabled={feedbackSending}
+                class="px-2 py-1 border border-(--red) text-(--red) text-xs font-bold uppercase hover:bg-(--red) hover:text-white transition-colors disabled:opacity-50"
+              >{feedbackSending ? '...' : 'Send'}</button>
+              <button onclick={() => { feedbackOpen = null; }} class="px-2 py-1 text-xs text-(--text-muted) hover:text-(--text)">✕</button>
+            </div>
+          {/if}
+          <div class="flex items-center gap-1">
+            <span class="flex-1">{getTypeEmoji(vPrev1.type)} {game.chain[i-1]} → {word}: {vPrev1.reason}</span>
+            {#if !feedbackSent.has(key1)}
+              <button
+                onclick={() => { feedbackOpen = feedbackOpen === key1 ? null : key1; feedbackComment = ''; }}
+                class="text-sm opacity-30 hover:opacity-100 transition-opacity"
+                title="Report bad link"
+              >👎</button>
+            {:else}
+              <span class="text-sm opacity-30">✓</span>
+            {/if}
+          </div>
+          {#if feedbackOpen === key1}
+            <div class="flex gap-1 items-center mb-1">
+              <input
+                bind:value={feedbackComment}
+                placeholder="What's wrong? (optional)"
+                class="flex-1 px-2 py-1 border border-(--border) bg-(--surface) text-xs focus:outline-none focus:border-(--accent)"
+              />
+              <button
+                onclick={() => sendFeedback(key1, vPrev1.a, vPrev1.b)}
+                disabled={feedbackSending}
+                class="px-2 py-1 border border-(--red) text-(--red) text-xs font-bold uppercase hover:bg-(--red) hover:text-white transition-colors disabled:opacity-50"
+              >{feedbackSending ? '...' : 'Send'}</button>
+              <button onclick={() => { feedbackOpen = null; }} class="px-2 py-1 text-xs text-(--text-muted) hover:text-(--text)">✕</button>
+            </div>
+          {/if}
         </div>
       {/if}
     {/each}

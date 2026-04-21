@@ -142,6 +142,32 @@
     navigator.clipboard?.writeText(text);
     trackShare('chain');
   }
+
+  // --- Feedback (thumbs-down) ---
+  let feedbackOpen: number | null = $state(null); // verdict index
+  let feedbackComment = $state('');
+  let feedbackSending = $state(false);
+  let feedbackSent = new Set<number>();
+
+  async function sendFeedback(idx: number) {
+    const v = game.verdicts[idx];
+    if (!v) return;
+    feedbackSending = true;
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ a: v.a, b: v.b, comment: feedbackComment }),
+      });
+      feedbackSent.add(idx);
+      feedbackOpen = null;
+      feedbackComment = '';
+    } catch {
+      // best-effort
+    } finally {
+      feedbackSending = false;
+    }
+  }
 </script>
 
 <div class="flex flex-col gap-4">
@@ -179,8 +205,37 @@
           <span class="text-[10px] font-bold uppercase tracking-wider text-(--text-muted) w-20 truncate" title={game.verdicts[i - 1].type ?? ''}>
             {game.verdicts[i - 1].type ?? ''}
           </span>
+          {#if !feedbackSent.has(i - 1)}
+            <button
+              onclick={() => { feedbackOpen = feedbackOpen === i - 1 ? null : i - 1; feedbackComment = ''; }}
+              class="text-sm opacity-30 hover:opacity-100 transition-opacity"
+              title="Report bad link"
+            >👎</button>
+          {:else}
+            <span class="text-sm opacity-30" title="Reported">✓</span>
+          {/if}
         {/if}
       </div>
+      {#if feedbackOpen === i - 1}
+        <div class="ml-8 flex gap-1 items-center mb-1">
+          <input
+            bind:value={feedbackComment}
+            placeholder="What's wrong? (optional)"
+            class="flex-1 px-2 py-1 border border-(--border) bg-(--surface) text-xs focus:outline-none focus:border-(--accent)"
+          />
+          <button
+            onclick={() => sendFeedback(i - 1)}
+            disabled={feedbackSending}
+            class="px-2 py-1 border border-(--red) text-(--red) text-xs font-bold uppercase hover:bg-(--red) hover:text-white transition-colors disabled:opacity-50"
+          >
+            {feedbackSending ? '...' : 'Send'}
+          </button>
+          <button
+            onclick={() => { feedbackOpen = null; }}
+            class="px-2 py-1 text-xs text-(--text-muted) hover:text-(--text)"
+          >✕</button>
+        </div>
+      {/if}
     {/each}
   </div>
 
