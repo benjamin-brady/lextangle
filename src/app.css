@@ -1,31 +1,41 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Patrick+Hand&display=swap');
 @import "tw-animate-css";
 @import "shadcn-svelte/tailwind.css";
-@import "@fontsource-variable/inter";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	--bg: #f3ede1;
-	--bg-raised: #faf5ea;
-	--surface: #ffffff;
-	--surface-light: #fdf8ec;
-	--border: rgba(26, 26, 46, 0.16);
-	--border-strong: rgba(26, 26, 46, 0.5);
-	--ink: #1a1a2e;
-	--text: #1a1a2e;
-	--text-muted: #6b6478;
-	--accent: #ff4d4f;
-	--accent-ink: #c4142b;
-	--accent-soft: rgba(255, 77, 79, 0.12);
-	--green: #2d7a3d;
-	--yellow: #f0b429;
-	--red: #c4142b;
+	/* Crayon Scrapbook palette */
+	--paper-cream: #fbf1dc;
+	--paper-shadow: #ede1c2;
+	--ink-dark: #2a2a2e;
+	--crayon-red: #e74c3c;
+	--crayon-yellow: #f1c40f;
+	--crayon-blue: #3498db;
+	--crayon-green: #27ae60;
+	--crayon-purple: #8e44ad;
+	--tape-yellow: rgba(244, 220, 130, 0.75);
+
+	--bg: var(--paper-cream);
+	--bg-raised: #fff7e4;
+	--surface: #fffdf6;
+	--surface-light: #fffbed;
+	--border: rgba(42, 42, 46, 0.35);
+	--border-strong: rgba(42, 42, 46, 0.6);
+	--ink: var(--ink-dark);
+	--text: var(--ink-dark);
+	--text-muted: #7a6a52;
+	--accent: var(--crayon-red);
+	--accent-ink: #b83424;
+	--accent-soft: rgba(231, 76, 60, 0.12);
+	--green: var(--crayon-green);
+	--yellow: var(--crayon-yellow);
+	--red: var(--crayon-red);
 	--radius: 0.625rem;
 	color-scheme: light;
-	font-family: 'Inter', system-ui, sans-serif;
-	--font-display: 'Fraunces', Georgia, serif;
+	font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
+	--font-display: 'Caveat', 'Patrick Hand', cursive;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.145 0 0);
 	--card: oklch(1 0 0);
@@ -62,17 +72,33 @@ body {
 	color: var(--text);
 	margin: 0;
 	min-height: 100dvh;
-	font-feature-settings: 'ss01', 'cv11';
+	font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
+	font-size: 1.0625rem;
+	line-height: 1.5;
 }
 
-/* Paper grain texture */
+/* Notebook rule lines */
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent 0 28px,
+		rgba(52, 152, 219, 0.12) 28px 29px
+	);
+}
+
+/* Crumpled paper texture */
 body::before {
 	content: '';
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
-	opacity: 0.5;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.18 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	opacity: 0.4;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.7 0 0 0 0 0.55 0 0 0 0 0.25 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
 	z-index: 0;
 	mix-blend-mode: multiply;
 }
@@ -82,9 +108,130 @@ body::before {
 	mix-blend-mode: screen;
 }
 
+:global(.dark) body::after {
+	background: repeating-linear-gradient(
+		0deg,
+		transparent 0 28px,
+		rgba(52, 152, 219, 0.18) 28px 29px
+	);
+}
+
 .font-display {
 	font-family: var(--font-display);
-	font-feature-settings: 'ss01';
+	font-weight: 700;
+	letter-spacing: 0.01em;
+}
+
+/* Polaroid tile card with random tilt */
+.polaroid {
+	background: #fffdf6;
+	padding: 6px 6px 18px;
+	filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.15));
+	position: relative;
+	border-radius: 2px;
+}
+
+.polaroid::before,
+.polaroid::after {
+	content: '';
+	position: absolute;
+	top: -6px;
+	width: 40px;
+	height: 14px;
+	background: var(--tape-yellow);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+	pointer-events: none;
+}
+
+.polaroid::before {
+	left: -8px;
+	transform: rotate(-20deg);
+}
+
+.polaroid::after {
+	right: -8px;
+	transform: rotate(20deg);
+}
+
+/* Tilt helpers */
+.tilt-n3 { transform: rotate(-3deg); }
+.tilt-n2 { transform: rotate(-2deg); }
+.tilt-n1 { transform: rotate(-1deg); }
+.tilt-0 { transform: rotate(0deg); }
+.tilt-p1 { transform: rotate(1deg); }
+.tilt-p2 { transform: rotate(2deg); }
+.tilt-p3 { transform: rotate(3deg); }
+
+/* Sticky note (for stats) */
+.sticky-note {
+	padding: 8px 10px;
+	filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.18));
+	border-radius: 2px;
+}
+
+/* Crayon button with wobbly dashed outline */
+.crayon-btn {
+	position: relative;
+	border: none;
+	padding: 10px 16px;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 1.35rem;
+	line-height: 1;
+	color: var(--ink-dark);
+	cursor: pointer;
+	background: transparent;
+	outline: 3px dashed var(--ink-dark);
+	outline-offset: -6px;
+	border-radius: 6px;
+	transition: transform 0.08s ease;
+	filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.18));
+}
+
+.crayon-btn:hover:not(:disabled) { transform: translate(-1px, -1px); }
+.crayon-btn:active:not(:disabled) { transform: translate(1px, 1px); filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.18)); }
+.crayon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.crayon-btn-blue { background: var(--crayon-blue); color: #fff; outline-color: #1e6fa8; }
+.crayon-btn-yellow { background: var(--crayon-yellow); color: var(--ink-dark); outline-color: #b8900a; }
+.crayon-btn-red { background: var(--crayon-red); color: #fff; outline-color: #a33224; }
+.crayon-btn-green { background: var(--crayon-green); color: #fff; outline-color: #1a7a42; }
+.crayon-btn-purple { background: var(--crayon-purple); color: #fff; outline-color: #5e2e75; }
+.crayon-btn-cream { background: #fffdf6; color: var(--ink-dark); outline-color: var(--ink-dark); }
+
+/* Inventory chip — scattered sticker */
+.sticker-chip {
+	background: #fffdf6;
+	border: 2px solid var(--ink-dark);
+	padding: 6px 10px;
+	filter: drop-shadow(1.5px 2px 0 rgba(0, 0, 0, 0.18));
+	border-radius: 4px;
+	cursor: grab;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+.sticker-chip:active { cursor: grabbing; }
+
+/* Ripped paper footer edge */
+.ripped-top {
+	position: relative;
+}
+.ripped-top::before {
+	content: '';
+	position: absolute;
+	top: -12px;
+	left: 0;
+	right: 0;
+	height: 14px;
+	background: var(--bg-raised);
+	filter: url(#wobble);
+	clip-path: polygon(
+		0 100%,
+		3% 10%, 7% 80%, 12% 20%, 17% 70%, 22% 10%, 28% 65%, 34% 15%, 40% 75%,
+		46% 20%, 52% 70%, 58% 10%, 64% 80%, 70% 25%, 76% 65%, 82% 10%, 88% 70%,
+		94% 20%, 100% 80%, 100% 100%
+	);
 }
 
 .dark {
@@ -120,27 +267,27 @@ body::before {
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
 
-	/* LexLink custom tokens (declared last to win over shadcn overrides above) */
-	--bg: #14141c;
-	--bg-raised: #1c1c28;
-	--surface: #23232f;
-	--surface-light: #2c2c3a;
-	--border: rgba(240, 235, 220, 0.18);
-	--border-strong: rgba(240, 235, 220, 0.5);
-	--ink: #f3ede1;
-	--text: #f3ede1;
-	--text-muted: #a8a2b3;
-	--accent: #ff6a6c;
-	--accent-ink: #ff8d8f;
-	--accent-soft: rgba(255, 106, 108, 0.18);
-	--green: #4fbf63;
-	--yellow: #f4c15c;
-	--red: #ff6a6c;
+	/* LexLink Crayon Scrapbook dark mode — craft paper */
+	--bg: #1f1710;
+	--bg-raised: #2a1f16;
+	--surface: #332619;
+	--surface-light: #3d2e1f;
+	--border: rgba(251, 241, 220, 0.25);
+	--border-strong: rgba(251, 241, 220, 0.55);
+	--ink: #fbf1dc;
+	--text: #fbf1dc;
+	--text-muted: #c9b994;
+	--accent: #e74c3c;
+	--accent-ink: #ff6a5a;
+	--accent-soft: rgba(231, 76, 60, 0.22);
+	--green: #27ae60;
+	--yellow: #f1c40f;
+	--red: #e74c3c;
 	color-scheme: dark;
 }
 
 @theme inline {
-	--font-sans: 'Inter Variable', sans-serif;
+	--font-sans: 'Patrick Hand', 'Comic Sans MS', cursive;
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

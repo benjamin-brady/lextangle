@@ -388,6 +388,38 @@
 			y: row * (SLOT_SIZE + GAP),
 		};
 	}
+
+	// Scrapbook helpers
+	const TILT_ANGLES = [-2, 1.5, -1, 2, -2.5, 1, -1.5, 2.5, -1];
+	const INVENTORY_TILTS = [-3, 2, -1.5, 3, -2, 1, -2.5, 2, -1, 1.5];
+
+	function wavyPath(x1: number, y1: number, x2: number, y2: number): string {
+		// Build a wobbly path from (x1,y1) to (x2,y2) using short cubic-bezier segments.
+		const dx = x2 - x1;
+		const dy = y2 - y1;
+		const len = Math.hypot(dx, dy);
+		const nx = -dy / len; // perpendicular unit
+		const ny = dx / len;
+		const segs = Math.max(4, Math.round(len / 20));
+		let d = `M ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+		let px = x1;
+		let py = y1;
+		for (let i = 1; i <= segs; i++) {
+			const t = i / segs;
+			const tx = x1 + dx * t;
+			const ty = y1 + dy * t;
+			// Deterministic wobble based on i
+			const amp = 2.5 * Math.sin(i * 1.7) * (1 - Math.abs(0.5 - t) * 1.5);
+			const cx1 = px + (tx - px) * 0.33 + nx * amp;
+			const cy1 = py + (ty - py) * 0.33 + ny * amp;
+			const cx2 = px + (tx - px) * 0.66 - nx * amp;
+			const cy2 = py + (ty - py) * 0.66 - ny * amp;
+			d += ` C ${cx1.toFixed(2)} ${cy1.toFixed(2)}, ${cx2.toFixed(2)} ${cy2.toFixed(2)}, ${tx.toFixed(2)} ${ty.toFixed(2)}`;
+			px = tx;
+			py = ty;
+		}
+		return d;
+	}
 </script>
 
 <svelte:window
@@ -395,52 +427,56 @@
 	ontouchend={onTouchEnd}
 />
 
-<div class="flex flex-col items-stretch gap-5 select-none touch-none">
-	<!-- Stats strip -->
-	<div class="flex items-stretch justify-between rounded-none border-y-2 border-(--ink) bg-(--bg-raised)">
-		<div class="flex-1 px-2 py-2 text-center">
-			<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-(--text-muted)">Checks</p>
-			<p class="font-display text-2xl font-black tabular-nums leading-none mt-0.5">{game.checks}</p>
+<div class="flex flex-col items-stretch gap-6 select-none touch-none">
+	<!-- Stats: sticky notes -->
+	<div class="flex items-start justify-center gap-3 px-2">
+		<div class="sticky-note flex-1 text-center" style="background: var(--crayon-yellow); transform: rotate(-2deg);">
+			<p class="font-display leading-none" style="font-size: 1rem; color: rgba(42,42,46,0.75);">checks</p>
+			<p class="font-display font-bold tabular-nums leading-none mt-1" style="font-size: 2.2rem; color: var(--ink-dark);">{game.checks}</p>
 		</div>
-		<div class="w-px bg-(--ink)/30"></div>
-		<div class="flex-1 px-2 py-2 text-center">
-			<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-(--text-muted)">Words</p>
-			<p class="font-display text-2xl font-black tabular-nums leading-none mt-0.5">{game.correctCount}<span class="text-(--text-muted) font-bold">/9</span></p>
+		<div class="sticky-note flex-1 text-center" style="background: var(--crayon-blue); transform: rotate(1.5deg);">
+			<p class="font-display leading-none" style="font-size: 1rem; color: rgba(255,255,255,0.9);">words</p>
+			<p class="font-display font-bold tabular-nums leading-none mt-1" style="font-size: 2.2rem; color: #fff;">{game.correctCount}<span style="opacity: 0.7;">/9</span></p>
 		</div>
-		<div class="w-px bg-(--ink)/30"></div>
-		<div class="flex-1 px-2 py-2 text-center">
-			<p class="text-[10px] font-bold uppercase tracking-[0.2em] text-(--text-muted)">Links</p>
-			<p class="font-display text-2xl font-black tabular-nums leading-none mt-0.5">{game.correctEdgeCount}<span class="text-(--text-muted) font-bold">/{ADJACENCIES.length}</span></p>
+		<div class="sticky-note flex-1 text-center" style="background: var(--crayon-green); transform: rotate(-1deg);">
+			<p class="font-display leading-none" style="font-size: 1rem; color: rgba(255,255,255,0.9);">links</p>
+			<p class="font-display font-bold tabular-nums leading-none mt-1" style="font-size: 2.2rem; color: #fff;">{game.correctEdgeCount}<span style="opacity: 0.7;">/{ADJACENCIES.length}</span></p>
 		</div>
 	</div>
 
 	<!-- Grid -->
-	<div class="relative w-full" style="height: {GRID_H}px;" bind:clientWidth={boardWidth}>
-		<!-- Edges (SVG lines) -->
+	<div class="relative w-full" style="height: {GRID_H + 18}px;" bind:clientWidth={boardWidth}>
+		<!-- Crayon-squiggle edges -->
 		<svg
 			class="absolute inset-0 pointer-events-none"
 			width={GRID_W}
 			height={GRID_H}
+			style="overflow: visible;"
 		>
 			{#each ADJACENCIES as [a, b] (`${a}-${b}`)}
 				{@const pa = cellPos(a)}
 				{@const pb = cellPos(b)}
-				<line
-					x1={pa.x + SLOT_SIZE / 2}
-					y1={pa.y + SLOT_SIZE / 2}
-					x2={pb.x + SLOT_SIZE / 2}
-					y2={pb.y + SLOT_SIZE / 2}
+				{@const x1 = pa.x + SLOT_SIZE / 2}
+				{@const y1 = pa.y + SLOT_SIZE / 2}
+				{@const x2 = pb.x + SLOT_SIZE / 2}
+				{@const y2 = pb.y + SLOT_SIZE / 2}
+				<path
+					d={wavyPath(x1, y1, x2, y2)}
+					fill="none"
 					stroke={edgeColor(a, b)}
-					stroke-width="3"
+					stroke-width="10"
 					stroke-linecap="round"
+					stroke-linejoin="round"
+					filter="url(#wobble)"
 				/>
 			{/each}
 		</svg>
 
-		<!-- Nodes -->
+		<!-- Polaroid tiles -->
 		{#each Array(9) as _, i (i)}
 			{@const pos = cellPos(i)}
 			{@const cell = game.grid[i]}
+			{@const tilt = TILT_ANGLES[i]}
 			<div
 				class="absolute flex items-center justify-center"
 				style="
@@ -459,8 +495,15 @@
 			>
 				{#if cell}
 					<div
-						class="flex cursor-grab flex-col items-center justify-center gap-0.5 rounded-lg border-2 bg-(--surface) shadow-[2px_2px_0_0_var(--ink)] transition-all active:cursor-grabbing active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-						style="border-color: {nodeOutline(i)}; width: {NODE_SIZE}px; height: {NODE_SIZE}px;"
+						class="polaroid cursor-grab flex flex-col items-center justify-center active:cursor-grabbing"
+						style="
+							width: {NODE_SIZE}px;
+							height: {NODE_SIZE + 14}px;
+							transform: rotate({tilt}deg);
+							background: {game.isCellChecked(i) ? (game.getNodeStatus(i) === 'correct' ? '#d7efd2' : game.getNodeStatus(i) === 'wrong' ? '#f7d2cc' : '#fffdf6') : '#fffdf6'};
+							outline: 3px solid {nodeOutline(i)};
+							outline-offset: -3px;
+						"
 						role="button"
 						aria-label={`Move ${cell.word}`}
 						tabindex="-1"
@@ -469,33 +512,38 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span aria-hidden="true" class="leading-none" style="font-size: {EMOJI_FONT}px;">{wordEmoji(cell)}</span>
-						<span class="font-bold" style="font-size: {NODE_FONT}px;">{cell.word}</span>
+						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
+						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
 					</div>
 				{:else if dragOverIndex === i}
 					<div
-						class="flex items-center justify-center rounded-lg border-2 border-dashed border-(--accent) bg-(--accent-soft)"
-						style="width: {NODE_SIZE}px; height: {NODE_SIZE}px;"
+						class="polaroid"
+						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
 					></div>
 				{:else}
 					<div
-						class="rounded-lg border-2 border-dashed bg-(--surface) transition-colors"
-						style="border-color: {nodeOutline(i)}; width: {NODE_SIZE}px; height: {NODE_SIZE}px;"
+						class="polaroid"
+						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fffdf6; outline: 3px dashed {nodeOutline(i)}; outline-offset: -3px;"
 					></div>
 				{/if}
 			</div>
 		{/each}
 	</div>
 
-	<!-- Status -->
+	<!-- Solve state with stickers -->
 	{#if game.solved}
-		<div class="text-center">
-			<p class="font-display text-4xl font-black italic tracking-tight text-(--green)">Solved.</p>
-			<p class="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-(--text-muted)">in {game.checks} {game.checks === 1 ? 'check' : 'checks'}</p>
-			<div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+		<div class="relative text-center py-4">
+			<span aria-hidden="true" class="absolute" style="top: -4px; left: 18%; font-size: 2rem; transform: rotate(-18deg); display: inline-block;">⭐</span>
+			<span aria-hidden="true" class="absolute" style="top: 40px; right: 14%; font-size: 1.6rem; transform: rotate(22deg); display: inline-block;">🌟</span>
+			<span aria-hidden="true" class="absolute" style="bottom: 8px; left: 32%; font-size: 1.5rem; transform: rotate(-8deg); display: inline-block;">⭐</span>
+			<span aria-hidden="true" class="absolute" style="top: 8px; right: 8%; font-size: 2.2rem;">☀️</span>
+			<p class="font-display font-bold leading-none" style="font-size: 6rem; color: var(--crayon-green); transform: rotate(-3deg); display: inline-block;">nice!</p>
+			<p class="font-display mt-2" style="font-size: 1.25rem; color: var(--text-muted);">solved in {game.checks} {game.checks === 1 ? 'check' : 'checks'}</p>
+			<div class="mt-5 flex flex-wrap items-center justify-center gap-3">
 				<button
 					type="button"
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--accent) px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-white shadow-[3px_3px_0_0_var(--ink)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_var(--ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+					class="crayon-btn crayon-btn-yellow inline-flex items-center gap-2"
+					style="transform: rotate(-2deg);"
 					onclick={shareResult}
 					aria-label="Share result"
 				>
@@ -504,105 +552,98 @@
 				</button>
 				<button
 					type="button"
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+					class="crayon-btn crayon-btn-cream"
+					style="transform: rotate(1.5deg);"
 					title="I liked this puzzle"
 					aria-label="Thumbs up"
-					onclick={() => {
-						feedbackSentiment = 'up';
-						feedbackOpen = true;
-					}}
+					onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
 				>
-					<ThumbsUp class="h-4 w-4" aria-hidden="true" />
-					<span class="sr-only">Like</span>
+					<ThumbsUp class="h-5 w-5" aria-hidden="true" />
 				</button>
 				<button
 					type="button"
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+					class="crayon-btn crayon-btn-cream"
+					style="transform: rotate(-1deg);"
 					title="Report a problem with this puzzle"
 					aria-label="Thumbs down"
-					onclick={() => {
-						feedbackSentiment = 'down';
-						feedbackOpen = true;
-					}}
+					onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}
 				>
-					<ThumbsDown class="h-4 w-4" aria-hidden="true" />
-					<span class="sr-only">Dislike</span>
+					<ThumbsDown class="h-5 w-5" aria-hidden="true" />
 				</button>
 			</div>
 			{#if shareFeedback && shareFeedback !== 'copied!'}
-				<p class="mt-1 text-sm text-(--text-muted)">{shareFeedback}</p>
+				<p class="mt-2 font-display" style="font-size: 1.15rem; color: var(--text-muted);">{shareFeedback}</p>
 			{/if}
 		</div>
 
-		<section>
-			<h2 class="font-display text-xs font-bold uppercase tracking-[0.25em] text-(--text-muted) pb-2 border-b-2 border-(--ink)">
-				Why the links work
+		<section class="px-2 py-3" style="background: rgba(255,253,246,0.7); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.1)); border-radius: 3px;">
+			<h2 class="font-display font-bold mb-1" style="font-size: 2rem; color: var(--ink-dark); transform: rotate(-1deg); display: inline-block;">
+				why the links work
 			</h2>
-			<ul class="divide-y divide-(--border)">
+			<ul class="mt-2" style="background-image: repeating-linear-gradient(0deg, transparent 0 26px, rgba(52,152,219,0.18) 26px 27px);">
 				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
-					<li class="py-3">
-						<p class="font-display text-base font-bold flex items-center gap-1.5 flex-wrap">
-							<span aria-hidden="true" class="text-lg leading-none">{wordEmoji(link.from)}</span>
+					<li class="py-2 px-1" style="min-height: 52px;">
+						<p class="font-display font-bold flex items-center gap-1.5 flex-wrap leading-tight" style="font-size: 1.35rem; color: var(--ink-dark);">
+							<span aria-hidden="true" style="font-size: 1.3rem;">{wordEmoji(link.from)}</span>
 							<span>{link.from.word}</span>
-							<span class="text-(--accent)">→</span>
-							<span aria-hidden="true" class="text-lg leading-none">{wordEmoji(link.to)}</span>
+							<span style="color: var(--crayon-red);">→</span>
+							<span aria-hidden="true" style="font-size: 1.3rem;">{wordEmoji(link.to)}</span>
 							<span>{link.to.word}</span>
 						</p>
-						<p class="mt-1 text-sm text-(--text-muted) leading-relaxed">{link.clue}</p>
+						<p class="mt-0.5" style="font-size: 1rem; color: var(--text-muted); line-height: 1.4;">{link.clue}</p>
 					</li>
 				{/each}
 			</ul>
 		</section>
 	{/if}
 
-	<!-- Inventory -->
+	<!-- Inventory: scattered stickers -->
 	<div
-		class="flex min-h-14 flex-wrap justify-center gap-2 rounded-none border-2 border-dashed border-(--border-strong) bg-(--bg-raised) p-2"
+		class="flex min-h-16 flex-wrap justify-center gap-2 p-3"
 		data-inventory
 		role="list"
-		ondragover={(e) => {
-			e.preventDefault();
-			if (e.dataTransfer) {
-				e.dataTransfer.dropEffect = 'move';
-			}
-		}}
+		style="background: rgba(255,253,246,0.5); outline: 3px dashed var(--border-strong); outline-offset: -6px; border-radius: 6px;"
+		ondragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
 		ondrop={onDropInventory}
 	>
 		{#if game.inventory.length === 0}
-			<p class="self-center text-xs font-bold uppercase tracking-[0.2em] text-(--text-muted)">
-				{game.solved ? 'All words placed' : 'Drag words back here'}
+			<p class="self-center font-display" style="font-size: 1.2rem; color: var(--text-muted);">
+				{game.solved ? 'all words placed ✨' : 'drag words back here'}
 			</p>
 		{/if}
-		{#each game.inventory as word (word.word)}
+		{#each game.inventory as word, idx (word.word)}
 			<div
-				class="flex cursor-grab items-center gap-1.5 rounded-lg border-2 border-(--ink) bg-(--surface) px-3 py-2 shadow-[2px_2px_0_0_var(--ink)] transition-all hover:bg-(--surface-light) active:cursor-grabbing active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)]"
+				class="sticker-chip"
+				style="transform: rotate({INVENTORY_TILTS[idx % INVENTORY_TILTS.length]}deg);"
 				draggable="true"
 				role="listitem"
 				ondragstart={(e) => onDragStartInventory(e, word)}
 				ondragend={onDragEnd}
 				ontouchstart={(e) => onTouchStartInventory(e, word)}
 			>
-				<span aria-hidden="true" class="text-base leading-none">{wordEmoji(word)}</span>
-				<span class="text-sm font-bold">{word.word}</span>
+				<span aria-hidden="true" style="font-size: 1.15rem; line-height: 1;">{wordEmoji(word)}</span>
+				<span class="font-display" style="font-size: 1.3rem; line-height: 1; color: var(--ink-dark);">{word.word}</span>
 			</div>
 		{/each}
 	</div>
 
-	<div class="flex flex-col gap-3">
+	<div class="flex flex-col gap-4">
 		{#if !game.solved}
 			<button
-				class="w-full cursor-pointer rounded-none border-2 border-(--ink) bg-(--ink) px-5 py-4 text-base font-black uppercase tracking-[0.25em] text-(--bg) shadow-[4px_4px_0_0_var(--accent)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_var(--accent)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:active:translate-x-0 disabled:active:translate-y-0"
+				class="crayon-btn crayon-btn-blue w-full"
+				style="padding: 16px; font-size: 1.8rem; transform: rotate(-0.5deg);"
 				onclick={handleCheck}
 				disabled={!game.canCheck}
 			>
-				Check
+				check it!
 			</button>
 		{/if}
-		<div class="flex flex-wrap items-center gap-2">
+		<div class="flex flex-wrap items-center justify-center gap-2">
 			{#if !game.solved}
 				<button
 					type="button"
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+					class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
+					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
 					onclick={shareResult}
 					aria-label="Share result"
 				>
@@ -611,87 +652,85 @@
 				</button>
 				<button
 					type="button"
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
+					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(1.5deg);"
 					onclick={() => game.flipHorizontal()}
 					title="Flip board horizontally"
 					aria-label="Flip board horizontally"
 				>
 					<FlipHorizontal2 class="h-4 w-4" aria-hidden="true" />
-					<span>Flip H</span>
+					<span>flip h</span>
 				</button>
 				<button
 					type="button"
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
+					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1deg);"
 					onclick={() => game.flipVertical()}
 					title="Flip board vertically"
 					aria-label="Flip board vertically"
 				>
 					<FlipVertical2 class="h-4 w-4" aria-hidden="true" />
-					<span>Flip V</span>
+					<span>flip v</span>
 				</button>
 			{/if}
 			<button
 				type="button"
-				class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light) disabled:cursor-not-allowed disabled:opacity-50"
+				class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
+				style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(2deg);"
 				onclick={() => game.undo()}
 				disabled={!game.canUndo}
 				aria-label="Undo last move"
 				title="Undo last move"
 			>
 				<Undo2 class="h-4 w-4" aria-hidden="true" />
-				<span>Undo</span>
+				<span>undo</span>
 			</button>
 			<button
 				type="button"
-				class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+				class="crayon-btn crayon-btn-red inline-flex items-center gap-1.5"
+				style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
 				onclick={() => game.reset()}
 				aria-label="Reset board"
 			>
 				<RotateCcw class="h-4 w-4" aria-hidden="true" />
-				<span>Reset</span>
+				<span>reset</span>
 			</button>
 			<button
 				type="button"
-				class="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5 ml-auto"
+				style="font-size: 1.1rem; padding: 8px 10px; transform: rotate(1.5deg);"
 				title="I liked this puzzle"
 				aria-label="Thumbs up"
-				onclick={() => {
-					feedbackSentiment = 'up';
-					feedbackOpen = true;
-				}}
+				onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
 			>
 				<ThumbsUp class="h-4 w-4" aria-hidden="true" />
-				<span class="sr-only">Like</span>
 			</button>
 			<button
 				type="button"
-				class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
+				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5"
+				style="font-size: 1.1rem; padding: 8px 10px; transform: rotate(-1.5deg);"
 				title="Report a problem with this puzzle"
 				aria-label="Thumbs down"
-				onclick={() => {
-					feedbackSentiment = 'down';
-					feedbackOpen = true;
-				}}
+				onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}
 			>
 				<ThumbsDown class="h-4 w-4" aria-hidden="true" />
-				<span class="sr-only">Dislike</span>
 			</button>
 		</div>
 	</div>
 
 	{#if shareFeedback && shareFeedback !== 'copied!'}
-		<p class="text-center text-sm text-(--text-muted)">{shareFeedback}</p>
+		<p class="text-center font-display" style="font-size: 1.15rem; color: var(--text-muted);">{shareFeedback}</p>
 	{/if}
 </div>
 
 <!-- Touch drag ghost -->
 {#if touchDragItem && touchGhost}
 	<div
-		class="fixed z-50 flex items-center gap-1.5 rounded-lg bg-(--accent) px-3 py-2 text-white shadow-lg pointer-events-none"
-		style="left: {touchGhost.x - 40}px; top: {touchGhost.y - 30}px;"
+		class="fixed z-50 sticker-chip pointer-events-none"
+		style="left: {touchGhost.x - 40}px; top: {touchGhost.y - 30}px; background: var(--crayon-yellow);"
 	>
-		<span aria-hidden="true" class="text-base leading-none">{wordEmoji(touchDragItem.word)}</span>
-		<span class="text-sm font-semibold">{touchDragItem.word.word}</span>
+		<span aria-hidden="true" style="font-size: 1.15rem; line-height: 1;">{wordEmoji(touchDragItem.word)}</span>
+		<span class="font-display" style="font-size: 1.3rem; line-height: 1;">{touchDragItem.word.word}</span>
 	</div>
 {/if}
 
