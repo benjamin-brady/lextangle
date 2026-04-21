@@ -12,7 +12,7 @@ interface SavedState {
 
 // Bump this when the saved-state schema changes or we want to invalidate all
 // existing browser saves (alpha, so we can freely discard).
-const STORAGE_VERSION = 'v2';
+const STORAGE_VERSION = 'v3';
 
 function storageKey(storageId: string): string {
 	return `simicle-game-${STORAGE_VERSION}-${storageId}`;
@@ -26,6 +26,64 @@ function freshState(puzzle: Puzzle): SavedState {
 		cellChecked: Array(9).fill(false),
 		checkedSnapshot: Array(9).fill(null),
 	};
+}
+
+function isValidSavedState(
+	state: unknown,
+	wordLookup: Record<string, WordItem>,
+	expectedWordCount: number
+): state is SavedState {
+	if (typeof state !== 'object' || state === null) return false;
+
+	const candidate = state as Partial<SavedState>;
+	if (
+		!Array.isArray(candidate.grid) ||
+		!Array.isArray(candidate.inventory) ||
+		!Array.isArray(candidate.cellChecked) ||
+		!Array.isArray(candidate.checkedSnapshot)
+	) {
+		return false;
+	}
+
+	if (
+		candidate.grid.length !== expectedWordCount ||
+		candidate.cellChecked.length !== expectedWordCount ||
+		candidate.checkedSnapshot.length !== expectedWordCount
+	) {
+		return false;
+	}
+
+	if (!Number.isInteger(candidate.checks) || (candidate.checks ?? 0) < 0) {
+		return false;
+	}
+
+	const isKnownWord = (word: string) => word in wordLookup;
+	if (!candidate.grid.every((word) => word === null || (typeof word === 'string' && isKnownWord(word)))) {
+		return false;
+	}
+
+	if (!candidate.inventory.every((word) => typeof word === 'string' && isKnownWord(word))) {
+		return false;
+	}
+
+	if (
+		!candidate.checkedSnapshot.every(
+			(word) => word === null || (typeof word === 'string' && isKnownWord(word))
+		)
+	) {
+		return false;
+	}
+
+	if (!candidate.cellChecked.every((value) => typeof value === 'boolean')) {
+		return false;
+	}
+
+	const presentWords = [
+		...candidate.grid.filter((word): word is string => typeof word === 'string'),
+		...candidate.inventory,
+	];
+
+	return presentWords.length === expectedWordCount && new Set(presentWords).size === expectedWordCount;
 }
 
 /**
@@ -66,15 +124,10 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		historyVersion++;
 	}
 
-	// Discard stale saves that reference words no longer in this puzzle (e.g. after a puzzle
-	// regeneration under the same storageId). Otherwise the grid and inventory would reference
-	// unknown words and the board would appear empty.
+	// Discard malformed or stale saves that don't match this puzzle exactly.
 	{
 		const s = persisted.current;
-		const allWordsKnown = [...s.grid, ...s.inventory].every(
-			(w) => w == null || w in wordLookup
-		);
-		if (!allWordsKnown) {
+		if (!isValidSavedState(s, wordLookup, puzzle.solution.length)) {
 			persisted.current = freshState(puzzle);
 		}
 	}
@@ -82,7 +135,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 	const grid = $derived(
 		persisted.current.grid.map((w) => (w ? wordLookup[w] ?? null : null))
 	);
-	const inventory = $derived(
+	const inventory = $derived.by(() =>
 		persisted.current.inventory
 			.map((w) => wordLookup[w])
 			.filter((w): w is WordItem => w != null)
