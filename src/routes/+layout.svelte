@@ -71,8 +71,13 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 	<header class="w-full bg-(--bg-raised)" style="filter: drop-shadow(0 2px 0 rgba(0,0,0,0.12));">
 		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-5 pb-3">
 			<a href="/" class="flex items-baseline gap-2 group">
-				<span class="font-display leading-none" style="font-size: 4.5rem; color: var(--ink);">
+				<span class="font-display leading-none relative" style="font-size: 4.5rem; color: var(--ink);">
 					<span>Lex</span><span style="color: var(--crayon-red);">tangle</span>
+					<span
+						class="font-display absolute"
+						style="top: -0.25rem; right: -1.75rem; font-size: 1.15rem; color: var(--paper-cream); background: var(--crayon-purple); padding: 0.1rem 0.5rem 0.05rem; border: 2px solid var(--ink-dark); transform: rotate(8deg); line-height: 1; letter-spacing: 0.05em; box-shadow: 1px 1px 0 0 var(--ink-dark);"
+						aria-label="Alpha version"
+					>alpha</span>
 				</span>
 				<span class="font-display leading-none" style="font-size: 2rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{puzzleNumber}</span>
 			</a>
