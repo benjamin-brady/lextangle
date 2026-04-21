@@ -75,6 +75,27 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 	<main class="flex-1 w-full max-w-md mx-auto px-4 py-6">
 		{@render children()}
 	</main>
+	<footer class="w-full border-t-2 border-(--ink) bg-(--bg-raised) mt-6">
+		<div class="w-full max-w-md mx-auto px-4 py-4 flex flex-col items-center gap-3">
+			<a
+				href="https://ko-fi.com/benbob"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="inline-flex items-center gap-2 border-2 border-(--ink) bg-(--accent) px-4 py-2 font-display text-sm font-black uppercase tracking-[0.15em] text-white shadow-[2px_2px_0_0_var(--ink)] transition-all hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)]"
+			>
+				<span aria-hidden="true">☕</span>
+				<span>Support on Ko-fi</span>
+			</a>
+			<nav class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">
+				<a class="hover:text-(--accent)" href="https://discord.gg/AWfvmFWBcA" target="_blank" rel="noopener noreferrer">Discord</a>
+				<span aria-hidden="true">·</span>
+				<a class="hover:text-(--accent)" href="/terms">Terms</a>
+				<span aria-hidden="true">·</span>
+				<a class="hover:text-(--accent)" href="/privacy">Privacy</a>
+			</nav>
+			<p class="text-[10px] text-(--text-muted)">Made with ☕ by Ben Brady</p>
+		</div>
+	</footer>
 </div>
 
 <Toaster richColors position="bottom-center" />

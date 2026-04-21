@@ -315,6 +315,30 @@
 					<p><strong class="text-(--text)">Links</strong> counts valid neighbouring pairs — it can be ahead of Words while you're still arranging.</p>
 					<p>When you solve it, every link gets an explanation so you can see the chain.</p>
 				</div>
+
+				<div class="border-t-2 border-(--ink) pt-4 space-y-3 text-xs leading-relaxed text-(--text-muted)">
+					<p class="font-display text-xs font-bold uppercase tracking-[0.2em] text-(--text-muted)">
+						Who made it
+					</p>
+					<p>
+						LexLink is a solo project by Ben Brady. If you get stuck, spot a dodgy clue, or just want to chat about puzzles, come say hi on
+						<a
+							class="font-bold text-(--accent) underline underline-offset-2 hover:text-(--accent-ink)"
+							href="https://discord.gg/AWfvmFWBcA"
+							target="_blank"
+							rel="noopener noreferrer">Discord</a
+						>.
+					</p>
+					<p>
+						LexLink has no ads and no tracking beyond basic analytics. If you'd like to keep it that way, you can support development on
+						<a
+							class="font-bold text-(--accent) underline underline-offset-2 hover:text-(--accent-ink)"
+							href="https://ko-fi.com/benbob"
+							target="_blank"
+							rel="noopener noreferrer">Ko-fi</a
+						>.
+					</p>
+				</div>
 			</div>
 		</div>
 	</div>
