@@ -1,6 +1,6 @@
 ---
 name: puzzle-generator
-description: Generate LexLink emoji puzzles and 3x3 word-link grids. Use when asked to create, draft, expand, review, or add standard or hard puzzles with word relationships such as common phrases, compounds, containment, rhyme, homophone, derivation, slang, secondary meanings, category links, or other explainable word associations.
+description: Generate LexLink emoji puzzles and 3x3 word-link grids. Use when asked to create, draft, expand, review, or add standard or hard puzzles with word relationships such as common phrases, compounds, containment, rhyme, homophone, slang, secondary meanings, category links, or other explainable word associations.
 ---
 
 # Puzzle Generator
@@ -26,6 +26,8 @@ The data model is defined in [../../../src/lib/types.ts](../../../src/lib/types.
 - `edges`: 12 adjacent links with `from`, `to`, and `clue`
 - `WordItem` can include `emoji`
 
+Emoji are normally applied centrally via the `WORD_EMOJIS` map in [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts). Inline `emoji` on a `WordItem` is only required when the word is not in that map, or when you want to override the map for one board. The file uses 2-space indentation — match it when inserting puzzles.
+
 Grid adjacency is fixed:
 
 ```text
@@ -42,7 +44,15 @@ Every puzzle must define all 12 horizontal and vertical links.
 
 ## Relation Taxonomy
 
-Every edge MUST be classified with exactly one relation type from this taxonomy. If you cannot cleanly assign a type, the edge is junk — reject it.
+Classify each edge with a primary relation type from this taxonomy. You may note a secondary type when two cleanly apply; the primary type is the official classification. If no type fits, the edge is junk — reject it.
+
+### Precedence When Types Overlap
+
+- Compound/Phrase beats everything. If `x y` or `y x` is a real compound, that is the primary type even when the pair is also Object-Role or Part-Whole.
+- Material/Made-Of beats Sequence/State-Change for the same pair (ice/water, grape/wine).
+- Part-Whole beats Object-Role when the part is literally a component, not just associated.
+- Cultural Pair beats Category Siblings when a fixed duo exists (salt + pepper is cultural, not just "both seasonings").
+- Homophone beats Rhyme when the sounds are identical.
 
 ### A-Tier: Strongest Relations
 
@@ -261,6 +271,7 @@ These are NOT acceptable as edge justifications:
 - **"Both are nouns" / "Both can be adjectives":** — not a relationship
 - **Private slang / niche fandom:** — audience won't know it
 - **Vibes-based connections:** "they feel related" — not a relation
+- **Reputation/metaphor-only:** "elephants have good memory", "dogs are loyal" — not a typed relation unless it is also a cultural pair or compound.
 
 ---
 
@@ -275,7 +286,12 @@ An edge is **junk** and must be discarded if ANY of these are true:
 5. **Requires obscure knowledge.** If < 80% of English speakers would get it — it's out.
 6. **Generic connector.** If either word could link to 5+ other words on the same board equally well — the word is too generic.
 7. **Reverse test failure.** Show someone the two words and the clue. Could they distinguish this pair from a random pairing? If no — it's out.
-8. **Clue depends on a third word.** The clue should work from just the two endpoint words.
+8. **Third-word dependency.** Two forms, both rejected:
+   - Clue text: the clue names or implies a third word from the board (e.g. clueing `Tree` + `Party` via "party line" uses `Line`).
+   - Underlying phrase: the compound or idiom requires a word not in the pair (e.g. `Tea` + `Tree` via "tea tree oil" needs `oil`).
+9. **Endpoint mismatch.** The clue must describe `x` plus `y`, not `x` plus `z` where `z` is a different word on the board. Before finalizing, restate the two endpoint words and re-read the clue.
+10. **Reverse-compound hedge.** A clue that asks the solver to rotate, reverse, or mentally manipulate the compound is out. Own the direction or replace the edge.
+11. **Clue opacity (including hard mode).** The clue must let a reasonable solver reconstruct the pair after reveal without external guessing. Poetic imagery that replaces both endpoints is out.
 
 ---
 
@@ -284,13 +300,13 @@ An edge is **junk** and must be discarded if ANY of these are true:
 A complete puzzle must pass ALL of these before it's accepted:
 
 1. **Minimum 3 distinct relation types** across the 12 edges.
-2. **No single relation type on more than 6 edges** (50%).
+2. **Diversity floor, not a ceiling.** A board may be heavy in one relation type (e.g. 10+ Compound/Phrase edges) as long as at least 2 other relation types also appear. A pure single-type board is a reject.
 3. **At least 6 A-tier edges.**
 4. **No more than 2 C-tier edges.**
 5. **Every word participates in at least 1 A-tier edge.**
 6. **No word connects plausibly to more than 4 other words** in the set (intended + unintended).
 7. **No plausible alternate solution** — swapping 2-3 words should not produce an equally convincing board.
-8. **The board has anchors** — at least 2 A-tier edges using Compound/Phrase or Cultural Pair, so players have obvious footholds.
+8. **The board has anchors** — at least 2 A-tier edges that a casual solver can identify in under 10 seconds. Compound/Phrase and Cultural Pair are the typical anchors; Part-Whole (wheel/car) and Object-Role (king/crown) also qualify when the pair is iconic.
 
 Note: 6 A-tier + 4 B-tier + 2 C-tier = 12 exactly. The math is tight. If a puzzle has 6 A, 5 B, 1 C, that's still valid (at most 6 of one type, at most 2 C-tier). Aim for 7-8 A-tier if possible — it leaves room to drop a weak edge during review.
 
@@ -315,6 +331,13 @@ Hard puzzle constraints:
 - Do not stack obscurity with ambiguity.
 - Hard should come from layered reasoning, not from vague words that fit everywhere.
 
+Hard-mode clue rules (tighter than tier allowances):
+
+- A clue may withhold the compound, but it must still describe at least one of the two endpoint words plausibly.
+- A clue may not replace both endpoints with pure imagery.
+- A clue may not rely on a different word from the board (the third-word rule applies in hard mode too).
+- Meta-clues that say what the pair does *not* mean are fragile and should be avoided.
+
 ---
 
 ## Anti-Patterns: Examples of Slop
@@ -330,7 +353,9 @@ These are real examples of bad edges. Learn to recognize the patterns.
 | `fire` + `dance` | "Fire dance" exists but is not a common compound. |
 | `line` + `life` | "Lifeline" is a compound, but the clue leans on grid position rather than the word pair itself. |
 | `board` + `game` vs `board` + `room` vs `board` + `meeting` | `board` connecting three ways on one grid = generic connector. Pick one. |
-| `tea` + `tree` via "tea tree oil" | Requires a third word (`oil`) to make the phrase — violates the no-third-word rule. |
+| `tea` + `tree` via "tea tree oil" | Requires a third word (`oil`) to make the phrase — violates the third-word rule. |
+| `Tree` + `Party` clued as "party line can be political or telephone-based" | Endpoint mismatch: the clue is really about `Party` + `Line`, which is a different pair on the board. |
+| `House` + `Green` clued as "read the compound backward if needed" | Reversed-compound hedge. Either own the reversal (use "greenhouse" directly) or replace the edge. |
 
 ---
 
@@ -345,6 +370,7 @@ One emoji per word. Rules:
 - Two-emoji combinations are allowed for compound concepts: `Seahorse` → `🌊🐴`.
 - Do not use more than two emojis per word.
 - Do not smuggle extra meaning through the emoji.
+- Before inlining, check `WORD_EMOJIS` in [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts). If the word is already mapped, omit `emoji` on the `WordItem`. If the emoji needs to change for all boards, update the map.
 
 ---
 
@@ -356,7 +382,12 @@ Use the `runSubagent` tool for each step. Run generators in parallel when produc
 
 ### Pre-flight: Word-Set Viability Check
 
-BEFORE arranging any grid, list all 9 candidate words and enumerate every pairwise relation among them (36 possible pairs). The chosen 9 must support at least 12 strong edges drawn from A/B-tier relations, with no single word appearing in more than 4 plausible edges. If the word set can't support this, pick new words — do not proceed to grid placement.
+BEFORE arranging any grid, list the candidate pairings you intend to use plus 3–4 alternates, and confirm:
+
+- **Standard boards:** at least 12 A/B-tier candidate edges, no single word appearing in 5+ plausible pairs.
+- **Hard boards:** at least 10 A/B-tier candidate edges plus up to 4 C-tier candidates, same generic-connector ceiling.
+
+You do not need to enumerate all 36 pairs — just enough to judge the generic-connector rule. If the word set can't support the bar, pick new words before grid placement.
 
 ### Generating a single puzzle
 
@@ -377,16 +408,17 @@ Launch a subagent via `runSubagent` with the prompt:
 >
 > RULES:
 > 1. Pick 9 concrete, emoji-friendly English words.
-> 2. Before placing: list every pairwise relation among the 9 words. Verify at least 12 viable strong edges exist and no word is a generic connector (appears in 5+ plausible pairs).
+> 2. Before placing: list the pairings you'd actually use plus a few alternates. Confirm no word is a generic connector (appears in 5+ plausible pairs).
 > 3. Arrange them in the 3x3 grid so every horizontal and vertical adjacency has a strong relationship.
 > 4. For EACH of the 12 edges, state:
 >    - The two words
->    - The relation type (from: compound/phrase, object-role, part-whole, material/made-of, tool-action, cause-effect, cultural-pair, category-siblings, rhyme, homophone, anagram, opposite, sequence/state-change, containment, location/habitat, collective-noun, double-meaning, slang, symbol)
+>    - The primary relation type from the taxonomy in the skill file (and a secondary if two cleanly apply)
 >    - The tier (A, B, or C)
->    - A one-sentence clue (the clue must work from just the two endpoint words — no reference to a third word)
-> 5. Minimum 6 A-tier edges, max 2 C-tier, at least 3 distinct relation types.
-> 6. At least 2 anchor edges must be Compound/Phrase or Cultural Pair type.
-> 7. Assign one emoji per word.
+>    - A one-sentence clue that describes the two endpoint words directly — no reference to a third word on the board, no reversed-compound hedges
+> 5. After drafting the clues, re-read each one and restate the two endpoint words. If the clue is really about a different pair on the board, rewrite it.
+> 6. Minimum 6 A-tier edges, max 2 C-tier, at least 3 distinct relation types (minimum 4 A-tier and up to 4 C-tier for hard boards).
+> 7. At least 2 anchor edges a casual solver can identify in under 10 seconds.
+> 8. Assign one emoji per word.
 >
 > {Insert any user-specified theme, difficulty, or constraints here.}
 >
@@ -420,17 +452,18 @@ Launch a SEPARATE subagent with the generated puzzle and this prompt:
 > {paste the puzzle + classification table from Step 1}
 >
 > For EACH of the 12 edges, answer:
-> 1. Is the stated relation type correct? If not, what is it really?
-> 2. Does it pass the hard reject rules? Check each:
->    - Can it be classified cleanly into one type?
->    - Can the link be explained in one sentence?
->    - Does the clue avoid hedging language?
->    - Is it direct (no multi-hop)?
->    - Would 80%+ of English speakers get it?
->    - Is either word too generic for this board?
->    - Reverse test: could someone distinguish this pair from a random pairing?
->    - Does the clue work without depending on a third word?
-> 3. Rate the edge: PASS, WEAK (fixable), or REJECT (must replace).
+> 1. **Restate the two endpoint words** before reading the clue. Then read the clue. Is it really about a different pair on the board? If yes, REJECT.
+> 2. Is the stated relation type correct under the taxonomy's precedence rules? If not, what is it really?
+> 3. **Structure verdict** (PASS / WEAK / REJECT) against hard reject rules 1–10:
+>    - Classifiable into one primary type?
+>    - Explained in one sentence without hedging?
+>    - Direct (no multi-hop)?
+>    - 80%+ of English speakers would get it?
+>    - Neither word is a generic connector on this board?
+>    - Passes the reverse test?
+>    - No third-word dependency (clue text or underlying phrase)?
+>    - No reversed-compound hedge?
+> 4. **Clue verdict** (PASS / WEAK / REJECT): does the clue describe the two endpoint words correctly and read as fair after reveal? Flag any clue that asks the solver to rotate, reverse, or mentally manipulate a compound.
 >
 > Then check board-level gates:
 > - At least 3 distinct relation types?
@@ -452,6 +485,7 @@ Launch a SEPARATE subagent with the generated puzzle and this prompt:
 Based on the review:
 
 - **ACCEPT**: Use the puzzle as-is.
+- **CLUE_FIX**: Structure PASSes but one or more clues are flagged. Rewrite only the clue text — do not regenerate the board.
 - **REVISE**: Fix the specific edges flagged as WEAK or REJECT. You can do this yourself or launch another subagent to regenerate just the problem areas. Then send back through Step 2.
 - **REJECT**: Go back to Step 1 with adjusted constraints.
 
@@ -459,7 +493,7 @@ Based on the review:
 
 ### Generating multiple puzzles
 
-When asked for N puzzles, launch N generator subagents in parallel (Step 1). Then review each result (Step 2 — can also be parallelized). Fix individually. This is much faster than sequential generation.
+When asked for N puzzles, launch N generator subagents in parallel (Step 1). Then review each result (Step 2 — can also be parallelized). Fix individually. This is much faster than sequential generation. For batches of 5+, skip the candidate-pair dump and rely on the structure verdict to catch generic connectors.
 
 ### Generating hard puzzles
 
@@ -471,35 +505,35 @@ Use the same loop, but adjust the generator prompt constraints:
 
 ## Output Format
 
-When returning a puzzle candidate for this repo, use this shape (match the repo's tab indentation):
+When returning a puzzle candidate for this repo, match the 2-space indentation used in [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts). Omit inline `emoji` when the word is already in `WORD_EMOJIS`.
 
 ```ts
 {
-	solution: [
-		{ word: 'King', emoji: '🤴' },
-		{ word: 'Crown', emoji: '👑' },
-		{ word: 'Tooth', emoji: '🦷' },
-		{ word: 'Fairy', emoji: '🧚' },
-		{ word: 'Tale', emoji: '📖' },
-		{ word: 'Tail', emoji: '🐒' },
-		{ word: 'Coat', emoji: '🧥' },
-		{ word: 'Pocket', emoji: '👖' },
-		{ word: 'Watch', emoji: '⌚' }
-	],
-	edges: [
-		{ from: 0, to: 1, clue: 'Kings wear crowns.' },
-		{ from: 1, to: 2, clue: 'A crown can cap a damaged tooth.' },
-		{ from: 3, to: 4, clue: 'Fairies belong in fairy tales.' },
-		{ from: 4, to: 5, clue: 'Tale and tail sound identical.' },
-		{ from: 6, to: 7, clue: 'Coats come with pockets.' },
-		{ from: 7, to: 8, clue: 'A pocket watch is a classic pairing.' },
-		{ from: 0, to: 3, clue: 'The tooth fairy answers to both.' },
-		{ from: 3, to: 6, clue: 'A fairy-tale coat belongs in the wardrobe.' },
-		{ from: 1, to: 4, clue: 'Crowns feature in plenty of tales.' },
-		{ from: 4, to: 7, clue: 'Tales have pockets of detail.' },
-		{ from: 2, to: 5, clue: 'Both can describe an end.' },
-		{ from: 5, to: 8, clue: 'A watchful animal keeps an eye on its tail.' }
-	]
+  solution: [
+    { word: 'Tea' },
+    { word: 'Green' },
+    { word: 'Power' },
+    { word: 'Tree' },
+    { word: 'House' },
+    { word: 'Plant' },
+    { word: 'Line' },
+    { word: 'Party' },
+    { word: 'Food' }
+  ],
+  edges: [
+    { from: 0, to: 1, clue: 'Green tea is the gentler cup.' },
+    { from: 1, to: 2, clue: 'Green power comes from cleaner sources.' },
+    { from: 3, to: 4, clue: 'A tree house belongs above ground level.' },
+    { from: 4, to: 5, clue: 'A houseplant lives indoors.' },
+    { from: 6, to: 7, clue: 'A party line once shared a neighborhood phone.' },
+    { from: 7, to: 8, clue: 'Party food disappears first.' },
+    { from: 0, to: 3, clue: 'A tea tree is known more for its oil than cups.' },
+    { from: 3, to: 6, clue: 'A tree line marks where growth gives up.' },
+    { from: 1, to: 4, clue: 'Greenhouse is the compound hiding in plain sight.' },
+    { from: 4, to: 7, clue: 'A house party gets louder than intended.' },
+    { from: 2, to: 5, clue: 'A power plant makes the grid hum.' },
+    { from: 5, to: 8, clue: 'Plant food keeps the leaves honest.' }
+  ]
 }
 ```
 
@@ -507,20 +541,20 @@ Example classification table for that puzzle:
 
 | Edge | Words | Type | Tier |
 |------|-------|------|------|
-| 0→1 | King + Crown | object-role | A |
-| 1→2 | Crown + Tooth | object-role | A |
-| 3→4 | Fairy + Tale | compound/phrase | A |
-| 4→5 | Tale + Tail | homophone | B |
-| 6→7 | Coat + Pocket | part-whole | A |
-| 7→8 | Pocket + Watch | compound/phrase | A |
-| 0→3 | King + Fairy | cultural-pair | B |
-| 3→6 | Fairy + Coat | object-role | B |
-| 1→4 | Crown + Tale | object-role | B |
-| 4→7 | Tale + Pocket | double-meaning | C |
-| 2→5 | Tooth + Tail | category-siblings | B |
-| 5→8 | Tail + Watch | object-role | A |
+| 0→1 | Tea + Green | compound/phrase | A |
+| 1→2 | Green + Power | compound/phrase | A |
+| 3→4 | Tree + House | compound/phrase | A |
+| 4→5 | House + Plant | compound/phrase | A |
+| 6→7 | Line + Party | compound/phrase | A |
+| 7→8 | Party + Food | compound/phrase | A |
+| 0→3 | Tea + Tree | compound/phrase | B |
+| 3→6 | Tree + Line | compound/phrase | A |
+| 1→4 | Green + House | compound/phrase | A |
+| 4→7 | House + Party | compound/phrase | A |
+| 2→5 | Power + Plant | compound/phrase | A |
+| 5→8 | Plant + Food | compound/phrase | A |
 
-Count: 6 A-tier, 5 B-tier, 1 C-tier. 6 distinct relation types. Passes gates.
+Count: 11 A-tier, 1 B-tier, 0 C-tier. Gate 2 (diversity floor) requires adding a B/C relation type for a compound-only board of this density — see the Board-Level Quality Gates. Use this board as a structural template and diversify at least 2 edges when you adapt it.
 
 ---
 
@@ -531,9 +565,10 @@ Before presenting or committing a puzzle, verify:
 - [ ] All 12 edges are present.
 - [ ] Every edge has been classified with a relation type.
 - [ ] No edge was classified as REJECT by the reviewer.
-- [ ] Every clue matches the exact words in its two endpoints.
-- [ ] No clue depends on a third word from the board.
-- [ ] The board uses at least 3 relation families.
+- [ ] Every clue names or directly describes its two endpoint words, not a different pair from the board.
+- [ ] No clue depends on a third word from the board (clue text or underlying phrase).
+- [ ] No clue asks the solver to rotate, reverse, or mentally manipulate a compound.
+- [ ] The board uses at least 3 relation families (diversity floor).
 - [ ] At least 6 A-tier edges (4 for hard).
 - [ ] No more than 2 C-tier edges (4 for hard).
 - [ ] The board has 2+ obvious anchor edges.
@@ -550,6 +585,7 @@ Before presenting or committing a puzzle, verify:
 If the user asks to add the puzzle directly:
 
 - Edit [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts).
-- Preserve the existing puzzle object style.
-- Include inline `emoji` values on new words when that is the clearest option.
+- Preserve 2-space indentation and the centralized emoji pattern.
+- New words should either be added to `WORD_EMOJIS` in that file or carry inline `emoji` on the `WordItem`.
+- Do not include inline `emoji` for words already in `WORD_EMOJIS`.
 - Run `bun run check` after editing.
