@@ -1,0 +1,32 @@
+{
+  "id": "candidate-5",
+  "difficulty": "standard",
+  "status": "rejected",
+  "solution": [
+    { "word": "Soft", "emoji": "🧸" },
+    { "word": "Back", "emoji": "🔙" },
+    { "word": "Ground", "emoji": "🌍" },
+    { "word": "Wood", "emoji": "🪵" },
+    { "word": "Fire" },
+    { "word": "Work", "emoji": "🔨" },
+    { "word": "Paper", "emoji": "📄" },
+    { "word": "Wall", "emoji": "🧱" },
+    { "word": "Stone", "emoji": "🪨" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "clue": "A book with a flexible cover.", "type": "compound", "tier": "A" },
+    { "from": 1, "to": 2, "clue": "The scene behind the action.", "type": "compound", "tier": "A" },
+    { "from": 3, "to": 4, "clue": "Stacks up before winter.", "type": "compound", "tier": "A" },
+    { "from": 4, "to": 5, "clue": "Lights up the sky with a bang.", "type": "compound", "tier": "A" },
+    { "from": 6, "to": 7, "clue": "Covers what's underneath in a room.", "type": "compound", "tier": "A" },
+    { "from": 7, "to": 8, "clue": "One blocks the path completely.", "type": "compound", "tier": "A" },
+    { "from": 0, "to": 3, "clue": "A timber that bends more easily.", "type": "compound", "tier": "A" },
+    { "from": 3, "to": 6, "clue": "Trees become this writing surface.", "type": "material", "tier": "A" },
+    { "from": 1, "to": 4, "clue": "The plan reversed itself.", "type": "compound", "tier": "A" },
+    { "from": 4, "to": 7, "clue": "One blocks the intruders from getting through.", "type": "compound", "tier": "A" },
+    { "from": 2, "to": 5, "clue": "Lays the foundation for what comes next.", "type": "compound", "tier": "A" },
+    { "from": 5, "to": 8, "clue": "Masonry that lasts for centuries.", "type": "compound", "tier": "A" }
+  ],
+  "stats": { "A": 12, "B": 0, "C": 0, "types": ["compound", "material"] },
+  "anchors": [{ "from": 0, "to": 1 }, { "from": 3, "to": 4 }]
+}

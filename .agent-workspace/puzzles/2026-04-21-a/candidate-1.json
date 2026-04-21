@@ -1,0 +1,32 @@
+{
+  "id": "candidate-1",
+  "difficulty": "standard",
+  "status": "draft",
+  "solution": [
+    { "word": "Arm", "emoji": "💪" },
+    { "word": "Chair", "emoji": "🪑" },
+    { "word": "Lift", "emoji": "🛗" },
+    { "word": "Band", "emoji": "🎸" },
+    { "word": "Back", "emoji": "🔙" },
+    { "word": "Shop", "emoji": "🛒" },
+    { "word": "Wagon", "emoji": "🚃" },
+    { "word": "Bone", "emoji": "🦴" },
+    { "word": "Dry", "emoji": "🏜️" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "clue": "An armchair is the comfortable option in the room.", "type": "compound-phrase", "tier": "A" },
+    { "from": 1, "to": 2, "clue": "A chairlift carries skiers up the mountain.", "type": "compound-phrase", "tier": "A" },
+    { "from": 3, "to": 4, "clue": "The comeback is the best part of the performance.", "type": "compound-phrase", "tier": "A" },
+    { "from": 4, "to": 5, "clue": "A backshop is where repairs happen behind the counter.", "type": "compound-phrase", "tier": "A" },
+    { "from": 6, "to": 7, "clue": "A wagonbone? No.", "type": "compound-phrase", "tier": "A" },
+    { "from": 7, "to": 8, "clue": "Bone dry means completely without moisture.", "type": "compound-phrase", "tier": "A" },
+    { "from": 0, "to": 3, "clue": "An armband wraps around the upper arm.", "type": "compound-phrase", "tier": "A" },
+    { "from": 3, "to": 6, "clue": "A bandwagon is the ride everyone jumps on.", "type": "compound-phrase", "tier": "A" },
+    { "from": 1, "to": 4, "clue": "The back of a chair is where you lean.", "type": "part-whole", "tier": "A" },
+    { "from": 4, "to": 7, "clue": "A backbone holds you upright.", "type": "compound-phrase", "tier": "A" },
+    { "from": 2, "to": 5, "clue": "A liftshop? No.", "type": "compound-phrase", "tier": "A" },
+    { "from": 5, "to": 8, "clue": "A dry shop? No.", "type": "compound-phrase", "tier": "A" }
+  ],
+  "stats": { "A": 0, "B": 0, "C": 0, "types": [] },
+  "anchors": []
+}

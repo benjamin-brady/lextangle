@@ -1,0 +1,28 @@
+{
+  "id": "review-1",
+  "candidate": "candidate-1",
+  "edges": [
+    { "from": 0, "to": 1, "verdict": "PASS", "note": "Star and sun are both celestial bodies — clean category-siblings." },
+    { "from": 1, "to": 2, "verdict": "PASS", "note": "Sunday — clean compound." },
+    { "from": 3, "to": 4, "verdict": "PASS", "note": "Moonlight — clean compound." },
+    { "from": 4, "to": 5, "verdict": "PASS", "note": "Light/night rhyme — obvious." },
+    { "from": 6, "to": 7, "verdict": "PASS", "note": "Headstone — clean compound." },
+    { "from": 7, "to": 8, "verdict": "PASS", "note": "Overhead — clean compound." },
+    { "from": 0, "to": 3, "verdict": "PASS", "note": "Star and moon both shine at night — category-siblings." },
+    { "from": 3, "to": 6, "verdict": "PASS", "note": "Moonstone — clean compound." },
+    { "from": 1, "to": 4, "verdict": "PASS", "note": "Sunlight — clean compound." },
+    { "from": 4, "to": 7, "verdict": "PASS", "note": "Headlight — clean compound." },
+    { "from": 2, "to": 5, "verdict": "PASS", "note": "Day/night — clean opposite." },
+    { "from": 5, "to": 8, "verdict": "PASS", "note": "Overnight — clean compound." }
+  ],
+  "board_gates": {
+    "types": 4,
+    "a_tier": 8,
+    "c_tier": 0,
+    "every_word_in_a_tier": true,
+    "generic_connectors": "none — light has 4 edges but all are distinct compounds",
+    "alternate_arrangement": "unlikely — star/moon siblings anchor top-left, day/night opposite anchors right column",
+    "anchor_edges": 2
+  },
+  "overall": "ACCEPT"
+}

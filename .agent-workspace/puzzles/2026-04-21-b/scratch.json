@@ -1,0 +1,31 @@
+{
+  "id": "candidate-1",
+  "difficulty": "standard",
+  "status": "draft",
+  "theme": "Dairy & Kitchen",
+  "solution": [
+    { "word": "Cream", "emoji": "🍦" },
+    { "word": "Cheese", "emoji": "🧀" },
+    { "word": "Chalk", "emoji": "🖍️" },
+    { "word": "Butter", "emoji": "🧈" },
+    { "word": "Milk", "emoji": "🥛" },
+    { "word": "Shake", "emoji": "🤝" },
+    { "word": "Bread", "emoji": "🍞" },
+    { "word": "Man", "emoji": "👨" },
+    { "word": "Hand", "emoji": "✋" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "clue": "Cream cheese spreads on the morning bagel.", "type": "compound-phrase", "tier": "A" },
+    { "from": 1, "to": 2, "clue": "Chalk and cheese are as different as two things get.", "type": "cultural-pair", "tier": "A" },
+    { "from": 3, "to": 4, "clue": "Buttermilk adds tang to the batter.", "type": "compound-phrase", "tier": "A" },
+    { "from": 4, "to": 5, "clue": "A milkshake blends ice cream and nostalgia.", "type": "compound-phrase", "tier": "A" },
+    { "from": 6, "to": 7, "clue": "The breadman once delivered a fresh loaf to every door.", "type": "compound-phrase", "tier": "A" },
+    { "from": 7, "to": 8, "clue": "A handshake seals the deal.", "type": "compound-phrase", "tier": "A" },
+    { "from": 0, "to": 3, "clue": "Cream and butter are both dairy products.", "type": "category-siblings", "tier": "B" },
+    { "from": 3, "to": 6, "clue": "Bread and butter are the essential duo.", "type": "cultural-pair", "tier": "A" },
+    { "from": 1, "to": 4, "clue": "Milk becomes cheese.", "type": "material", "tier": "A" },
+    { "from": 4, "to": 7, "clue": "A milkman delivers at dawn.", "type": "compound-phrase", "tier": "A" },
+    { "from": 2, "to": 5, "clue": "A chalkboard shake is what happens when the eraser misses — no. Chalk shakes free as dust when you clap the erasers.", "type": "?", "tier": "?" }
+  ],
+  "notes": "PROBLEM: chalk↔shake and hand↔shake don't have clean edges. Rethink positions 2 and 5."
+}

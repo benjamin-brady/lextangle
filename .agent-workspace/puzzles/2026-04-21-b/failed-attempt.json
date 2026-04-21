@@ -1,0 +1,31 @@
+{
+  "id": "candidate-1",
+  "difficulty": "standard",
+  "status": "draft",
+  "solution": [
+    { "word": "Butter", "emoji": "🧈" },
+    { "word": "Cup", "emoji": "🥤" },
+    { "word": "Cake", "emoji": "🍰" },
+    { "word": "Bread", "emoji": "🍞" },
+    { "word": "Cheese", "emoji": "🧀" },
+    { "word": "Burger", "emoji": "🍔" },
+    { "word": "Cream", "emoji": "🍦" },
+    { "word": "Chalk", "emoji": "🖍️" },
+    { "word": "Van", "emoji": "🚐" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "clue": "A buttercup glows yellow in the meadow.", "type": "compound-phrase", "tier": "A" },
+    { "from": 1, "to": 2, "clue": "A cupcake is a party in miniature.", "type": "compound-phrase", "tier": "A" },
+    { "from": 3, "to": 4, "clue": "Bread and cheese is the simplest meal that still satisfies.", "type": "cultural-pair", "tier": "A" },
+    { "from": 4, "to": 5, "clue": "A cheeseburger needs nothing else.", "type": "compound-phrase", "tier": "A" },
+    { "from": 6, "to": 7, "clue": "Chalk and cream sit at opposite ends of the colour chart.", "type": "?", "tier": "?" },
+    { "from": 7, "to": 8, "clue": "A chalk van? No relation.", "type": "?", "tier": "?" },
+    { "from": 0, "to": 3, "clue": "Bread and butter are the essential duo.", "type": "cultural-pair", "tier": "A" },
+    { "from": 3, "to": 6, "clue": "Cream fills the bread roll.", "type": "?", "tier": "?" },
+    { "from": 1, "to": 4, "clue": "A cheese cup? No.", "type": "?", "tier": "?" },
+    { "from": 4, "to": 7, "clue": "Chalk and cheese are as different as can be.", "type": "cultural-pair", "tier": "A" },
+    { "from": 2, "to": 5, "clue": "A burger cake? No.", "type": "?", "tier": "?" },
+    { "from": 5, "to": 8, "clue": "A burger van serves from the kerb.", "type": "compound-phrase", "tier": "A" }
+  ],
+  "notes": "FAILED: too many missing edges. cream+chalk, chalk+van, bread+cream, cup+cheese, cake+burger don't work."
+}

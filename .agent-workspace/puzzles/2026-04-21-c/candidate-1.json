@@ -1,0 +1,32 @@
+{
+  "id": "candidate-1",
+  "difficulty": "standard",
+  "status": "accepted",
+  "solution": [
+    { "word": "Star", "emoji": "⭐" },
+    { "word": "Sun", "emoji": "☀️" },
+    { "word": "Day", "emoji": "🌤️" },
+    { "word": "Moon", "emoji": "🌕" },
+    { "word": "Light", "emoji": "💡" },
+    { "word": "Night" },
+    { "word": "Stone", "emoji": "🪨" },
+    { "word": "Head", "emoji": "🗣️" },
+    { "word": "Over", "emoji": "🔁" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "clue": "Both illuminate the sky from above.", "type": "category-siblings", "tier": "B" },
+    { "from": 1, "to": 2, "clue": "The first one names this part of the week.", "type": "compound", "tier": "A" },
+    { "from": 3, "to": 4, "clue": "One bathes the night in silver.", "type": "compound", "tier": "A" },
+    { "from": 4, "to": 5, "clue": "These two sound the same at bedtime.", "type": "rhyme", "tier": "B" },
+    { "from": 6, "to": 7, "clue": "A grave marker keeps the memory.", "type": "compound", "tier": "A" },
+    { "from": 7, "to": 8, "clue": "Costs that pile up quietly above you.", "type": "compound", "tier": "A" },
+    { "from": 0, "to": 3, "clue": "Both shine after dark.", "type": "category-siblings", "tier": "B" },
+    { "from": 3, "to": 6, "clue": "A gem that glows with an inner light.", "type": "compound", "tier": "A" },
+    { "from": 1, "to": 4, "clue": "Floods through the window at dawn.", "type": "compound", "tier": "A" },
+    { "from": 4, "to": 7, "clue": "One cuts through the dark on the road.", "type": "compound", "tier": "A" },
+    { "from": 2, "to": 5, "clue": "They split the clock in half.", "type": "opposite", "tier": "B" },
+    { "from": 5, "to": 8, "clue": "Everything changes while you sleep.", "type": "compound", "tier": "A" }
+  ],
+  "stats": { "A": 8, "B": 4, "C": 0, "types": ["category-siblings", "compound", "rhyme", "opposite"] },
+  "anchors": [{ "from": 2, "to": 5 }, { "from": 1, "to": 2 }]
+}

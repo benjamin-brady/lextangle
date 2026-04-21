@@ -1,0 +1,137 @@
+[
+  {
+    "solution": [
+      { "word": "Guest", "emoji": "🧳" },
+      { "word": "Book", "emoji": "📘" },
+      { "word": "Club", "emoji": "🎟️" },
+      { "word": "Gate", "emoji": "🚪" },
+      { "word": "Keeper", "emoji": "🧑‍🌾" },
+      { "word": "Shop", "emoji": "🏪" },
+      { "word": "House", "emoji": "🏠" },
+      { "word": "Pet", "emoji": "🐶" },
+      { "word": "Food", "emoji": "🍽️" }
+    ],
+    "edges": [
+      { "from": 0, "to": 1, "clue": "A guest book records who came by." },
+      { "from": 1, "to": 2, "clue": "A book club picks a title to discuss together." },
+      { "from": 3, "to": 4, "clue": "A gatekeeper decides who gets through." },
+      { "from": 4, "to": 5, "clue": "A shopkeeper runs the store floor and the till." },
+      { "from": 6, "to": 7, "clue": "A house pet lives with people at home." },
+      { "from": 7, "to": 8, "clue": "Pet food is sold for cats, dogs, and more." },
+      { "from": 0, "to": 3, "clue": "A guest arrives through the gate before reaching the door." },
+      { "from": 1, "to": 4, "clue": "A bookkeeper handles accounts and balances." },
+      { "from": 2, "to": 5, "clue": "A club shop sells team gear and member items." },
+      { "from": 3, "to": 6, "clue": "A gatehouse stands beside the main entrance." },
+      { "from": 4, "to": 7, "clue": "A pet keeper cares for animals every day." },
+      { "from": 5, "to": 8, "clue": "A shop sells food from produce to pantry basics." }
+    ]
+  },
+  {
+    "solution": [
+      { "word": "Cab", "emoji": "🚕" },
+      { "word": "Taxi", "emoji": "🚖" },
+      { "word": "Stand", "emoji": "🪧" },
+      { "word": "Truck", "emoji": "🚛" },
+      { "word": "Driver", "emoji": "🧑‍✈️" },
+      { "word": "Bus", "emoji": "🚌" },
+      { "word": "Delivery", "emoji": "📦" },
+      { "word": "Route", "emoji": "🗺️" },
+      { "word": "Stop", "emoji": "🚏" }
+    ],
+    "edges": [
+      { "from": 0, "to": 1, "clue": "A taxi cab is the same ride by another name." },
+      { "from": 1, "to": 2, "clue": "A taxi stand is where cabs queue for fares." },
+      { "from": 3, "to": 4, "clue": "A truck driver moves freight from depot to depot." },
+      { "from": 4, "to": 5, "clue": "A bus driver follows the route and the schedule." },
+      { "from": 6, "to": 7, "clue": "A delivery route strings many stops into one run." },
+      { "from": 7, "to": 8, "clue": "A route is made up of planned stops." },
+      { "from": 0, "to": 3, "clue": "The cab is the front section of a truck." },
+      { "from": 1, "to": 4, "clue": "A taxi driver works city streets for hire." },
+      { "from": 2, "to": 5, "clue": "A stand gives the bus queue a place to gather." },
+      { "from": 3, "to": 6, "clue": "A delivery truck drops parcels block by block." },
+      { "from": 4, "to": 7, "clue": "A driver follows an assigned route through the city." },
+      { "from": 5, "to": 8, "clue": "A bus stop marks where riders board and exit." }
+    ]
+  },
+  {
+    "solution": [
+      { "word": "Market", "emoji": "🛒" },
+      { "word": "Town", "emoji": "🏘️" },
+      { "word": "Square", "emoji": "◻️" },
+      { "word": "Food", "emoji": "🍜" },
+      { "word": "Hall", "emoji": "🏛️" },
+      { "word": "Dance", "emoji": "💃" },
+      { "word": "Street", "emoji": "🛣️" },
+      { "word": "City", "emoji": "🌆" },
+      { "word": "Club", "emoji": "🎷" }
+    ],
+    "edges": [
+      { "from": 0, "to": 1, "clue": "A town market fills the center on busy days." },
+      { "from": 1, "to": 2, "clue": "A town square sits at the civic heart." },
+      { "from": 3, "to": 4, "clue": "A food hall gathers many counters under one roof." },
+      { "from": 4, "to": 5, "clue": "A dance hall is built for music and movement." },
+      { "from": 6, "to": 7, "clue": "A city street stays busy from morning to night." },
+      { "from": 7, "to": 8, "clue": "A city club comes alive after dark." },
+      { "from": 0, "to": 3, "clue": "A market sells food from produce to prepared meals." },
+      { "from": 1, "to": 4, "clue": "Town hall is where local government meets." },
+      { "from": 2, "to": 5, "clue": "A square dance is called in sets." },
+      { "from": 3, "to": 6, "clue": "Street food is cooked to eat on the go." },
+      { "from": 4, "to": 7, "clue": "City hall houses the mayor and city offices." },
+      { "from": 5, "to": 8, "clue": "A dance club fills up once the music starts." }
+    ]
+  },
+  {
+    "solution": [
+      { "word": "Flower", "emoji": "🌸" },
+      { "word": "Pot", "emoji": "🪴" },
+      { "word": "Holder", "emoji": "🧺" },
+      { "word": "Water", "emoji": "💧" },
+      { "word": "Bottle", "emoji": "🍼" },
+      { "word": "Brush", "emoji": "🪥" },
+      { "word": "Garden", "emoji": "🌿" },
+      { "word": "Hose", "emoji": "🚿" },
+      { "word": "Rack", "emoji": "🗄️" }
+    ],
+    "edges": [
+      { "from": 0, "to": 1, "clue": "A flower pot gives roots a home." },
+      { "from": 1, "to": 2, "clue": "A plant pot can sit inside a decorative holder." },
+      { "from": 3, "to": 4, "clue": "A water bottle goes anywhere the day gets long." },
+      { "from": 4, "to": 5, "clue": "A bottle brush is built to clean what your hand cannot reach." },
+      { "from": 6, "to": 7, "clue": "A garden hose is the quick answer to thirsty beds." },
+      { "from": 7, "to": 8, "clue": "A hose rack keeps the coil from turning into a mess." },
+      { "from": 0, "to": 3, "clue": "Water keeps flowers alive and upright." },
+      { "from": 3, "to": 6, "clue": "Water turns a dry garden back into growth." },
+      { "from": 1, "to": 4, "clue": "A bottle can water a small pot in a pinch." },
+      { "from": 4, "to": 7, "clue": "A hose can fill a bottle in seconds." },
+      { "from": 2, "to": 5, "clue": "A brush holder keeps sink-side clutter contained." },
+      { "from": 5, "to": 8, "clue": "A rack can hold brushes so they dry cleanly." }
+    ]
+  },
+  {
+    "solution": [
+      { "word": "Bus", "emoji": "🚌" },
+      { "word": "Driver", "emoji": "🧑‍✈️" },
+      { "word": "Seat", "emoji": "💺" },
+      { "word": "Station", "emoji": "🚉" },
+      { "word": "Train", "emoji": "🚆" },
+      { "word": "Coach", "emoji": "🚞" },
+      { "word": "Rail", "emoji": "🛤️" },
+      { "word": "Track", "emoji": "🏃" },
+      { "word": "Team", "emoji": "👥" }
+    ],
+    "edges": [
+      { "from": 0, "to": 1, "clue": "A bus driver keeps the route moving." },
+      { "from": 1, "to": 2, "clue": "The driver sits in the front seat." },
+      { "from": 3, "to": 4, "clue": "A train station is where passengers board." },
+      { "from": 4, "to": 5, "clue": "A coach is one car of a train." },
+      { "from": 6, "to": 7, "clue": "Rails are laid along the track." },
+      { "from": 7, "to": 8, "clue": "A track team trains for running events." },
+      { "from": 0, "to": 3, "clue": "A bus station gathers many routes in one place." },
+      { "from": 1, "to": 4, "clue": "A train driver controls the engine and brakes." },
+      { "from": 2, "to": 5, "clue": "A coach seat folds down for the journey." },
+      { "from": 3, "to": 6, "clue": "A rail station serves trains instead of cars." },
+      { "from": 4, "to": 7, "clue": "A train runs on track, not on roads." },
+      { "from": 5, "to": 8, "clue": "A coach trains the team." }
+    ]
+  }
+]

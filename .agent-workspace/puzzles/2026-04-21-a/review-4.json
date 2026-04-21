@@ -1,0 +1,28 @@
+{
+  "candidateId": "candidate-gpt-4",
+  "overallVerdict": "ACCEPT",
+  "boardChecks": {
+    "distinctRelationTypes": true,
+    "aTierMinimum": true,
+    "cTierMaximum": true,
+    "everyWordHasATierEdge": true,
+    "genericConnectorRisk": false,
+    "alternateArrangementRisk": false,
+    "anchorCount": 3
+  },
+  "edges": [
+    { "from": 0, "to": 1, "words": ["Flower", "Pot"], "verdict": "PASS", "notes": "Strong gardening phrase." },
+    { "from": 1, "to": 2, "words": ["Pot", "Holder"], "verdict": "PASS", "notes": "Direct support relationship without third-word leakage." },
+    { "from": 3, "to": 4, "words": ["Water", "Bottle"], "verdict": "PASS", "notes": "Strong everyday phrase." },
+    { "from": 4, "to": 5, "words": ["Bottle", "Brush"], "verdict": "PASS", "notes": "Strong household phrase." },
+    { "from": 6, "to": 7, "words": ["Garden", "Hose"], "verdict": "PASS", "notes": "Strong gardening anchor." },
+    { "from": 7, "to": 8, "words": ["Hose", "Rack"], "verdict": "PASS", "notes": "Direct storage phrase." },
+    { "from": 0, "to": 3, "words": ["Flower", "Water"], "verdict": "PASS", "notes": "Direct cause-and-need relationship." },
+    { "from": 3, "to": 6, "words": ["Water", "Garden"], "verdict": "PASS", "notes": "Direct cause-and-need relationship." },
+    { "from": 1, "to": 4, "words": ["Pot", "Bottle"], "verdict": "PASS", "notes": "Direct use relationship." },
+    { "from": 4, "to": 7, "words": ["Bottle", "Hose"], "verdict": "PASS", "notes": "Direct filling relationship." },
+    { "from": 2, "to": 5, "words": ["Holder", "Brush"], "verdict": "PASS", "notes": "Strong storage phrase." },
+    { "from": 5, "to": 8, "words": ["Brush", "Rack"], "verdict": "PASS", "notes": "Direct storage relationship." }
+  ],
+  "summary": "Accepted without revision. Gardening and household anchors are immediate and the causal links stay clean."
+}

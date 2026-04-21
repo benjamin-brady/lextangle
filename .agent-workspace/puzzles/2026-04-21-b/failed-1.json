@@ -1,0 +1,25 @@
+{
+  "id": "candidate-1",
+  "difficulty": "standard",
+  "status": "draft",
+  "solution": [
+    { "word": "Hammer", "emoji": "🔨" },
+    { "word": "Head", "emoji": "🙂" },
+    { "word": "Light", "emoji": "💡" },
+    { "word": "Nail", "emoji": "🔩" },
+    { "word": "Bed", "emoji": "🛏️" },
+    { "word": "Bug", "emoji": "🐛" },
+    { "word": "Tail", "emoji": "🐒" },
+    { "word": "Rock", "emoji": "🪨" },
+    { "word": "Rug", "emoji": "🧶" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "clue": "A hammerhead strikes or swims.", "type": "compound-phrase", "tier": "A" },
+    { "from": 1, "to": 2, "clue": "A headlight cuts through the dark.", "type": "compound-phrase", "tier": "A" },
+    { "from": 3, "to": 4, "clue": "A nail bed hides under the surface.", "type": "compound-phrase", "tier": "A" },
+    { "from": 4, "to": 5, "clue": "A bedbug bites while you sleep.", "type": "compound-phrase", "tier": "A" },
+    { "from": 6, "to": 7, "clue": "A tailbone? No — tail+rock? No.", "type": "?", "tier": "?" },
+    { "from": 7, "to": 8, "clue": "Rock+rug? No.", "type": "?", "tier": "?" }
+  ],
+  "notes": "FAILED: row 3 doesn't work. tail+rock and rock+rug have no relation."
+}
