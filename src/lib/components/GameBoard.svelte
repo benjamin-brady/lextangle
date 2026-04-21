@@ -369,12 +369,15 @@
 		}
 	}
 
-	// Grid positioning helpers
-	const SLOT_SIZE = 92;
-	const NODE_SIZE = 72;
+	// Grid positioning helpers — grid fills the column width.
 	const GAP = 14;
-	const GRID_W = SLOT_SIZE * 3 + GAP * 2;
-	const GRID_H = SLOT_SIZE * 3 + GAP * 2;
+	let boardWidth = $state(304);
+	const SLOT_SIZE = $derived(Math.max(60, (boardWidth - GAP * 2) / 3));
+	const NODE_SIZE = $derived(SLOT_SIZE * (72 / 92));
+	const NODE_FONT = $derived(Math.max(12, NODE_SIZE * 0.19));
+	const EMOJI_FONT = $derived(Math.max(12, NODE_SIZE * 0.22));
+	const GRID_W = $derived(boardWidth);
+	const GRID_H = $derived(boardWidth);
 
 	function cellPos(index: number): { x: number; y: number } {
 		const row = Math.floor(index / 3);
@@ -411,7 +414,7 @@
 	</div>
 
 	<!-- Grid -->
-	<div class="relative self-center" style="width: {GRID_W}px; height: {GRID_H}px;">
+	<div class="relative w-full" style="height: {GRID_H}px;" bind:clientWidth={boardWidth}>
 		<!-- Edges (SVG lines) -->
 		<svg
 			class="absolute inset-0 pointer-events-none"
@@ -455,8 +458,8 @@
 			>
 				{#if cell}
 					<div
-						class="flex h-18 w-18 cursor-grab flex-col items-center justify-center gap-0.5 rounded-lg border-2 bg-(--surface) shadow-[2px_2px_0_0_var(--ink)] transition-all active:cursor-grabbing active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-						style="border-color: {nodeOutline(i)};"
+						class="flex cursor-grab flex-col items-center justify-center gap-0.5 rounded-lg border-2 bg-(--surface) shadow-[2px_2px_0_0_var(--ink)] transition-all active:cursor-grabbing active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						style="border-color: {nodeOutline(i)}; width: {NODE_SIZE}px; height: {NODE_SIZE}px;"
 						role="button"
 						aria-label={`Move ${cell.word}`}
 						tabindex="-1"
@@ -465,15 +468,18 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span aria-hidden="true" class="text-base leading-none">{wordEmoji(cell)}</span>
-						<span class="text-sm font-bold">{cell.word}</span>
+						<span aria-hidden="true" class="leading-none" style="font-size: {EMOJI_FONT}px;">{wordEmoji(cell)}</span>
+						<span class="font-bold" style="font-size: {NODE_FONT}px;">{cell.word}</span>
 					</div>
 				{:else if dragOverIndex === i}
-					<div class="flex h-18 w-18 items-center justify-center rounded-lg border-2 border-dashed border-(--accent) bg-(--accent-soft)"></div>
+					<div
+						class="flex items-center justify-center rounded-lg border-2 border-dashed border-(--accent) bg-(--accent-soft)"
+						style="width: {NODE_SIZE}px; height: {NODE_SIZE}px;"
+					></div>
 				{:else}
 					<div
-						class="h-18 w-18 rounded-lg border-2 border-dashed bg-(--surface) transition-colors"
-						style="border-color: {nodeOutline(i)};"
+						class="rounded-lg border-2 border-dashed bg-(--surface) transition-colors"
+						style="border-color: {nodeOutline(i)}; width: {NODE_SIZE}px; height: {NODE_SIZE}px;"
 					></div>
 				{/if}
 			</div>
