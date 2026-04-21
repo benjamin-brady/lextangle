@@ -10,6 +10,68 @@ function cacheKey(a: string, b: string): string {
   return lo < hi ? `lext:${lo}:${hi}` : `lext:${hi}:${lo}`;
 }
 
+const VALID_TYPES = [
+  'compound', 'synonym', 'rhyme', 'opposite', 'category-sibling',
+  'part-whole', 'object-role', 'material', 'verb-object', 'collocation',
+  'cause-effect', 'cultural-pair', 'slang', 'double-meaning',
+  'homophone', 'containment', 'anagram',
+];
+
+function parseLLMResponse(a: string, b: string, raw: string): LinkVerdict {
+  // 1. Try strict JSON parse (strip markdown fences first)
+  const cleaned = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+  try {
+    const parsed = JSON.parse(cleaned) as { valid: boolean; type: string | null; reason: string };
+    return {
+      a, b,
+      valid: !!parsed.valid,
+      type: parsed.type ?? null,
+      reason: parsed.reason ?? '',
+    };
+  } catch {
+    // fall through to regex extraction
+  }
+
+  // 2. Regex fallback: extract valid, type, reason from messy LLM output
+  const lower = raw.toLowerCase();
+
+  // Detect valid/invalid
+  const validMatch = lower.match(/"valid"\s*:\s*(true|false)/);
+  const hasPass = /\bpass\b|\bvalid\b.*\btrue\b|\byes\b/.test(lower);
+  const hasFail = /\bfail\b|\bvalid\b.*\bfalse\b|\breject\b|\binvalid\b/.test(lower);
+  let valid: boolean;
+  if (validMatch) {
+    valid = validMatch[1] === 'true';
+  } else if (hasPass && !hasFail) {
+    valid = true;
+  } else if (hasFail && !hasPass) {
+    valid = false;
+  } else {
+    // ambiguous — default reject
+    console.error('Ambiguous LLM response, defaulting to reject:', raw);
+    return { a, b, valid: false, type: null, reason: 'Could not parse LLM response' };
+  }
+
+  // Extract type
+  let type: string | null = null;
+  const typeMatch = raw.match(/"type"\s*:\s*"([^"]+)"/);
+  if (typeMatch && VALID_TYPES.includes(typeMatch[1])) {
+    type = typeMatch[1];
+  } else {
+    // Scan for any known type keyword in the response
+    for (const t of VALID_TYPES) {
+      if (lower.includes(t)) { type = t; break; }
+    }
+  }
+
+  // Extract reason
+  const reasonMatch = raw.match(/"reason"\s*:\s*"([^"]+)"/);
+  const reason = reasonMatch?.[1] ?? (valid ? 'Accepted (parsed from freeform)' : 'Rejected (parsed from freeform)');
+
+  console.log('Regex-parsed LLM response:', { valid, type, reason, raw: raw.slice(0, 200) });
+  return { a, b, valid, type, reason };
+}
+
 async function validatePairWithLLM(a: string, b: string, apiKey: string): Promise<LinkVerdict> {
   const prompt = VALIDATION_PROMPT.replace('{a}', a).replace('{b}', b);
 
@@ -37,22 +99,7 @@ async function validatePairWithLLM(a: string, b: string, apiKey: string): Promis
     choices: Array<{ message: { content: string } }>;
   };
   const raw = data.choices[0]?.message?.content ?? '';
-
-  try {
-    // Strip markdown fences if present
-    const cleaned = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned) as { valid: boolean; type: string | null; reason: string };
-    return {
-      a,
-      b,
-      valid: parsed.valid,
-      type: parsed.type ?? null,
-      reason: parsed.reason ?? '',
-    };
-  } catch {
-    console.error('Failed to parse LLM response:', raw);
-    return { a, b, valid: false, type: null, reason: 'Failed to parse validation response' };
-  }
+  return parseLLMResponse(a, b, raw);
 }
 
 export const POST: RequestHandler = async ({ request, platform }) => {
