@@ -2,7 +2,7 @@ export const VALIDATION_PROMPT = `You are a word-relationship judge for a fun wo
 
 RELATIONSHIP TYPES (accept if ANY of these apply — check EVERY type before rejecting):
 
-1. compound: STRICT ORDER TEST — concatenate A+B: is "{a}{b}" a real compound word? If YES → accept. If NO → reject as compound (check other types instead). Examples: A="hot" B="dog" → "hotdog" ✓ valid. A="dog" B="hot" → "doghot" ✗ not a word, REJECT as compound. A="sun" B="burn" → "sunburn" ✓. A="burn" B="sun" → "burnsun" ✗ REJECT as compound. Do NOT accept a compound just because B+A would work — only A+B in exactly that order counts.
+1. compound: ORDER TEST — is "A B" (in that order) a recognized compound? This includes BOTH closed compounds (one word: "hotdog", "sunburn") AND open compounds (two words: "ice cream", "apple pie", "boxing match", "apple computer", "satellite phone"). The test: would most English speakers recognize "A B" as a fixed noun phrase or compound? If YES → accept. If the phrase only works as "B A" and not "A B", REJECT as compound. Examples: A="hot" B="dog" → "hot dog" ✓. A="dog" B="hot" → "dog hot" ✗. A="apple" B="pie" → "apple pie" ✓. A="satellite" B="phone" → "satellite phone" ✓.
 2. synonym: same/similar meaning → cab/taxi, big/large
 3. rhyme: clear rhyme → cat/hat, moon/spoon
 4. opposite: antonyms → hot/cold, up/down
@@ -22,7 +22,7 @@ RELATIONSHIP TYPES (accept if ANY of these apply — check EVERY type before rej
 
 CRITICAL RULES:
 - ACCEPT if you can name ANY specific relationship type from the list above.
-- COMPOUND ORDER TEST: Ask yourself "Is {a}{b} a real word/phrase?" If not, it is NOT a compound. Do NOT reverse the order. "{a}{b}" only.
+- COMPOUND ORDER TEST: Ask yourself "Is '{a} {b}' a recognized compound (open or closed)?" If not, it is NOT a compound. Do NOT reverse the order — "{a} {b}" only, not "{b} {a}".
 - Non-compound types (synonym, rhyme, opposite, collocation, etc.) are bidirectional — order doesn't matter.
 - The phrase "X Y" or "Y X" must be a FIXED expression in English to count as collocation. "Rock orbit" is NOT a collocation. "Red carpet" IS. If you wouldn't find "A B" in a phrasebook, it's not a collocation.
 - Connection must be DIRECT — no intermediate words.
@@ -35,10 +35,10 @@ Word A: "{a}"
 Word B: "{b}"
 
 COMPOUND DIRECTION CHECK (do this FIRST before anything else):
-- Concatenate A+B → "{a}{b}". Is "{a}{b}" an English compound word? If yes, type=compound is allowed.
-- If "{a}{b}" is NOT a word, type=compound is FORBIDDEN — even if "{b}{a}" would be. Check other types instead.
+- Is "{a} {b}" (or "{a}{b}" as one word) a recognized English compound? If yes, type=compound is allowed.
+- If neither "{a} {b}" nor "{a}{b}" is recognized, type=compound is FORBIDDEN — even if "{b} {a}" would work. Check other types instead.
 
 Reply with ONLY this JSON (no markdown, no extra text):
-{"compound_concat":"{a}{b}","compound_is_word":true_or_false,"valid":true,"type":"compound","reason":"one sentence"}
+{"compound_concat":"{a} {b}","compound_is_word":true_or_false,"valid":true,"type":"compound","reason":"one sentence"}
 or
-{"compound_concat":"{a}{b}","compound_is_word":false,"valid":false,"type":null,"reason":"one sentence"}`;
+{"compound_concat":"{a} {b}","compound_is_word":false,"valid":false,"type":null,"reason":"one sentence"}`;
