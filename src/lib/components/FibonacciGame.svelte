@@ -4,6 +4,7 @@
   import { trackGuessHit, trackGuessMiss, trackGameComplete, trackShare, trackReset } from '$lib/analytics';
   import { fibEmojiSummary } from '$lib/share';
   import { recordCompletion, type DailyMode } from '$lib/streak';
+  import { saveFibGame, loadFibGame } from '$lib/game-persist';
 
   let {
     startA,
@@ -27,6 +28,16 @@
   }
 
   function createState(): FibState {
+    const saved = loadFibGame(startA, startB, target);
+    if (saved && saved.chain.length >= 2) {
+      return {
+        chain: saved.chain,
+        verdictPairs: saved.verdictPairs,
+        isComplete: saved.isComplete,
+        isValidating: false,
+        error: null,
+      };
+    }
     return {
       chain: [startA, startB],
       verdictPairs: [],
@@ -39,6 +50,15 @@
   let game: FibState = $state(createState());
   let inputValue = $state('');
   let inputEl: HTMLInputElement | null = $state(null);
+
+  // Auto-save on every chain mutation
+  $effect(() => {
+    saveFibGame(startA, startB, target, {
+      chain: game.chain,
+      verdictPairs: game.verdictPairs,
+      isComplete: game.isComplete,
+    });
+  });
 
   const prev1 = $derived(game.chain[game.chain.length - 1]);
   const prev2 = $derived(game.chain[game.chain.length - 2]);

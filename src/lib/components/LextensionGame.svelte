@@ -4,6 +4,7 @@
   import { trackGuessHit, trackGuessMiss, trackGameComplete, trackShare, trackReset } from '$lib/analytics';
   import { chainEmojiSummary } from '$lib/share';
   import { recordCompletion, type DailyMode } from '$lib/streak';
+  import { saveChainGame, loadChainGame } from '$lib/game-persist';
 
   let {
     start,
@@ -15,9 +16,29 @@
     daily?: { date: string; mode: DailyMode };
   } = $props();
 
-  let game: GameState = $state(createInitialState(start, end));
+  let game: GameState = $state((() => {
+    const saved = loadChainGame(start, end);
+    if (saved && saved.chain.length >= 1) {
+      return {
+        ...createInitialState(start, end),
+        chain: saved.chain,
+        verdicts: saved.verdicts,
+        isComplete: saved.isComplete,
+      };
+    }
+    return createInitialState(start, end);
+  })());
   let inputValue = $state('');
   let inputEl: HTMLInputElement | null = $state(null);
+
+  // Auto-save on every chain mutation
+  $effect(() => {
+    saveChainGame(start, end, {
+      chain: game.chain,
+      verdicts: game.verdicts,
+      isComplete: game.isComplete,
+    });
+  });
 
   const lastWord = $derived(game.chain[game.chain.length - 1]);
   const scoreInfo = $derived(game.isComplete ? getScore(game.chain) : null);
