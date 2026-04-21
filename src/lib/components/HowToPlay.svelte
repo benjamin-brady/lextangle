@@ -282,6 +282,34 @@
 					</p>
 				</div>
 
+				<div class="border-t-2 border-(--ink) pt-4">
+					<p class="font-display text-xs font-bold uppercase tracking-[0.2em] text-(--text-muted) mb-3">
+						Links come in many flavours
+					</p>
+					<ul class="space-y-2 text-xs leading-relaxed">
+						<li class="flex items-baseline gap-2">
+							<span class="font-bold uppercase tracking-wider text-(--accent-ink) text-[10px] w-20 shrink-0">Compound</span>
+							<span>🌙 Moon + 💡 Light → <em>moonlight</em></span>
+						</li>
+						<li class="flex items-baseline gap-2">
+							<span class="font-bold uppercase tracking-wider text-(--accent-ink) text-[10px] w-20 shrink-0">Phrase</span>
+							<span>🧂 Salt + 🌶️ Pepper → <em>salt and pepper</em></span>
+						</li>
+						<li class="flex items-baseline gap-2">
+							<span class="font-bold uppercase tracking-wider text-(--accent-ink) text-[10px] w-20 shrink-0">Category</span>
+							<span>🎹 Piano + 🎸 Guitar → <em>both instruments</em></span>
+						</li>
+						<li class="flex items-baseline gap-2">
+							<span class="font-bold uppercase tracking-wider text-(--accent-ink) text-[10px] w-20 shrink-0">Rhyme</span>
+							<span>🐱 Cat + 🎩 Hat → <em>sound-alike</em></span>
+						</li>
+						<li class="flex items-baseline gap-2">
+							<span class="font-bold uppercase tracking-wider text-(--accent-ink) text-[10px] w-20 shrink-0">Opposite</span>
+							<span>🔥 Hot + ❄️ Cold → <em>antonyms</em></span>
+						</li>
+					</ul>
+				</div>
+
 				<div class="border-t-2 border-(--ink) pt-4 space-y-2 text-xs text-(--text-muted) leading-relaxed">
 					<p><strong class="text-(--text)">Words</strong> counts tiles in their final correct spot.</p>
 					<p><strong class="text-(--text)">Links</strong> counts valid neighbouring pairs — it can be ahead of Words while you're still arranging.</p>
