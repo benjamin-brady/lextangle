@@ -140,10 +140,9 @@
 
   function shareResult() {
     if (!scoreInfo) return;
-    const url = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
     const emoji = chainEmojiSummary(game.chain);
     const header = daily ? `🔗 Lextension Daily ${daily.date}` : `🔗 Lextension: ${start} → ${end}`;
-    const text = `${header}\n${emoji}\n${scoreInfo.hops} hops • ${scoreInfo.rating}${url ? `\n${url}` : ''}`;
+    const text = `${header}\n${emoji}\n${scoreInfo.hops} hops • ${scoreInfo.rating}\nhttps://lextension.net`;
     navigator.clipboard?.writeText(text);
     trackShare('chain');
   }

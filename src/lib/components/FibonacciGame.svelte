@@ -183,10 +183,9 @@
 
   function shareResult() {
     if (!scoreInfo) return;
-    const url = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
     const emoji = fibEmojiSummary(game.chain);
     const header = daily ? `🌀 Lextension Fib Daily ${daily.date}` : `🌀 Lextension Fibonacci: ${startA}, ${startB} → ${target}`;
-    const text = `${header}\n${emoji}\n${scoreInfo.steps} steps • ${scoreInfo.rating}${url ? `\n${url}` : ''}`;
+    const text = `${header}\n${emoji}\n${scoreInfo.steps} steps • ${scoreInfo.rating}\nhttps://lextension.net`;
     navigator.clipboard?.writeText(text);
     trackShare('fibonacci');
   }
