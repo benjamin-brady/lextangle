@@ -552,6 +552,7 @@
 			{@const isDragSource =
 				draggedItem?.source === 'grid' && draggedItem.gridIndex === i}
 			{@const isSelected = isSelectedGrid(i)}
+			{@const isSwapSource = isDragSource || isSelected}
 			{@const isTapHint = isTapTarget(i) && !isDragSource}
 			{@const isDropTarget = (dragOverIndex === i && !isDragSource) || isTapHint}
 			<div
@@ -601,19 +602,17 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px; {isDropTarget ? 'opacity: 0.35;' : ''}">{wordEmoji(cell)}</span>
-						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark); {isDropTarget ? 'opacity: 0.35;' : ''}">{cell.word}</span>
-						{#if isDropTarget}
+						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
+						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
+						{#if isSwapSource}
 							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {NODE_FONT * 0.95}px; color: var(--crayon-red); bottom: 4px; right: 6px; transform: rotate(-4deg);">swap</span>
 						{/if}
 					</div>
 				{:else if isDropTarget}
 					<div
-						class="polaroid flex items-center justify-center"
+						class="polaroid"
 						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
-					>
-						<span class="font-display font-bold leading-none" style="font-size: {NODE_FONT * 1.1}px; color: var(--crayon-red); opacity: 0.75;">swap</span>
-					</div>
+					></div>
 				{:else}
 					<div
 						class="polaroid"
@@ -710,8 +709,10 @@
 		{/if}
 		{#each game.inventory as word, idx (word.word)}
 			{@const invSelected = isSelectedInventory(word.word)}
+			{@const invDragSource = draggedItem?.source === 'inventory' && draggedItem.word.word === word.word}
+			{@const invSwapSource = invSelected || invDragSource}
 			<div
-				class="sticker-chip {invSelected ? 'tile-wiggle' : ''}"
+				class="sticker-chip relative {invSelected ? 'tile-wiggle' : ''}"
 				style="transform: rotate({INVENTORY_TILTS[idx % INVENTORY_TILTS.length]}deg);"
 				draggable="true"
 				role="button"
@@ -725,6 +726,9 @@
 			>
 				<span aria-hidden="true" style="font-size: 1.15rem; line-height: 1;">{wordEmoji(word)}</span>
 				<span class="font-display" style="font-size: 1.3rem; line-height: 1; color: var(--ink-dark);">{word.word}</span>
+				{#if invSwapSource}
+					<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: 0.8rem; color: var(--crayon-red); bottom: -8px; right: -6px; transform: rotate(-4deg);">swap</span>
+				{/if}
 			</div>
 		{/each}
 	</div>
