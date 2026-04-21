@@ -40,6 +40,24 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	const persisted = new PersistedState<SavedState>(storageKey(storageId), freshState(puzzle));
 
+	// Session-only undo stack. Snapshots are taken before each move mutation.
+	// History is cleared on check (checks cannot be undone) and on reset.
+	type Snapshot = { grid: (string | null)[]; inventory: string[] };
+	let history = $state<Snapshot[]>([]);
+	const MAX_HISTORY = 50;
+
+	function snapshot(): Snapshot {
+		return {
+			grid: [...persisted.current.grid],
+			inventory: [...persisted.current.inventory],
+		};
+	}
+
+	function pushHistory() {
+		history.push(snapshot());
+		if (history.length > MAX_HISTORY) history.shift();
+	}
+
 	// Discard stale saves that reference words no longer in this puzzle (e.g. after a puzzle
 	// regeneration under the same storageId). Otherwise the grid and inventory would reference
 	// unknown words and the board would appear empty.
@@ -99,6 +117,18 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		s.checks += 1;
 		s.cellChecked = Array(9).fill(true);
 		s.checkedSnapshot = [...s.grid];
+		// Checks cannot be undone.
+		history = [];
+	}
+
+	function undo() {
+		const prev = history.pop();
+		if (!prev) return;
+		const s = persisted.current;
+		s.grid = prev.grid;
+		s.inventory = prev.inventory;
+		// Recompute checked flags against the last checked snapshot.
+		s.cellChecked = s.grid.map((w, i) => w != null && w === s.checkedSnapshot[i]);
 	}
 
 	function isCellChecked(index: number): boolean {
@@ -138,6 +168,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		const s = persisted.current;
 		if (s.grid[gridIndex] === word.word) return;
 
+		pushHistory();
 		const existing = s.grid[gridIndex];
 		s.inventory = s.inventory.filter((w) => w !== word.word);
 		if (existing) s.inventory.push(existing);
@@ -149,6 +180,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		const s = persisted.current;
 		const existing = s.grid[gridIndex];
 		if (!existing) return;
+		pushHistory();
 		s.inventory.push(existing);
 		s.grid[gridIndex] = null;
 		markCellsDirty([gridIndex]);
@@ -159,6 +191,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		const s = persisted.current;
 		const source = s.grid[fromIdx];
 		if (!source) return;
+		pushHistory();
 		const target = s.grid[toIdx];
 		s.grid[toIdx] = source;
 		s.grid[fromIdx] = target ?? null;
@@ -167,6 +200,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	function swapGridCells(fromIdx: number, toIdx: number) {
 		const s = persisted.current;
+		pushHistory();
 		const temp = s.grid[fromIdx];
 		s.grid[fromIdx] = s.grid[toIdx];
 		s.grid[toIdx] = temp;
@@ -174,6 +208,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	function flipGrid(pairs: [number, number][]) {
 		const s = persisted.current;
+		pushHistory();
 		const next = [...s.grid];
 		for (const [a, b] of pairs) {
 			[next[a], next[b]] = [next[b], next[a]];
@@ -200,6 +235,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	function reset() {
 		persisted.current = freshState(puzzle);
+		history = [];
 	}
 
 	return {
@@ -227,11 +263,15 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		get canCheck() {
 			return canCheck;
 		},
+		get canUndo() {
+			return history.length > 0;
+		},
 		getNodeStatus,
 		getEdgeStatus,
 		getEdgeClue,
 		isCellChecked,
 		check,
+		undo,
 		placeWord,
 		removeFromGrid,
 		moveGridWord,

@@ -7,6 +7,7 @@
 	import ThumbsDown from 'lucide-svelte/icons/thumbs-down';
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
+	import Undo2 from 'lucide-svelte/icons/undo-2';
 	import type { GameState } from '../game.svelte';
 	import type { Puzzle, WordItem } from '../types';
 	import { ADJACENCIES } from '../types';
@@ -629,6 +630,17 @@
 					<span>Flip V</span>
 				</button>
 			{/if}
+			<button
+				type="button"
+				class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light) disabled:cursor-not-allowed disabled:opacity-50"
+				onclick={() => game.undo()}
+				disabled={!game.canUndo}
+				aria-label="Undo last move"
+				title="Undo last move"
+			>
+				<Undo2 class="h-4 w-4" aria-hidden="true" />
+				<span>Undo</span>
+			</button>
 			<button
 				type="button"
 				class="inline-flex cursor-pointer items-center gap-1.5 rounded-none border-2 border-(--ink) bg-(--surface) px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors hover:bg-(--surface-light)"
