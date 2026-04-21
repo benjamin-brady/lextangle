@@ -1,3 +1,5 @@
+import { PersistedState } from 'runed';
+
 import type { EdgeStatus, NodeStatus, Puzzle, WordItem } from './types';
 
 interface SavedState {
@@ -12,38 +14,22 @@ function storageKey(storageId: string): string {
 	return `simicle-game-${storageId}`;
 }
 
-function loadState(storageId: string): SavedState | null {
-	if (typeof localStorage === 'undefined') return null;
-	try {
-		const raw = localStorage.getItem(storageKey(storageId));
-		if (!raw) return null;
-		return JSON.parse(raw) as SavedState;
-	} catch {
-		return null;
-	}
-}
-
-function saveState(storageId: string, state: SavedState): void {
-	if (typeof localStorage === 'undefined') return;
-	try {
-		localStorage.setItem(storageKey(storageId), JSON.stringify(state));
-	} catch {
-		// storage full or unavailable
-	}
+function freshState(puzzle: Puzzle): SavedState {
+	return {
+		grid: Array(9).fill(null),
+		inventory: shuffleArray(puzzle.solution.map((w) => w.word)),
+		checks: 0,
+		cellChecked: Array(9).fill(false),
+		checkedSnapshot: Array(9).fill(null),
+	};
 }
 
 /**
- * Reactive game state using Svelte 5 runes.
+ * Reactive game state backed by `runed`'s `PersistedState`. Saves to
+ * localStorage and syncs across browser tabs automatically.
  */
 export function createGameState(puzzle: Puzzle, storageId: string) {
-	const rawSaved = loadState(storageId);
 	const wordLookup = Object.fromEntries(puzzle.solution.map((w) => [w.word, w]));
-	// Discard stale saves that reference words no longer in this puzzle (e.g. after a puzzle
-	// regeneration under the same storageId). Otherwise grid/inventory collapse to empty.
-	const savedWordsValid = rawSaved
-		? [...rawSaved.grid, ...rawSaved.inventory].every((w) => w == null || w in wordLookup)
-		: true;
-	const saved = savedWordsValid ? rawSaved : null;
 	const validLinks = new Set(
 		puzzle.edges.map(({ from, to }) => {
 			const a = puzzle.solution[from].word;
@@ -52,99 +38,92 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		})
 	);
 
-	/** Current grid: null means empty slot */
-	let grid = $state<(WordItem | null)[]>(
-		saved ? saved.grid.map((w) => (w ? wordLookup[w] ?? null : null)) : Array(9).fill(null)
+	const persisted = new PersistedState<SavedState>(storageKey(storageId), freshState(puzzle));
+
+	// Discard stale saves that reference words no longer in this puzzle (e.g. after a puzzle
+	// regeneration under the same storageId). Otherwise the grid and inventory would reference
+	// unknown words and the board would appear empty.
+	{
+		const s = persisted.current;
+		const allWordsKnown = [...s.grid, ...s.inventory].every(
+			(w) => w == null || w in wordLookup
+		);
+		if (!allWordsKnown) {
+			persisted.current = freshState(puzzle);
+		}
+	}
+
+	const grid = $derived(
+		persisted.current.grid.map((w) => (w ? wordLookup[w] ?? null : null))
 	);
-	/** Inventory: words not yet placed */
-	let inventory = $state<WordItem[]>(
-		saved
-			? saved.inventory.map((w) => wordLookup[w]).filter((w): w is WordItem => w != null)
-			: shuffleArray([...puzzle.solution])
+	const inventory = $derived(
+		persisted.current.inventory
+			.map((w) => wordLookup[w])
+			.filter((w): w is WordItem => w != null)
 	);
-	let checks = $state(saved?.checks ?? 0);
 
-	/** Per-cell: whether the cell has been checked and not changed since */
-	let cellChecked = $state<boolean[]>(saved?.cellChecked ?? Array(9).fill(false));
+	const solved = $derived(
+		persisted.current.cellChecked.every(Boolean) &&
+			persisted.current.grid.every((w, i) => w !== null && w === puzzle.solution[i].word)
+	);
 
-	/** Snapshot of words at each cell at last check time */
-	let checkedSnapshot = $state<(string | null)[]>(saved?.checkedSnapshot ?? Array(9).fill(null));
-
-	$effect(() => {
-		saveState(storageId, {
-			grid: grid.map((c) => c?.word ?? null),
-			inventory: inventory.map((w) => w.word),
-			checks,
-			cellChecked: [...cellChecked],
-			checkedSnapshot: [...checkedSnapshot],
-		});
-	});
-
-	/** Whether the puzzle is complete and all correct */
-	let solved = $derived(cellChecked.every(Boolean) && grid.every((cell, i) => {
-		if (!cell) return false;
-		const correct = puzzle.solution[i];
-		return cell.word === correct.word;
-	}));
-
-	/** Number of correctly placed words (only counts checked cells) */
-	let correctCount = $derived(
-		grid.reduce((acc, cell, i) => {
-			if (!cell || !cellChecked[i]) return acc;
-			return acc + (cell.word === puzzle.solution[i].word ? 1 : 0);
+	const correctCount = $derived(
+		persisted.current.grid.reduce((acc, w, i) => {
+			if (!w || !persisted.current.cellChecked[i]) return acc;
+			return acc + (w === puzzle.solution[i].word ? 1 : 0);
 		}, 0)
 	);
 
-	let correctEdgeCount = $derived(
-		puzzle.edges.reduce((acc, edge) => acc + (getEdgeStatus(edge.from, edge.to) === 'correct' ? 1 : 0), 0)
+	const correctEdgeCount = $derived(
+		puzzle.edges.reduce(
+			(acc, edge) => acc + (getEdgeStatus(edge.from, edge.to) === 'correct' ? 1 : 0),
+			0
+		)
 	);
 
-	/** Whether the board has changed since the last check (or has any word if never checked). */
-	let canCheck = $derived(
-		grid.some((cell, i) => (cell?.word ?? null) !== checkedSnapshot[i])
+	const canCheck = $derived(
+		persisted.current.grid.some((w, i) => w !== persisted.current.checkedSnapshot[i])
 	);
 
-	/** Mark specific cells as dirty when they change after a check */
 	function markCellsDirty(indices: number[]) {
+		const s = persisted.current;
 		for (const idx of indices) {
-			const current = grid[idx]?.word ?? null;
-			if (current !== checkedSnapshot[idx]) {
-				cellChecked[idx] = false;
+			if (s.grid[idx] !== s.checkedSnapshot[idx]) {
+				s.cellChecked[idx] = false;
 			}
 		}
 	}
 
 	function check() {
-		checks += 1;
-		cellChecked = Array(9).fill(true);
-		checkedSnapshot = grid.map((c) => c?.word ?? null);
+		const s = persisted.current;
+		s.checks += 1;
+		s.cellChecked = Array(9).fill(true);
+		s.checkedSnapshot = [...s.grid];
 	}
 
 	function isCellChecked(index: number): boolean {
-		return cellChecked[index];
+		return persisted.current.cellChecked[index];
 	}
 
 	function getNodeStatus(index: number): NodeStatus {
-		const cell = grid[index];
-		if (!cell) return 'empty';
-		if (!cellChecked[index]) return 'unchecked';
-		return cell.word === puzzle.solution[index].word ? 'correct' : 'wrong';
+		const w = persisted.current.grid[index];
+		if (!w) return 'empty';
+		if (!persisted.current.cellChecked[index]) return 'unchecked';
+		return w === puzzle.solution[index].word ? 'correct' : 'wrong';
 	}
 
 	function getRawEdgeStatus(fromIdx: number, toIdx: number): EdgeStatus {
-		const fromCell = grid[fromIdx];
-		const toCell = grid[toIdx];
-		if (!fromCell || !toCell) return 'empty';
-
-		const key = [fromCell.word, toCell.word].sort().join('::');
+		const a = persisted.current.grid[fromIdx];
+		const b = persisted.current.grid[toIdx];
+		if (!a || !b) return 'empty';
+		const key = [a, b].sort().join('::');
 		return validLinks.has(key) ? 'correct' : 'wrong';
 	}
 
 	function getEdgeStatus(fromIdx: number, toIdx: number): EdgeStatus {
-		const fromCell = grid[fromIdx];
-		const toCell = grid[toIdx];
-		if (!fromCell || !toCell) return 'empty';
-		if (!cellChecked[fromIdx] || !cellChecked[toIdx]) return 'empty';
+		const s = persisted.current;
+		if (!s.grid[fromIdx] || !s.grid[toIdx]) return 'empty';
+		if (!s.cellChecked[fromIdx] || !s.cellChecked[toIdx]) return 'empty';
 		return getRawEdgeStatus(fromIdx, toIdx);
 	}
 
@@ -156,90 +135,98 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 	}
 
 	function placeWord(gridIndex: number, word: WordItem) {
-		if (grid[gridIndex]?.word === word.word) {
-			return;
-		}
+		const s = persisted.current;
+		if (s.grid[gridIndex] === word.word) return;
 
-		// If something is already in this slot, put it back in inventory
-		const existing = grid[gridIndex];
-		if (existing) {
-			inventory = [...inventory, existing];
-		}
-		// Remove from inventory
-		inventory = inventory.filter((w) => w.word !== word.word);
-		// Place in grid
-		grid[gridIndex] = word;
+		const existing = s.grid[gridIndex];
+		s.inventory = s.inventory.filter((w) => w !== word.word);
+		if (existing) s.inventory.push(existing);
+		s.grid[gridIndex] = word.word;
 		markCellsDirty([gridIndex]);
 	}
 
 	function removeFromGrid(gridIndex: number) {
-		const cell = grid[gridIndex];
-		if (cell) {
-			inventory = [...inventory, cell];
-			grid[gridIndex] = null;
-			markCellsDirty([gridIndex]);
-		}
+		const s = persisted.current;
+		const existing = s.grid[gridIndex];
+		if (!existing) return;
+		s.inventory.push(existing);
+		s.grid[gridIndex] = null;
+		markCellsDirty([gridIndex]);
 	}
 
 	function moveGridWord(fromIdx: number, toIdx: number) {
-		if (fromIdx === toIdx) {
-			return;
-		}
-
-		const source = grid[fromIdx];
-		if (!source) {
-			return;
-		}
-
-		const target = grid[toIdx];
-		grid[toIdx] = source;
-		grid[fromIdx] = target ?? null;
+		if (fromIdx === toIdx) return;
+		const s = persisted.current;
+		const source = s.grid[fromIdx];
+		if (!source) return;
+		const target = s.grid[toIdx];
+		s.grid[toIdx] = source;
+		s.grid[fromIdx] = target ?? null;
 		markCellsDirty([fromIdx, toIdx]);
 	}
 
 	function swapGridCells(fromIdx: number, toIdx: number) {
-		const temp = grid[fromIdx];
-		grid[fromIdx] = grid[toIdx];
-		grid[toIdx] = temp;
+		const s = persisted.current;
+		const temp = s.grid[fromIdx];
+		s.grid[fromIdx] = s.grid[toIdx];
+		s.grid[toIdx] = temp;
 	}
 
 	function flipGrid(pairs: [number, number][]) {
-		const next = [...grid];
+		const s = persisted.current;
+		const next = [...s.grid];
 		for (const [a, b] of pairs) {
 			[next[a], next[b]] = [next[b], next[a]];
 		}
-		grid = next;
+		s.grid = next;
 		markCellsDirty(pairs.flat());
 	}
 
 	function flipHorizontal() {
-		flipGrid([[0, 2], [3, 5], [6, 8]]);
+		flipGrid([
+			[0, 2],
+			[3, 5],
+			[6, 8],
+		]);
 	}
 
 	function flipVertical() {
-		flipGrid([[0, 6], [1, 7], [2, 8]]);
+		flipGrid([
+			[0, 6],
+			[1, 7],
+			[2, 8],
+		]);
 	}
 
 	function reset() {
-		inventory = shuffleArray([...puzzle.solution]);
-		grid = Array(9).fill(null);
-		checks = 0;
-		cellChecked = Array(9).fill(false);
-		checkedSnapshot = Array(9).fill(null);
-		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem(storageKey(storageId));
-		}
+		persisted.current = freshState(puzzle);
 	}
 
 	return {
-		get grid() { return grid; },
-		get inventory() { return inventory; },
-		get solved() { return solved; },
-		get correctCount() { return correctCount; },
-		get correctEdgeCount() { return correctEdgeCount; },
-		get checks() { return checks; },
-		get cellChecked() { return cellChecked; },
-		get canCheck() { return canCheck; },
+		get grid() {
+			return grid;
+		},
+		get inventory() {
+			return inventory;
+		},
+		get solved() {
+			return solved;
+		},
+		get correctCount() {
+			return correctCount;
+		},
+		get correctEdgeCount() {
+			return correctEdgeCount;
+		},
+		get checks() {
+			return persisted.current.checks;
+		},
+		get cellChecked() {
+			return persisted.current.cellChecked;
+		},
+		get canCheck() {
+			return canCheck;
+		},
 		getNodeStatus,
 		getEdgeStatus,
 		getEdgeClue,
