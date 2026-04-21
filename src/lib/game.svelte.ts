@@ -36,8 +36,14 @@ function saveState(storageId: string, state: SavedState): void {
  * Reactive game state using Svelte 5 runes.
  */
 export function createGameState(puzzle: Puzzle, storageId: string) {
-	const saved = loadState(storageId);
+	const rawSaved = loadState(storageId);
 	const wordLookup = Object.fromEntries(puzzle.solution.map((w) => [w.word, w]));
+	// Discard stale saves that reference words no longer in this puzzle (e.g. after a puzzle
+	// regeneration under the same storageId). Otherwise grid/inventory collapse to empty.
+	const savedWordsValid = rawSaved
+		? [...rawSaved.grid, ...rawSaved.inventory].every((w) => w == null || w in wordLookup)
+		: true;
+	const saved = savedWordsValid ? rawSaved : null;
 	const validLinks = new Set(
 		puzzle.edges.map(({ from, to }) => {
 			const a = puzzle.solution[from].word;
