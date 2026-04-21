@@ -500,7 +500,13 @@
 							width: {NODE_SIZE}px;
 							height: {NODE_SIZE + 14}px;
 							transform: rotate({tilt}deg);
-							background: {game.isCellChecked(i) ? (game.getNodeStatus(i) === 'correct' ? '#d7efd2' : game.getNodeStatus(i) === 'wrong' ? '#f7d2cc' : '#fffdf6') : '#fffdf6'};
+							background: {game.isCellChecked(i)
+								? (game.getNodeStatus(i) === 'correct'
+									? 'var(--tile-surface-correct)'
+									: game.getNodeStatus(i) === 'wrong'
+										? 'var(--tile-surface-wrong)'
+										: 'var(--tile-surface)')
+								: 'var(--tile-surface)'};
 							outline: 3px solid {nodeOutline(i)};
 							outline-offset: -3px;
 						"
@@ -523,7 +529,7 @@
 				{:else}
 					<div
 						class="polaroid"
-						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fffdf6; outline: 3px dashed {nodeOutline(i)}; outline-offset: -3px;"
+						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: var(--tile-surface); outline: 3px dashed {nodeOutline(i)}; outline-offset: -3px;"
 					></div>
 				{/if}
 			</div>

@@ -21,6 +21,9 @@
 	--bg-raised: #fff7e4;
 	--surface: #fffdf6;
 	--surface-light: #fffbed;
+	--tile-surface: #fffdf6;
+	--tile-surface-correct: #d7efd2;
+	--tile-surface-wrong: #f7d2cc;
 	--border: rgba(42, 42, 46, 0.35);
 	--border-strong: rgba(42, 42, 46, 0.6);
 	--ink: var(--ink-dark);
@@ -124,7 +127,7 @@ body::before {
 
 /* Polaroid tile card with random tilt */
 .polaroid {
-	background: #fffdf6;
+	background: var(--tile-surface);
 	padding: 6px 6px 18px;
 	filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.15));
 	position: relative;
@@ -272,6 +275,9 @@ body::before {
 	--bg-raised: #2a1f16;
 	--surface: #332619;
 	--surface-light: #3d2e1f;
+	--tile-surface: #b99a79;
+	--tile-surface-correct: #9ead87;
+	--tile-surface-wrong: #c49283;
 	--border: rgba(251, 241, 220, 0.25);
 	--border-strong: rgba(251, 241, 220, 0.55);
 	--ink: #fbf1dc;

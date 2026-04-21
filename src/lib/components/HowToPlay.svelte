@@ -258,7 +258,7 @@
 									<button
 										type="button"
 										class="polaroid cursor-pointer flex flex-col items-center justify-center"
-										style="width: {TUTORIAL_NODE_SIZE}px; height: {TUTORIAL_NODE_SIZE + 14}px; transform: rotate({tilts[i]}deg); outline: 3px solid {tutorialTileBorder(i)}; outline-offset: -3px; background: {tutorialSelectedIndex === i ? 'rgba(231,76,60,0.18)' : '#fffdf6'};"
+										style="width: {TUTORIAL_NODE_SIZE}px; height: {TUTORIAL_NODE_SIZE + 14}px; transform: rotate({tilts[i]}deg); outline: 3px solid {tutorialTileBorder(i)}; outline-offset: -3px; background: {tutorialSelectedIndex === i ? 'rgba(231,76,60,0.18)' : 'var(--tile-surface)'};"
 										onclick={() => handleTutorialTileClick(i)}
 										aria-pressed={tutorialSelectedIndex === i}
 										aria-label={tutorialTileLabel(i)}
