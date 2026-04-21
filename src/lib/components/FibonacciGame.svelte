@@ -212,7 +212,7 @@
       const el = tileEls[word];
       if (!el) continue;
       const c = tileCenter(i);
-      // Plait unravels — each row swings opposite to neighbours
+      // Hang unravels — each row swings opposite to neighbours
       const swing = i % 2 === 0 ? -1 : 1;
       specs.push({
         el,
@@ -255,7 +255,7 @@
 
 <div class="flex flex-col gap-3">
   <div class="flex items-center justify-between text-xs font-bold uppercase tracking-widest">
-    <span class="text-(--text-muted)">Plait Strain · Fibonacci</span>
+    <span class="text-(--text-muted)">Hang Strain · Fibonacci</span>
     <span class={stepsLeft <= 3 ? 'text-(--red)' : 'text-(--text-muted)'}>
       {stepsLeft} / {MAX_NEW} left
     </span>
@@ -293,7 +293,7 @@
       <circle cx={anchorRX} cy={CLIFF_H + 3} r="3" fill="var(--ink)" />
     </svg>
 
-    <!-- Plaited threads — fine fibre style -->
+    <!-- Hanging threads — fine fibre style -->
     <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 {boardWidth} {H}" preserveAspectRatio="none">
       {#if phase !== 'snapped'}
         <!-- As more words hang, the main strand thins and more fray appears. -->
@@ -428,7 +428,7 @@
     {#if phase === 'snapped'}
       <div class="absolute inset-x-0 top-14 flex justify-center pointer-events-none">
         <div class="px-3 py-1 border-2 border-(--red) bg-(--surface) font-display text-sm font-black uppercase tracking-wider text-(--red)">
-          💥 The plait unravelled!
+          💥 The hang unravelled!
         </div>
       </div>
     {/if}
@@ -452,7 +452,7 @@
         disabled={!inputValue.trim() || validating}
         class="px-3 py-2 border-2 border-(--ink) bg-(--accent) text-white font-bold text-sm uppercase tracking-wider shadow-[2px_2px_0_0_var(--ink)] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)] disabled:opacity-40 disabled:transform-none disabled:shadow-none transition-all"
       >
-        {validating ? '…' : 'Plait'}
+        {validating ? '…' : 'Hang'}
       </button>
     </div>
     <div class="flex gap-2">
@@ -474,7 +474,7 @@
         onclick={addFake}
         disabled={validating || stepsLeft <= 0}
         class="px-3 py-2 border-2 border-(--red) text-(--red) font-bold text-sm uppercase tracking-wider hover:bg-(--red) hover:text-white transition-colors disabled:opacity-30"
-        title="Debug: add a fake pre-validated word (spam to unravel the plait)"
+        title="Debug: add a fake pre-validated word (spam to unravel the hang)"
       >
         +🤖 Debug
       </button>
@@ -488,7 +488,7 @@
 
   {#if phase === 'won'}
     <div class="flex flex-col items-center gap-2 p-4 border-2 border-(--green) bg-green-50 dark:bg-green-950">
-      <div class="font-display text-2xl font-black text-(--green)">Plait reached the ledge!</div>
+      <div class="font-display text-2xl font-black text-(--green)">Hang reached the ledge!</div>
       <div class="text-sm text-(--text-muted)">
         <span class="font-bold">{stepsUsed}</span> words woven • <span class="font-bold">{stepsLeft}</span> spare
       </div>
@@ -500,10 +500,10 @@
 
   {#if phase === 'snapped'}
     <div class="flex flex-col items-center gap-2 p-4 border-2 border-(--red) bg-red-50 dark:bg-red-950">
-      <div class="font-display text-2xl font-black text-(--red)">The plait came apart!</div>
+      <div class="font-display text-2xl font-black text-(--red)">The hang came apart!</div>
       <div class="text-sm text-(--text-muted)">Unravelled at {chain.length} strands.</div>
       <button onclick={reset} class="px-4 py-2 border-2 border-(--ink) bg-(--surface) font-bold text-sm uppercase tracking-wider hover:bg-(--bg-raised)">
-        Re-plait
+        Re-hang
       </button>
     </div>
   {/if}

@@ -37,10 +37,10 @@
       onclick={startFib}
       class="px-5 py-4 border-2 border-(--ink) bg-amber-400 dark:bg-amber-500 text-stone-900 font-bold text-base uppercase tracking-wider shadow-[3px_3px_0_0_var(--ink)] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)] transition-all"
     >
-      🎀 Plait (Fibonacci)
+      🎀 Hang (Fibonacci)
     </button>
     <p class="text-[11px] text-(--text-muted) text-center">
-      Plait: each word links to the <em>two</em> above it, weaving left/right.
+      Hang: each word links to the <em>two</em> above it, weaving left/right.
     </p>
   </div>
 
