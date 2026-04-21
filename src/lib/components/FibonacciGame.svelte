@@ -1,172 +1,104 @@
 <script lang="ts">
-  import { validateLink, type GameState } from '$lib/game';
+  import { onDestroy, tick } from 'svelte';
+  import { validateLink } from '$lib/game';
   import type { LinkVerdict } from '$lib/types';
-  import { trackGuessHit, trackGuessMiss, trackGameComplete, trackShare, trackReset } from '$lib/analytics';
-  import { fibEmojiSummary } from '$lib/share';
-  import { recordCompletion, type DailyMode } from '$lib/streak';
-  import { saveFibGame, loadFibGame } from '$lib/game-persist';
+  import { collapse, type TileSpec } from '$lib/physics';
 
-  let {
-    startA,
-    startB,
-    target,
-    daily,
-  }: {
-    startA: string;
-    startB: string;
-    target: string;
-    daily?: { date: string; mode: DailyMode };
-  } = $props();
+  let { startA, startB, target }: { startA: string; startB: string; target: string } = $props();
 
-  interface FibState {
-    chain: string[];
-    /** verdicts[i] = [linkToPrev2, linkToPrev1] for chain[i] where i >= 2 */
-    verdictPairs: [LinkVerdict, LinkVerdict][];
-    isComplete: boolean;
-    isValidating: boolean;
-    error: string | null;
-  }
+  const MAX_NEW = 10;
 
-  function createState(): FibState {
-    const saved = loadFibGame(startA, startB, target);
-    if (saved && saved.chain.length >= 2) {
-      return {
-        chain: saved.chain,
-        verdictPairs: saved.verdictPairs,
-        isComplete: saved.isComplete,
-        isValidating: false,
-        error: null,
-      };
-    }
-    return {
-      chain: [startA, startB],
-      verdictPairs: [],
-      isComplete: false,
-      isValidating: false,
-      error: null,
-    };
-  }
-
-  let game: FibState = $state(createState());
+  let chain = $state<string[]>([startA, startB]);
+  // verdictPairs[i] = [linkToPrev2, linkToPrev1] for chain[i + 2]
+  let verdictPairs = $state<[LinkVerdict, LinkVerdict][]>([]);
   let inputValue = $state('');
-  let inputEl: HTMLInputElement | null = $state(null);
+  let validating = $state(false);
+  let error = $state<string | null>(null);
+  let phase = $state<'play' | 'snapped' | 'won'>('play');
 
-  // Auto-save on every chain mutation
+  let boardEl: HTMLDivElement | null = $state(null);
+  let boardWidth = $state(360);
+  const H = 680;
+  let tileEls: Record<string, HTMLDivElement | null> = $state({});
+  let disposeSim: (() => void) | null = null;
+
   $effect(() => {
-    saveFibGame(startA, startB, target, {
-      chain: game.chain,
-      verdictPairs: game.verdictPairs,
-      isComplete: game.isComplete,
+    if (!boardEl) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) boardWidth = e.contentRect.width;
     });
+    ro.observe(boardEl);
+    return () => ro.disconnect();
   });
 
-  const prev1 = $derived(game.chain[game.chain.length - 1]);
-  const prev2 = $derived(game.chain[game.chain.length - 2]);
-  const steps = $derived(game.chain.length - 2); // words added after the two seeds
+  const prev1 = $derived(chain[chain.length - 1]);
+  const prev2 = $derived(chain[chain.length - 2]);
+  const stepsUsed = $derived(chain.length - 2);
+  const stepsLeft = $derived(MAX_NEW - stepsUsed);
 
-  function resetGame() {
-    game = createState();
-    inputValue = '';
-    trackReset('fibonacci');
+  // Layout
+  const CLIFF_H = 44;
+  const ANCHOR_Y = CLIFF_H;
+  const THREAD_LEN = 56;
+  const LEDGE_H = 44;
+  const TOP_PAD = CLIFF_H + THREAD_LEN;
+
+  // Narrower tiles so left+right columns sit side by side
+  const tileW = $derived(Math.min(140, Math.max(84, Math.floor(boardWidth * 0.4))));
+  const tileH = $derived(Math.max(20, Math.round(36 - chain.length * 1.1)));
+  const rungGap = $derived(Math.max(10, 26 - Math.round(chain.length * 0.9)));
+  const tileStep = $derived(tileH + rungGap);
+
+  const centerX = $derived(boardWidth / 2);
+  const colGap = 8; // small gap between the two columns
+  const leftX = $derived(centerX - tileW / 2 - colGap / 2); // center of left column
+  const rightX = $derived(centerX + tileW / 2 + colGap / 2); // center of right column
+
+  // Ceiling anchor pegs — one above each column
+  const anchorLX = $derived(leftX);
+  const anchorRX = $derived(rightX);
+
+  // i even → left column, i odd → right column
+  function colX(i: number): number {
+    return i % 2 === 0 ? leftX : rightX;
   }
 
-  async function addWord() {
-    const word = inputValue.trim();
-    if (!word || game.isValidating || game.isComplete) return;
-
-    if (/\s/.test(word)) {
-      game.error = 'One word only — no spaces!';
-      return;
-    }
-
-    if (game.chain.some((w: string) => w.toLowerCase() === word.toLowerCase())) {
-      game.error = `"${word}" is already in the chain`;
-      return;
-    }
-
-    game.isValidating = true;
-    game.error = null;
-
-    try {
-      // Must validate against BOTH previous words
-      const [v1, v2] = await Promise.all([
-        validateLink(prev2, word),
-        validateLink(prev1, word),
-      ]);
-
-      if (v1.valid && v2.valid) {
-        game.chain = [...game.chain, word];
-        game.verdictPairs = [...game.verdictPairs, [v1, v2]];
-        inputValue = '';
-        trackGuessHit(prev1, word, v2.type, 'fibonacci');
-
-        if (word.toLowerCase() === target.toLowerCase()) {
-          game.isComplete = true;
-          const si = getScoreInfo();
-          if (si) trackGameComplete('fibonacci', si.steps, si.score, si.rating);
-          if (daily) recordCompletion(daily.mode, daily.date);
-        }
-      } else if (!v1.valid && !v2.valid) {
-        game.error = `No link to either word.\n${prev2} → ${word}: ${v1.reason}\n${prev1} → ${word}: ${v2.reason}`;
-        trackGuessMiss(prev1, word, 'no link to either', 'fibonacci');
-      } else if (!v1.valid) {
-        game.error = `Links to ${prev1} (${v2.type}) but not ${prev2}: ${v1.reason}`;
-        trackGuessMiss(prev2, word, v1.reason, 'fibonacci');
-      } else {
-        game.error = `Links to ${prev2} (${v1.type}) but not ${prev1}: ${v2.reason}`;
-        trackGuessMiss(prev1, word, v2.reason, 'fibonacci');
-      }
-    } catch (err) {
-      game.error = err instanceof Error ? err.message : 'Validation failed';
-    } finally {
-      game.isValidating = false;
-      inputEl?.focus();
-    }
+  function tileCenter(i: number): { x: number; y: number } {
+    return { x: colX(i), y: TOP_PAD + tileH / 2 + i * tileStep };
   }
 
-  async function tryFinish() {
-    if (game.isValidating || game.isComplete) return;
-
-    game.isValidating = true;
-    game.error = null;
-
-    try {
-      const [v1, v2] = await Promise.all([
-        validateLink(prev2, target),
-        validateLink(prev1, target),
-      ]);
-
-      if (v1.valid && v2.valid) {
-        game.chain = [...game.chain, target];
-        game.verdictPairs = [...game.verdictPairs, [v1, v2]];
-        game.isComplete = true;
-        trackGuessHit(prev1, target, v2.type, 'fibonacci');
-        const si = getScoreInfo();
-        if (si) trackGameComplete('fibonacci', si.steps, si.score, si.rating);
-        if (daily) recordCompletion(daily.mode, daily.date);
-      } else if (!v1.valid && !v2.valid) {
-        game.error = `No link to either word.\n${prev2} → ${target}: ${v1.reason}\n${prev1} → ${target}: ${v2.reason}`;
-        trackGuessMiss(prev1, target, 'no link to either', 'fibonacci');
-      } else if (!v1.valid) {
-        game.error = `${target} links to ${prev1} but not ${prev2}: ${v1.reason}`;
-        trackGuessMiss(prev2, target, v1.reason, 'fibonacci');
-      } else {
-        game.error = `${target} links to ${prev2} but not ${prev1}: ${v2.reason}`;
-        trackGuessMiss(prev1, target, v2.reason, 'fibonacci');
-      }
-    } catch (err) {
-      game.error = err instanceof Error ? err.message : 'Validation failed';
-    } finally {
-      game.isValidating = false;
-    }
+  // Rope endpoints — near corner (same-side rope) and far corner (crossing rope)
+  function nearTop(i: number): { x: number; y: number } {
+    const c = tileCenter(i);
+    const nearX = i % 2 === 0 ? c.x - tileW / 2 + 10 : c.x + tileW / 2 - 10;
+    return { x: nearX, y: c.y - tileH / 2 };
+  }
+  function farTop(i: number): { x: number; y: number } {
+    const c = tileCenter(i);
+    const farX = i % 2 === 0 ? c.x + tileW / 2 - 10 : c.x - tileW / 2 + 10;
+    return { x: farX, y: c.y - tileH / 2 };
+  }
+  function nearBottom(i: number): { x: number; y: number } {
+    const c = tileCenter(i);
+    const nearX = i % 2 === 0 ? c.x - tileW / 2 + 10 : c.x + tileW / 2 - 10;
+    return { x: nearX, y: c.y + tileH / 2 };
+  }
+  function farBottom(i: number): { x: number; y: number } {
+    const c = tileCenter(i);
+    const farX = i % 2 === 0 ? c.x + tileW / 2 - 10 : c.x - tileW / 2 + 10;
+    return { x: farX, y: c.y + tileH / 2 };
   }
 
-  function undoLast() {
-    if (game.chain.length <= 2 || game.isComplete) return;
-    game.chain = game.chain.slice(0, -1);
-    game.verdictPairs = game.verdictPairs.slice(0, -1);
-    game.error = null;
+  // Ceiling anchor on tile i's *near* side (same column as tile)
+  function ceilingNear(i: number): { x: number; y: number } {
+    return { x: i % 2 === 0 ? anchorLX : anchorRX, y: ANCHOR_Y + 4 };
   }
+  // Ceiling anchor on tile i's *far* side (opposite column)
+  function ceilingFar(i: number): { x: number; y: number } {
+    return { x: i % 2 === 0 ? anchorRX : anchorLX, y: ANCHOR_Y + 4 };
+  }
+
+  const threadStrain = $derived(Math.min(1, stepsUsed / MAX_NEW));
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
@@ -175,269 +107,345 @@
     }
   }
 
-  function getTypeEmoji(type: string | null): string {
-    const map: Record<string, string> = {
+  async function addWord() {
+    const word = inputValue.trim();
+    if (!word || validating || phase !== 'play') return;
+    if (/\s/.test(word)) { error = 'One word only'; return; }
+    if (chain.some((w) => w.toLowerCase() === word.toLowerCase())) {
+      error = `"${word}" already placed`;
+      return;
+    }
+    if (stepsLeft <= 0) return;
+
+    validating = true;
+    error = null;
+    try {
+      const [v2, v1] = await Promise.all([validateLink(prev2, word), validateLink(prev1, word)]);
+      if (v1.valid && v2.valid) {
+        chain = [...chain, word];
+        verdictPairs = [...verdictPairs, [v2, v1]];
+        inputValue = '';
+        if (word.toLowerCase() === target.toLowerCase()) {
+          phase = 'won';
+          return;
+        }
+        if (stepsUsed >= MAX_NEW) await snap();
+      } else if (!v1.valid && !v2.valid) {
+        error = `No link to either.\n${prev2}→${word}: ${v2.reason}\n${prev1}→${word}: ${v1.reason}`;
+      } else if (!v1.valid) {
+        error = `Links to ${prev2} but not ${prev1}: ${v1.reason}`;
+      } else {
+        error = `Links to ${prev1} but not ${prev2}: ${v2.reason}`;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Validation failed';
+    } finally {
+      validating = false;
+    }
+  }
+
+  async function tryFinish() {
+    if (validating || phase !== 'play') return;
+    validating = true;
+    error = null;
+    try {
+      const [v2, v1] = await Promise.all([validateLink(prev2, target), validateLink(prev1, target)]);
+      if (v1.valid && v2.valid) {
+        chain = [...chain, target];
+        verdictPairs = [...verdictPairs, [v2, v1]];
+        phase = 'won';
+      } else if (!v1.valid && !v2.valid) {
+        error = `No link to either.\n${prev2}→${target}: ${v2.reason}\n${prev1}→${target}: ${v1.reason}`;
+      } else if (!v1.valid) {
+        error = `Links to ${prev2} but not ${prev1}: ${v1.reason}`;
+      } else {
+        error = `Links to ${prev1} but not ${prev2}: ${v2.reason}`;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Validation failed';
+    } finally {
+      validating = false;
+    }
+  }
+
+  function undo() {
+    if (chain.length <= 2 || phase !== 'play') return;
+    chain = chain.slice(0, -1);
+    verdictPairs = verdictPairs.slice(0, -1);
+    error = null;
+  }
+
+  function reset() {
+    if (disposeSim) disposeSim();
+    disposeSim = null;
+    chain = [startA, startB];
+    verdictPairs = [];
+    inputValue = '';
+    error = null;
+    phase = 'play';
+    tileEls = {};
+  }
+
+  const DEBUG_WORDS = ['ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA', 'ETA', 'THETA', 'IOTA', 'KAPPA', 'LAMBDA', 'MU'];
+  async function addFake() {
+    if (phase !== 'play' || validating || stepsLeft <= 0) return;
+    const used = new Set(chain.map((w) => w.toLowerCase()));
+    const pick = DEBUG_WORDS.find((w) => !used.has(w.toLowerCase())) ?? `DEBUG${chain.length}`;
+    const stub = (a: string, b: string): LinkVerdict => ({
+      a, b, valid: true, type: 'compound', reason: 'debug: auto-inserted'
+    });
+    chain = [...chain, pick];
+    verdictPairs = [...verdictPairs, [stub(prev2, pick), stub(prev1, pick)]];
+    error = null;
+    if (stepsUsed >= MAX_NEW) await snap();
+  }
+
+  async function snap() {
+    phase = 'snapped';
+    await tick();
+    if (!boardEl) return;
+    const specs: TileSpec[] = [];
+    const w = tileW;
+    const h = tileH;
+    for (let i = 0; i < chain.length; i++) {
+      const word = chain[i];
+      const el = tileEls[word];
+      if (!el) continue;
+      const c = tileCenter(i);
+      // Plait unravels — each row swings opposite to neighbours
+      const swing = i % 2 === 0 ? -1 : 1;
+      specs.push({
+        el,
+        x: c.x,
+        y: c.y,
+        w,
+        h,
+        vx: swing * (1.2 + i * 0.25),
+        vy: -0.4,
+        angularVelocity: swing * (0.06 + i * 0.012)
+      });
+    }
+    disposeSim = collapse(boardEl, specs);
+  }
+
+  onDestroy(() => { if (disposeSim) disposeSim(); });
+
+  function typeEmoji(t: string | null | undefined): string {
+    const m: Record<string, string> = {
       compound: '🧩', synonym: '🔄', rhyme: '🎵', opposite: '⚡',
       'category-sibling': '👥', 'part-whole': '🔧', 'object-role': '🎭',
       material: '🧱', 'verb-object': '💪', collocation: '💬',
       'cause-effect': '💥', 'cultural-pair': '🤝', slang: '🗣️',
-      'double-meaning': '🎯', homophone: '👂', containment: '📦', anagram: '🔀',
+      'double-meaning': '🎯', homophone: '👂', containment: '📦', anagram: '🔀'
     };
-    return map[type ?? ''] ?? '✅';
+    return m[t ?? ''] ?? '✅';
   }
 
-  function getScoreInfo() {
-    if (!game.isComplete) return null;
-    const s = steps;
-    const score = Math.floor(1000 / Math.max(s, 1));
-    let rating: string;
-    if (s <= 1) rating = 'Genius';
-    else if (s <= 2) rating = 'Brilliant';
-    else if (s <= 3) rating = 'Sharp';
-    else if (s <= 5) rating = 'Solid';
-    else rating = 'Scenic Route';
-    return { steps: s, score, rating };
-  }
+  const HATCH_COUNT = 14;
+  // Visible target position on the ledge
+  const endY = $derived(H - LEDGE_H / 2 - 4);
 
-  const scoreInfo = $derived(getScoreInfo());
-
-  function shareResult() {
-    if (!scoreInfo) return;
-    const emoji = fibEmojiSummary(game.chain);
-    const header = daily ? `🌀 Lextension Fib Daily ${daily.date}` : `🌀 Lextension Fibonacci: ${startA}, ${startB} → ${target}`;
-    const text = `${header}\n${emoji}\n${scoreInfo.steps} steps • ${scoreInfo.rating}\nhttps://lextension.net`;
-    navigator.clipboard?.writeText(text);
-    trackShare('fibonacci');
-  }
-
-  // --- Feedback (thumbs-down) ---
-  let feedbackOpen: string | null = $state(null); // "idx-verdictIdx" key
-  let feedbackComment = $state('');
-  let feedbackSending = $state(false);
-  let feedbackSent = new Set<string>();
-
-  async function sendFeedback(key: string, a: string, b: string) {
-    feedbackSending = true;
-    try {
-      await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ a, b, comment: feedbackComment }),
-      });
-      feedbackSent.add(key);
-      feedbackOpen = null;
-      feedbackComment = '';
-    } catch {
-      // best-effort
-    } finally {
-      feedbackSending = false;
-    }
+  function tileBg(i: number, word: string): string {
+    if (phase !== 'snapped' && word.toLowerCase() === target.toLowerCase()) return 'bg-(--green) text-white';
+    if (i === 0) return 'bg-(--accent) text-white';
+    if (i === 1) return 'bg-amber-400 dark:bg-amber-500 text-stone-900';
+    return 'bg-(--bg-raised)';
   }
 </script>
 
-<div class="flex flex-col gap-4">
-  <!-- Header -->
-  <div class="p-4 border-2 border-(--ink) bg-(--surface)">
-    <div class="flex items-center justify-between">
-      <div class="text-center flex-1">
-        <div class="text-xs font-bold uppercase tracking-widest text-(--text-muted)">Seeds</div>
-        <div class="font-display text-xl font-black">{startA} + {startB}</div>
-      </div>
-      <div class="text-2xl text-(--text-muted) px-4">→</div>
-      <div class="text-center flex-1">
-        <div class="text-xs font-bold uppercase tracking-widest text-(--text-muted)">Target</div>
-        <div class="font-display text-xl font-black">{target}</div>
-      </div>
-    </div>
-    <div class="mt-2 text-center">
-      <span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-(--accent) text-white">
-        🌀 Fibonacci Mode
-      </span>
-    </div>
+<div class="flex flex-col gap-3">
+  <div class="flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+    <span class="text-(--text-muted)">Plait Strain · Fibonacci</span>
+    <span class={stepsLeft <= 3 ? 'text-(--red)' : 'text-(--text-muted)'}>
+      {stepsLeft} / {MAX_NEW} left
+    </span>
   </div>
 
-  <!-- Chain -->
-  <div class="flex flex-col gap-1">
-    {#each game.chain as word, i}
-      <div class="flex items-center gap-2">
-        <span class="w-6 text-center text-xs font-bold text-(--text-muted)">{i + 1}</span>
-        <span
-          class="flex-1 px-3 py-2 border-2 font-bold text-sm {i < 2
-            ? 'border-(--accent) bg-(--accent-soft) text-(--accent-ink)'
-            : game.isComplete && i === game.chain.length - 1
-              ? 'border-(--green) bg-green-50 dark:bg-green-950 text-(--green)'
-              : 'border-(--ink) bg-(--surface)'}"
-        >
-          {word}
-        </span>
-        {#if i >= 2 && game.verdictPairs[i - 2]}
-          {@const [vPrev2, vPrev1] = game.verdictPairs[i - 2]}
-          <span class="flex gap-1 text-sm">
-            <span>{getTypeEmoji(vPrev2.type)}</span>
-            <span>{getTypeEmoji(vPrev1.type)}</span>
-          </span>
-        {/if}
-      </div>
-      {#if i >= 2 && game.verdictPairs[i - 2]}
-        {@const [vPrev2, vPrev1] = game.verdictPairs[i - 2]}
-        {@const key0 = i + '-0'}
-        {@const key1 = i + '-1'}
-        <div class="ml-8 flex flex-col gap-0.5 text-[11px] text-(--text-muted) leading-tight">
-          <div class="flex items-center gap-1">
-            <span class="flex-1">{getTypeEmoji(vPrev2.type)} {game.chain[i-2]} → {word}: {vPrev2.reason}</span>
-            {#if !feedbackSent.has(key0)}
-              <button
-                onclick={() => { feedbackOpen = feedbackOpen === key0 ? null : key0; feedbackComment = ''; }}
-                class="text-sm opacity-30 hover:opacity-100 transition-opacity"
-                title="Report bad link"
-              >👎</button>
-            {:else}
-              <span class="text-sm opacity-30">✓</span>
-            {/if}
-          </div>
-          {#if feedbackOpen === key0}
-            <div class="flex gap-1 items-center mb-1">
-              <input
-                bind:value={feedbackComment}
-                placeholder="What's wrong? (optional)"
-                class="flex-1 px-2 py-1 border border-(--border) bg-(--surface) text-xs focus:outline-none focus:border-(--accent)"
-              />
-              <button
-                onclick={() => sendFeedback(key0, vPrev2.a, vPrev2.b)}
-                disabled={feedbackSending}
-                class="px-2 py-1 border border-(--red) text-(--red) text-xs font-bold uppercase hover:bg-(--red) hover:text-white transition-colors disabled:opacity-50"
-              >{feedbackSending ? '...' : 'Send'}</button>
-              <button onclick={() => { feedbackOpen = null; }} class="px-2 py-1 text-xs text-(--text-muted) hover:text-(--text)">✕</button>
-            </div>
+  <div class="h-2 border-2 border-(--ink) bg-(--surface) overflow-hidden">
+    <div
+      class="h-full transition-all"
+      style="width: {threadStrain * 100}%; background: {threadStrain > 0.7 ? 'var(--red)' : threadStrain > 0.4 ? '#d97706' : 'var(--accent)'};"
+    ></div>
+  </div>
+
+  <div
+    bind:this={boardEl}
+    class="relative border-2 border-(--ink) bg-gradient-to-b from-sky-100 via-sky-50 to-amber-50 dark:from-slate-900 dark:via-slate-800 dark:to-stone-900 overflow-hidden"
+    style="height: {H}px;"
+  >
+    <!-- Cliff top with two anchor pegs -->
+    <svg
+      class="absolute inset-x-0 top-0 w-full pointer-events-none"
+      height={CLIFF_H + 8}
+      viewBox="0 0 {boardWidth} {CLIFF_H + 8}"
+      preserveAspectRatio="none"
+    >
+      <rect x="0" y="0" width={boardWidth} height={CLIFF_H} fill="#78716c" stroke="var(--ink)" stroke-width="2" />
+      {#each Array(HATCH_COUNT) as _, i}
+        {@const x = (i / HATCH_COUNT) * boardWidth}
+        <line x1={x} y1="0" x2={x + 14} y2={CLIFF_H} stroke="#44403c" stroke-width="1.2" opacity="0.55" />
+      {/each}
+      <line x1="0" y1={CLIFF_H} x2={boardWidth} y2={CLIFF_H} stroke="var(--ink)" stroke-width="2.5" />
+      <!-- Two anchor pegs -->
+      <rect x={anchorLX - 5} y={CLIFF_H - 10} width="10" height="14" fill="var(--ink)" />
+      <circle cx={anchorLX} cy={CLIFF_H + 3} r="3" fill="var(--ink)" />
+      <rect x={anchorRX - 5} y={CLIFF_H - 10} width="10" height="14" fill="var(--ink)" />
+      <circle cx={anchorRX} cy={CLIFF_H + 3} r="3" fill="var(--ink)" />
+    </svg>
+
+    <!-- Plaited ropes -->
+    <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 {boardWidth} {H}" preserveAspectRatio="none">
+      {#if phase !== 'snapped'}
+        <!-- Thread-width decreases with strain -->
+        {@const tw = Math.max(1.4, 3.6 - stepsUsed * 0.2)}
+        {@const colour = threadStrain > 0.75 ? 'var(--red)' : threadStrain > 0.45 ? '#b45309' : '#8b4513'}
+
+        <!-- For each tile i, draw two ropes to its anchors (ceiling or prior tiles). -->
+        {#each chain as _, i}
+          {@const nt = nearTop(i)}
+          {@const ft = farTop(i)}
+          <!-- Same-side rope: connects to tile[i-2] on same column (or ceiling for i<2) -->
+          {#if i >= 2}
+            {@const src = nearBottom(i - 2)}
+            <line x1={src.x} y1={src.y} x2={nt.x} y2={nt.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
+          {:else}
+            {@const src = ceilingNear(i)}
+            <line x1={src.x} y1={src.y} x2={nt.x} y2={nt.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
           {/if}
-          <div class="flex items-center gap-1">
-            <span class="flex-1">{getTypeEmoji(vPrev1.type)} {game.chain[i-1]} → {word}: {vPrev1.reason}</span>
-            {#if !feedbackSent.has(key1)}
-              <button
-                onclick={() => { feedbackOpen = feedbackOpen === key1 ? null : key1; feedbackComment = ''; }}
-                class="text-sm opacity-30 hover:opacity-100 transition-opacity"
-                title="Report bad link"
-              >👎</button>
-            {:else}
-              <span class="text-sm opacity-30">✓</span>
-            {/if}
-          </div>
-          {#if feedbackOpen === key1}
-            <div class="flex gap-1 items-center mb-1">
-              <input
-                bind:value={feedbackComment}
-                placeholder="What's wrong? (optional)"
-                class="flex-1 px-2 py-1 border border-(--border) bg-(--surface) text-xs focus:outline-none focus:border-(--accent)"
-              />
-              <button
-                onclick={() => sendFeedback(key1, vPrev1.a, vPrev1.b)}
-                disabled={feedbackSending}
-                class="px-2 py-1 border border-(--red) text-(--red) text-xs font-bold uppercase hover:bg-(--red) hover:text-white transition-colors disabled:opacity-50"
-              >{feedbackSending ? '...' : 'Send'}</button>
-              <button onclick={() => { feedbackOpen = null; }} class="px-2 py-1 text-xs text-(--text-muted) hover:text-(--text)">✕</button>
-            </div>
+          <!-- Crossing rope: connects to tile[i-1] on opposite column (or opposite ceiling for i=0) -->
+          {#if i >= 1}
+            {@const src = farBottom(i - 1)}
+            <line x1={src.x} y1={src.y} x2={ft.x} y2={ft.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
+          {:else}
+            {@const src = ceilingFar(i)}
+            <line x1={src.x} y1={src.y} x2={ft.x} y2={ft.y} stroke={colour} stroke-width={tw} stroke-linecap="round" />
           {/if}
-        </div>
+        {/each}
       {/if}
+
+      <!-- Rescue ledge -->
+      <rect x="0" y={H - LEDGE_H} width={boardWidth} height={LEDGE_H} fill="#44403c" stroke="var(--ink)" stroke-width="2" />
+      {#each Array(10) as _, i}
+        {@const x = (i / 10) * boardWidth}
+        <line x1={x} y1={H - LEDGE_H} x2={x + 10} y2={H} stroke="#1c1917" stroke-width="1" opacity="0.6" />
+      {/each}
+    </svg>
+
+    <!-- End target on ledge -->
+    {#if phase !== 'snapped'}
+      <div
+        class="absolute flex items-center justify-center gap-1 px-2 border-2 border-dashed border-(--green) bg-green-50 dark:bg-green-950 text-(--green) font-bold text-xs"
+        style="left: {centerX - 58}px; top: {endY - 16}px; width: 116px; height: 32px;"
+      >
+        <span class="text-[10px] uppercase tracking-wider">🏁</span>
+        <span class="truncate">{target}</span>
+      </div>
+    {/if}
+
+    <!-- Hanging tiles -->
+    {#each chain as word, i (word)}
+      {@const c = tileCenter(i)}
+      <div
+        bind:this={tileEls[word]}
+        class="absolute flex items-center justify-center gap-1 px-2 border-2 border-(--ink) font-bold text-xs shadow-[2px_2px_0_0_var(--ink)] will-change-transform {tileBg(i, word)}"
+        style={phase === 'snapped'
+          ? `left: 0px; top: 0px; width: ${tileW}px; height: ${tileH}px;`
+          : `left: ${c.x - tileW / 2}px; top: ${c.y - tileH / 2}px; width: ${tileW}px; height: ${tileH}px;`}
+        title={i < 2
+          ? `Seed ${i === 0 ? 'A' : 'B'}`
+          : `${chain[i - 2]} + ${chain[i - 1]} → ${word}`}
+      >
+        {#if i === 0}
+          <span class="text-[9px] uppercase tracking-wider opacity-80">A</span>
+        {:else if i === 1}
+          <span class="text-[9px] uppercase tracking-wider opacity-80">B</span>
+        {:else}
+          <span class="text-[10px]">{typeEmoji(verdictPairs[i - 2]?.[1]?.type)}</span>
+        {/if}
+        <span class="truncate">{word}</span>
+      </div>
     {/each}
+
+    {#if phase === 'snapped'}
+      <div class="absolute inset-x-0 top-14 flex justify-center pointer-events-none">
+        <div class="px-3 py-1 border-2 border-(--red) bg-(--surface) font-display text-sm font-black uppercase tracking-wider text-(--red)">
+          💥 The plait unravelled!
+        </div>
+      </div>
+    {/if}
   </div>
 
-  <!-- Must-link hint -->
-  {#if !game.isComplete && game.chain.length >= 2}
+  {#if phase === 'play'}
     <div class="text-xs text-(--text-muted) text-center">
-      Next word must link to both <strong class="text-(--text)">{prev2}</strong> and <strong class="text-(--text)">{prev1}</strong>
+      Next word must link to <strong class="text-(--text)">{prev2}</strong> <em>and</em>
+      <strong class="text-(--text)">{prev1}</strong>
     </div>
-  {/if}
-
-  <!-- Input area -->
-  {#if !game.isComplete}
-    <div class="flex flex-col gap-2">
-      <div class="flex gap-2">
-        <input
-          bind:this={inputEl}
-          bind:value={inputValue}
-          onkeydown={handleKeydown}
-          disabled={game.isValidating}
-          placeholder="Word linking both..."
-          class="flex-1 px-3 py-2 border-2 border-(--ink) bg-(--surface) font-bold text-sm placeholder:text-(--text-muted) placeholder:font-normal focus:outline-none focus:border-(--accent) disabled:opacity-50"
-        />
-        <button
-          onclick={addWord}
-          disabled={!inputValue.trim() || game.isValidating}
-          class="px-4 py-2 border-2 border-(--ink) bg-(--accent) text-white font-bold text-sm uppercase tracking-wider shadow-[2px_2px_0_0_var(--ink)] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)] disabled:opacity-50 disabled:transform-none disabled:shadow-none transition-all"
-        >
-          {game.isValidating ? '...' : 'Add'}
-        </button>
-      </div>
-
-      <div class="flex gap-2">
-        <button
-          onclick={tryFinish}
-          disabled={game.chain.length < 3 || game.isValidating}
-          class="flex-1 px-4 py-2 border-2 border-(--green) text-(--green) font-bold text-sm uppercase tracking-wider hover:bg-(--green) hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--green)"
-        >
-          Finish → {target}
-        </button>
-        <button
-          onclick={undoLast}
-          disabled={game.chain.length <= 2 || game.isValidating}
-          class="px-4 py-2 border-2 border-(--ink) text-(--text-muted) font-bold text-sm uppercase tracking-wider hover:bg-(--surface) transition-colors disabled:opacity-30"
-        >
-          Undo
-        </button>
-        <button
-          onclick={resetGame}
-          disabled={game.chain.length <= 2 || game.isValidating}
-          class="px-4 py-2 border-2 border-(--red) text-(--red) font-bold text-sm uppercase tracking-wider hover:bg-(--red) hover:text-white transition-colors disabled:opacity-30"
-        >
-          Reset
-        </button>
-      </div>
+    <div class="flex gap-2">
+      <input
+        bind:value={inputValue}
+        onkeydown={handleKeydown}
+        disabled={validating}
+        placeholder={`Word linking ${prev2} + ${prev1}…`}
+        class="flex-1 px-3 py-2 border-2 border-(--ink) bg-(--surface) font-bold text-sm placeholder:text-(--text-muted) placeholder:font-normal focus:outline-none focus:border-(--accent) disabled:opacity-50"
+      />
+      <button
+        onclick={addWord}
+        disabled={!inputValue.trim() || validating}
+        class="px-3 py-2 border-2 border-(--ink) bg-(--accent) text-white font-bold text-sm uppercase tracking-wider shadow-[2px_2px_0_0_var(--ink)] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)] disabled:opacity-40 disabled:transform-none disabled:shadow-none transition-all"
+      >
+        {validating ? '…' : 'Plait'}
+      </button>
     </div>
-
-    {#if game.error}
+    <div class="flex gap-2">
+      <button
+        onclick={tryFinish}
+        disabled={validating}
+        class="flex-1 px-3 py-2 border-2 border-(--green) text-(--green) font-bold text-sm uppercase tracking-wider hover:bg-(--green) hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--green)"
+      >
+        Finish → {target}
+      </button>
+      <button
+        onclick={undo}
+        disabled={chain.length <= 2 || validating}
+        class="px-3 py-2 border-2 border-(--ink) text-(--text-muted) font-bold text-sm uppercase tracking-wider hover:bg-(--surface) transition-colors disabled:opacity-30"
+      >
+        Undo
+      </button>
+      <button
+        onclick={addFake}
+        disabled={validating || stepsLeft <= 0}
+        class="px-3 py-2 border-2 border-(--red) text-(--red) font-bold text-sm uppercase tracking-wider hover:bg-(--red) hover:text-white transition-colors disabled:opacity-30"
+        title="Debug: add a fake pre-validated word (spam to unravel the plait)"
+      >
+        +🤖 Debug
+      </button>
+    </div>
+    {#if error}
       <div class="px-3 py-2 border-2 border-(--red) bg-red-50 dark:bg-red-950 text-(--red) text-sm font-medium whitespace-pre-line">
-        {game.error}
+        {error}
       </div>
     {/if}
   {/if}
 
-  <!-- Score card -->
-  {#if game.isComplete && scoreInfo}
-    <div class="flex flex-col items-center gap-3 p-6 border-2 border-(--green) bg-green-50 dark:bg-green-950">
-      <div class="font-display text-3xl font-black text-(--green)">
-        {scoreInfo.rating}!
-      </div>
+  {#if phase === 'won'}
+    <div class="flex flex-col items-center gap-2 p-4 border-2 border-(--green) bg-green-50 dark:bg-green-950">
+      <div class="font-display text-2xl font-black text-(--green)">Plait reached the ledge!</div>
       <div class="text-sm text-(--text-muted)">
-        <span class="font-bold">{scoreInfo.steps}</span> step{scoreInfo.steps === 1 ? '' : 's'} •
-        <span class="font-bold">{scoreInfo.score}</span> pts
+        <span class="font-bold">{stepsUsed}</span> words woven • <span class="font-bold">{stepsLeft}</span> spare
       </div>
-      <div class="flex gap-2 mt-2">
-        <button
-          onclick={shareResult}
-          class="px-4 py-2 border-2 border-(--ink) bg-(--accent) text-white font-bold text-sm uppercase tracking-wider shadow-[2px_2px_0_0_var(--ink)] hover:-translate-y-0.5 active:translate-y-[1px] active:shadow-[1px_1px_0_0_var(--ink)] transition-all"
-        >
-          📋 Copy Result
-        </button>
-        <button
-          onclick={resetGame}
-          class="px-4 py-2 border-2 border-(--ink) text-(--text) font-bold text-sm uppercase tracking-wider hover:bg-(--surface) transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
+      <button onclick={reset} class="px-4 py-2 border-2 border-(--ink) bg-(--surface) font-bold text-sm uppercase tracking-wider hover:bg-(--bg-raised)">
+        Weave again
+      </button>
     </div>
   {/if}
 
-  <!-- How it works -->
-  <details class="text-xs text-(--text-muted)">
-    <summary class="cursor-pointer font-bold uppercase tracking-wider hover:text-(--text)">How Fibonacci mode works</summary>
-    <div class="mt-2 space-y-1 pl-2">
-      <p>You start with two seed words: <strong>{startA}</strong> and <strong>{startB}</strong>.</p>
-      <p>Each word you add must have a valid link to <strong>both</strong> of the two words before it — like a Fibonacci sequence where each term depends on the previous two.</p>
-      <p>Your goal is to reach <strong>{target}</strong>.</p>
-      <p class="mt-1">Example: <strong>Fire, Ice</strong> → you need a word related to both Fire AND Ice, like <em>Burn</em> (fire→burn, ice→burn).</p>
-      <p>Fewer steps = higher score. This mode is <strong>much harder</strong> than regular bridging!</p>
+  {#if phase === 'snapped'}
+    <div class="flex flex-col items-center gap-2 p-4 border-2 border-(--red) bg-red-50 dark:bg-red-950">
+      <div class="font-display text-2xl font-black text-(--red)">The plait came apart!</div>
+      <div class="text-sm text-(--text-muted)">Unravelled at {chain.length} strands.</div>
+      <button onclick={reset} class="px-4 py-2 border-2 border-(--ink) bg-(--surface) font-bold text-sm uppercase tracking-wider hover:bg-(--bg-raised)">
+        Re-plait
+      </button>
     </div>
-  </details>
+  {/if}
 </div>
