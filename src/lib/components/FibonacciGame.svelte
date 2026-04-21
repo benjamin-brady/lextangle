@@ -192,12 +192,19 @@
         </span>
         {#if i >= 2 && game.verdictPairs[i - 2]}
           {@const [vPrev2, vPrev1] = game.verdictPairs[i - 2]}
-          <span class="flex gap-1 text-[10px] font-bold uppercase tracking-wider text-(--text-muted)">
-            <span title="{game.chain[i-2]} → {word}: {vPrev2.reason}">{getTypeEmoji(vPrev2.type)}</span>
-            <span title="{game.chain[i-1]} → {word}: {vPrev1.reason}">{getTypeEmoji(vPrev1.type)}</span>
+          <span class="flex gap-1 text-sm">
+            <span>{getTypeEmoji(vPrev2.type)}</span>
+            <span>{getTypeEmoji(vPrev1.type)}</span>
           </span>
         {/if}
       </div>
+      {#if i >= 2 && game.verdictPairs[i - 2]}
+        {@const [vPrev2, vPrev1] = game.verdictPairs[i - 2]}
+        <div class="ml-8 flex flex-col gap-0.5 text-[11px] text-(--text-muted) leading-tight">
+          <div>{getTypeEmoji(vPrev2.type)} {game.chain[i-2]} → {word}: {vPrev2.reason}</div>
+          <div>{getTypeEmoji(vPrev1.type)} {game.chain[i-1]} → {word}: {vPrev1.reason}</div>
+        </div>
+      {/if}
     {/each}
   </div>
 
