@@ -1,13 +1,12 @@
 <script lang="ts">
-	import PuzzleRunner from '$lib/components/PuzzleRunner.svelte';
-	import { getTodaysPuzzleInfo } from '$lib/puzzles';
+	import LextensionGame from '$lib/components/LextensionGame.svelte';
+	import { getTodaysChallenge } from '$lib/challenges';
 
-	const { puzzle, puzzleNumber } = getTodaysPuzzleInfo();
-	const shareLabel = `Daily #${puzzleNumber}`;
+	const challenge = getTodaysChallenge();
 </script>
 
 <div class="grid gap-4">
-	{#key `daily-${puzzleNumber}`}
-		<PuzzleRunner {puzzle} storageId={`daily-${puzzleNumber}`} {shareLabel} />
+	{#key challenge.date}
+		<LextensionGame start={challenge.start} end={challenge.end} />
 	{/key}
 </div>

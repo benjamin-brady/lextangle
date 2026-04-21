@@ -1,38 +1,42 @@
-export interface WordItem {
-	word: string;
-	emoji?: string;
+export interface LinkVerdict {
+  a: string;
+  b: string;
+  valid: boolean;
+  type: string | null;
+  reason: string;
 }
 
-export interface Edge {
-	from: number; // grid index
-	to: number; // grid index
-	clue: string;
+export interface ChainState {
+  start: string;
+  end: string;
+  words: string[];
+  verdicts: LinkVerdict[];
 }
 
-export interface Puzzle {
-	/** 9 words in their correct grid positions (index 0–8, row-major) */
-	solution: WordItem[];
-	/** Edges describing relationships between adjacent cells */
-	edges: Edge[];
+export const RELATION_TYPES = [
+  'compound',
+  'synonym',
+  'rhyme',
+  'opposite',
+  'category-sibling',
+  'part-whole',
+  'object-role',
+  'material',
+  'verb-object',
+  'collocation',
+  'cause-effect',
+  'cultural-pair',
+  'slang',
+  'double-meaning',
+  'homophone',
+  'containment',
+  'anagram',
+] as const;
+
+export type RelationType = (typeof RELATION_TYPES)[number];
+
+export interface DailyChallenge {
+  start: string;
+  end: string;
+  date: string;
 }
-
-/**
- * Grid layout (indices):
- *  0 — 1 — 2
- *  |   |   |
- *  3 — 4 — 5
- *  |   |   |
- *  6 — 7 — 8
- *
- * All horizontal and vertical adjacencies:
- */
-export const ADJACENCIES: [number, number][] = [
-	[0, 1], [1, 2],
-	[3, 4], [4, 5],
-	[6, 7], [7, 8],
-	[0, 3], [1, 4], [2, 5],
-	[3, 6], [4, 7], [5, 8],
-];
-
-export type EdgeStatus = 'correct' | 'wrong' | 'empty';
-export type NodeStatus = 'correct' | 'wrong' | 'empty' | 'unchecked';

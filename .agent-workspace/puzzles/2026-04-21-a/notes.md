@@ -1,7 +1,0 @@
-- Promoted five candidate boards into `candidate-gpt-1.json` through `candidate-gpt-5.json`.
-- Source material came from existing generated puzzle batches, then clues and classifications were tightened to fit the stricter candidate schema.
-- The local `grid-search.ts` helper produced no clean 3x3 boards from the raw compound graph alone; semantic/object-role boards were stronger than compound-only search output.
-- Existing `candidate-1.json` in this run folder was left untouched because it is unrelated and already malformed.
-- Accepted: 5
-- Rejected: 0
-- Retried: 0
