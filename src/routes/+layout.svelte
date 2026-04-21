@@ -72,7 +72,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-5 pb-3">
 			<a href="/" class="flex items-baseline gap-2 group">
 				<span class="font-display leading-none" style="font-size: 4.5rem; color: var(--ink);">
-					<span>Lex</span><span style="color: var(--crayon-red);">Link</span>
+					<span>Lex</span><span style="color: var(--crayon-red);">tangle</span>
 				</span>
 				<span class="font-display leading-none" style="font-size: 2rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{puzzleNumber}</span>
 			</a>
