@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onDestroy, tick } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import { validateLink, getScore } from '$lib/game';
   import type { LinkVerdict } from '$lib/types';
-  import { collapseChain, type TileSpec } from '$lib/physics';
+  import { suspendChain, type SuspendChainSim } from '$lib/physics';
 
   let { start, end }: { start: string; end: string } = $props();
 
@@ -19,7 +19,14 @@
   let boardWidth = $state(360);
   const H = 680;
   let tileEls: Record<string, HTMLDivElement | null> = $state({});
-  let disposeSim: (() => void) | null = null;
+  let sim: SuspendChainSim | null = null;
+  let tilesInSim = 0;
+
+  // Live rope endpoints driven by the physics sim each frame.
+  type Pt = { x: number; y: number };
+  let leftRopeEnd: Pt | null = $state(null);
+  let rightRopeEnd: Pt | null = $state(null);
+  let rungEnds = $state<Array<{ top: Pt; bot: Pt; topR: Pt; botR: Pt }>>([]);
 
   $effect(() => {
     if (!boardEl) return;
@@ -133,11 +140,19 @@
     chain = chain.slice(0, -1);
     verdicts = verdicts.slice(0, -1);
     error = null;
+    if (sim) {
+      sim.removeLastTile();
+      tilesInSim = Math.min(tilesInSim, chain.length);
+    }
   }
 
   function reset() {
-    if (disposeSim) disposeSim();
-    disposeSim = null;
+    if (sim) sim.dispose();
+    sim = null;
+    tilesInSim = 0;
+    leftRopeEnd = null;
+    rightRopeEnd = null;
+    rungEnds = [];
     chain = [start];
     verdicts = [];
     inputValue = '';
@@ -158,48 +173,84 @@
   }
 
   async function snap() {
-    // Stage 1: left thread breaks. Chain tilts/swings right around remaining anchor.
+    // Stage 1: left thread breaks. Chain tilts/swings right around the right anchor.
     phase = 'presnap';
-    await tick();
-    await new Promise((r) => setTimeout(r, 260));
+    if (sim) sim.breakAnchor('left');
+    await new Promise((r) => setTimeout(r, 520));
 
     // Stage 2: right thread snaps too, full collapse.
     phase = 'snapped';
-    await tick();
-    if (!boardEl) return;
-
-    const specs: TileSpec[] = [];
-    const w = tileW;
-    const h = tileH;
-    for (let i = 0; i < chain.length; i++) {
-      const word = chain[i];
-      const el = tileEls[word];
-      if (!el) continue;
-      const { x, y } = tileCenter(i);
-      // Small per-tile jitter only; the chain constraints do the real work.
-      specs.push({
-        el,
-        x,
-        y,
-        w,
-        h,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: 0,
-        angularVelocity: (Math.random() - 0.5) * 0.02
-      });
+    if (sim) {
+      sim.cutAllAnchors({ topImpulseX: 4.5, topAngularImpulse: 0.08 });
     }
-    // Apply a rightward impulse at the top (inherited momentum from the
-    // left-thread pre-snap swing) and a tilt. The chain falls as a coherent
-    // flexible ladder, sweeping right as it goes.
-    disposeSim = collapseChain(boardEl, specs, {
-      railOffset: 18,
-      topImpulseX: 5.5,
-      topAngularImpulse: 0.12,
-      duration: 9000
-    });
   }
 
-  onDestroy(() => { if (disposeSim) disposeSim(); });
+  onDestroy(() => { if (sim) sim.dispose(); });
+
+  // ---- Physics sim lifecycle --------------------------------------------
+  // Create the sim once the board element and its width are known.
+  $effect(() => {
+    if (!boardEl) return;
+    if (sim) return;
+    if (boardWidth <= 0) return;
+    const centerX0 = boardWidth / 2;
+    const s = suspendChain(boardEl, {
+      anchors: {
+        left: { x: centerX0 - ANCHOR_DX, y: ANCHOR_Y + 4 },
+        right: { x: centerX0 + ANCHOR_DX, y: ANCHOR_Y + 4 }
+      },
+      gravity: 1,
+      railOffset: 18,
+      anchorStiffness: 0.55,
+      anchorDamping: 0.2,
+      rungStiffness: 0.92,
+      rungDamping: 0.18,
+      frictionAir: 0.06,
+      floorY: H - LEDGE_H,
+      onFrame: (s) => {
+        // Snapshot live rope/rung endpoints for SVG rendering.
+        leftRopeEnd = s.getAnchorAttachWorld('left');
+        rightRopeEnd = s.getAnchorAttachWorld('right');
+        const next: Array<{ top: Pt; bot: Pt; topR: Pt; botR: Pt }> = [];
+        for (let i = 0; i < s.tiles.length - 1; i++) {
+          const topL = s.getTileRailWorld(i, 'left', 'bottom');
+          const botL = s.getTileRailWorld(i + 1, 'left', 'top');
+          const topR = s.getTileRailWorld(i, 'right', 'bottom');
+          const botR = s.getTileRailWorld(i + 1, 'right', 'top');
+          if (topL && botL && topR && botR) {
+            next.push({ top: topL, bot: botL, topR, botR });
+          }
+        }
+        rungEnds = next;
+      }
+    });
+    sim = s;
+    tilesInSim = 0;
+  });
+
+  // Whenever new words are appended to `chain`, hand them to the sim.
+  $effect(() => {
+    const len = chain.length;
+    if (!sim) return;
+    // Wait a tick so tileEls is populated for the new word.
+    untrack(() => {
+      if (len <= tilesInSim) return;
+      queueMicrotask(async () => {
+        await tick();
+        if (!sim) return;
+        const w = tileW;
+        const h = tileH;
+        for (let i = tilesInSim; i < chain.length; i++) {
+          const word = chain[i];
+          const el = tileEls[word];
+          if (!el) return; // wait for next effect pass
+          const { x, y } = tileCenter(i);
+          sim.addTile({ el, x, y, w, h });
+          tilesInSim = i + 1;
+        }
+      });
+    });
+  });
 
   function typeEmoji(t: string | null | undefined): string {
     const m: Record<string, string> = {
@@ -252,30 +303,29 @@
 
     <!-- Threads, rope links, ledge -->
     <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 {boardWidth} {H}" preserveAspectRatio="none">
-      <!-- LEFT thread: anchor → top-left of first tile -->
-      {#if phase === 'play'}
+      <!-- LEFT thread: anchor → top-left corner of first tile (driven by physics). -->
+      {#if phase !== 'snapped' && leftRopeEnd}
         <line
           x1={anchorLX}
           y1={ANCHOR_Y + 4}
-          x2={centerX - 18}
-          y2={TOP_PAD}
-          stroke={threadStrain > 0.65 ? 'var(--red)' : '#57534e'}
+          x2={leftRopeEnd.x}
+          y2={leftRopeEnd.y}
+          stroke={phase === 'presnap' || threadStrain > 0.65 ? 'var(--red)' : '#57534e'}
           stroke-width={leftThreadW}
           stroke-linecap="round"
         />
-      {:else if phase === 'presnap'}
+      {:else if phase === 'presnap' || phase === 'snapped'}
         <!-- Recoil fragments for the snapped left thread -->
         <line x1={anchorLX} y1={ANCHOR_Y + 4} x2={anchorLX - 3} y2={ANCHOR_Y + 14} stroke="var(--red)" stroke-width="1.2" />
-        <line x1={centerX - 18} y1={TOP_PAD} x2={centerX - 24} y2={TOP_PAD - 10} stroke="var(--red)" stroke-width="1.2" />
       {/if}
 
       <!-- RIGHT thread -->
-      {#if phase !== 'snapped'}
+      {#if phase !== 'snapped' && rightRopeEnd}
         <line
           x1={anchorRX}
           y1={ANCHOR_Y + 4}
-          x2={centerX + 18}
-          y2={TOP_PAD}
+          x2={rightRopeEnd.x}
+          y2={rightRopeEnd.y}
           stroke={phase === 'presnap' ? 'var(--red)' : threadStrain > 0.7 ? 'var(--red)' : '#57534e'}
           stroke-width={phase === 'presnap' ? Math.max(0.3, rightThreadW - 2) : rightThreadW}
           stroke-linecap="round"
@@ -283,22 +333,24 @@
       {/if}
 
       <!-- Fray specks along both threads -->
-      {#if phase === 'play'}
+      {#if phase === 'play' && leftRopeEnd && rightRopeEnd}
         {#each Array(Math.min(guessesUsed * 2, 14)) as _, i}
           {@const seed = (i * 9301 + 49297) % 233280}
           {@const r1 = seed / 233280}
           {@const r2 = (((i * 7 + 13) * 9301 + 49297) % 233280) / 233280}
           {@const onLeft = i % 2 === 0}
           {@const ax = onLeft ? anchorLX : anchorRX}
-          {@const tx = onLeft ? centerX - 18 : centerX + 18}
-          {@const fy = ANCHOR_Y + 6 + r1 * (THREAD_LEN - 12)}
+          {@const ay = ANCHOR_Y + 4}
+          {@const tx = onLeft ? leftRopeEnd.x : rightRopeEnd.x}
+          {@const ty = onLeft ? leftRopeEnd.y : rightRopeEnd.y}
           {@const bx = ax + (tx - ax) * r1}
+          {@const by = ay + (ty - ay) * r1}
           {@const dx = (r2 - 0.5) * 9}
           <line
             x1={bx}
-            y1={fy}
+            y1={by}
             x2={bx + dx}
-            y2={fy + 3 + r2 * 4}
+            y2={by + 3 + r2 * 4}
             stroke="#a8a29e"
             stroke-width="0.8"
             opacity="0.8"
@@ -306,15 +358,11 @@
         {/each}
       {/if}
 
-      <!-- Rope links between tiles (ladder-style, two parallel ropes) -->
+      <!-- Rope links between tiles (ladder-style, two parallel ropes), driven by physics. -->
       {#if phase !== 'snapped'}
-        {#each chain as _, i}
-          {#if i < chain.length - 1}
-            {@const top = tileCenter(i)}
-            {@const bot = tileCenter(i + 1)}
-            <line x1={centerX - 18} y1={top.y + tileH / 2} x2={centerX - 18} y2={bot.y - tileH / 2} stroke="#8b4513" stroke-width="2.4" stroke-linecap="round" />
-            <line x1={centerX + 18} y1={top.y + tileH / 2} x2={centerX + 18} y2={bot.y - tileH / 2} stroke="#8b4513" stroke-width="2.4" stroke-linecap="round" />
-          {/if}
+        {#each rungEnds as rung, i (i)}
+          <line x1={rung.top.x} y1={rung.top.y} x2={rung.bot.x} y2={rung.bot.y} stroke="#8b4513" stroke-width="2.4" stroke-linecap="round" />
+          <line x1={rung.topR.x} y1={rung.topR.y} x2={rung.botR.x} y2={rung.botR.y} stroke="#8b4513" stroke-width="2.4" stroke-linecap="round" />
         {/each}
       {/if}
 
@@ -335,18 +383,14 @@
       <span class="truncate">{end}</span>
     </div>
 
-    <!-- Hanging tiles -->
+    <!-- Hanging tiles. Positioned at (0,0); the physics sim drives `transform`
+         each frame via translate+rotate so they hang and sway naturally. -->
     {#each chain as word, i (word)}
-      {@const c = tileCenter(i)}
       {@const isStart = i === 0}
-      {@const presnapTilt = phase === 'presnap' ? ((i + 1) / chain.length) * 9 : 0}
-      {@const presnapShift = phase === 'presnap' ? ((i + 1) / chain.length) * 10 : 0}
       <div
         bind:this={tileEls[word]}
         class="absolute flex items-center justify-center gap-1 px-2 border-2 border-(--ink) font-bold text-xs shadow-[2px_2px_0_0_var(--ink)] will-change-transform {isStart ? 'bg-(--accent) text-white' : 'bg-(--bg-raised)'}"
-        style={phase === 'snapped'
-          ? `left: 0px; top: 0px; width: ${tileW}px; height: ${tileH}px;`
-          : `left: ${c.x - tileW / 2 + presnapShift}px; top: ${c.y - tileH / 2}px; width: ${tileW}px; height: ${tileH}px; transform: rotate(${presnapTilt}deg); transition: transform 220ms ease-in, left 220ms ease-in;`}
+        style="left: 0; top: 0; width: {tileW}px; height: {tileH}px;"
       >
         {#if isStart}
           <span class="text-[9px] uppercase tracking-wider opacity-80">🧗</span>
