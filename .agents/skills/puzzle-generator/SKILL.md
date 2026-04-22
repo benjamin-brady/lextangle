@@ -383,14 +383,21 @@ Use the `runSubagent` tool for each step. Run generators in parallel when produc
 
 ### Pre-flight: Word-Set Viability Check
 
-BEFORE arranging any grid, list the candidate pairings you intend to use plus 3–4 alternates, and confirm:
+**Step 0: Seed-pair shared-neighbor filter.** Before expanding to a full 9-word set, pick two anchor words and list at least **3 shared neighbors** — words that form an A-tier edge with BOTH anchors. If you can't list 3, the anchors are incompatible; replace one before going further. This is the cheapest filter and kills dead pairs like `wheel` + `storm` (no overlapping A-tier partners) before any layout work.
+
+Example pass: `fire` + `wheel` share `car`, `works`, `ball`, `engine` → proceed.
+Example fail: `wheel` + `storm` share nothing A-tier → pick a new anchor.
+
+**Step 1: Candidate edge list.** Once the anchors pass, grow the set to 9 words. List the candidate pairings you intend to use plus 3–4 alternates, and confirm:
 
 - **Standard boards:** at least 12 A/B-tier candidate edges, no single word appearing in 5+ plausible pairs.
 - **Hard boards:** at least 10 A/B-tier candidate edges plus up to 4 C-tier candidates, same generic-connector ceiling.
 
-Then do a **blind word-set audit**: ignore your intended layout, scan the 9 words as an unordered set, and enumerate every plausible A-tier pair plus the strongest B-tier extras. If you find an off-grid A-tier pair, or more than 2 off-grid B-tier pairs, reject the set before grid placement.
+**Step 2: Blind word-set audit.** Ignore your intended layout, scan the 9 words as an unordered set, and enumerate every plausible A-tier pair plus the strongest B-tier extras. If you find an off-grid A-tier pair, or more than 2 off-grid B-tier pairs, reject the set before grid placement.
 
 You do not need to enumerate all 36 pairs — just enough to judge the generic-connector rule. If the word set can't support the bar, pick new words before grid placement.
+
+> Optional tooling: `src/lib/puzzle-seeding.ts` exposes `sharedNeighbors(a, b)`, `growSeed(anchor)`, and `auditWordSet(words)` against a small curated hub lexicon. Useful for seeding candidates, not a replacement for human review.
 
 ### Generating a single puzzle
 
@@ -411,10 +418,11 @@ Launch a subagent via `runSubagent` with the prompt:
 >
 > RULES:
 > 1. Pick 9 concrete, emoji-friendly English words.
-> 2. Before placing: list the pairings you'd actually use plus a few alternates. Confirm no word is a generic connector (appears in 5+ plausible pairs).
-> 3. Do a blind word-set audit before locking the grid: enumerate every plausible A-tier pair plus the strongest B-tier extras among the 9 words. If an off-grid A-tier pair appears, or more than 2 off-grid B-tier pairs appear, reject the set.
-> 4. Arrange them in the 3x3 grid so every horizontal and vertical adjacency has a strong relationship.
-> 5. For EACH of the 12 edges, state:
+> 2. Seed from two anchor words that share at least 3 A-tier neighbors (words that link strongly to both anchors). If you can't name 3 shared neighbors, pick different anchors.
+> 3. Before placing: list the pairings you'd actually use plus a few alternates. Confirm no word is a generic connector (appears in 5+ plausible pairs).
+> 4. Do a blind word-set audit before locking the grid: enumerate every plausible A-tier pair plus the strongest B-tier extras among the 9 words. If an off-grid A-tier pair appears, or more than 2 off-grid B-tier pairs appear, reject the set.
+> 5. Arrange them in the 3x3 grid so every horizontal and vertical adjacency has a strong relationship.
+> 6. For EACH of the 12 edges, state:
 >    - The two words
 >    - The primary relation type from the taxonomy in the skill file (and a secondary if two cleanly apply)
 >    - The tier (A, B, or C)

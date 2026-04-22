@@ -302,6 +302,37 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		]);
 	}
 
+	function shiftGrid(cycles: number[][]) {
+		const s = persisted.current;
+		pushHistory();
+		const next = [...s.grid];
+		for (const cycle of cycles) {
+			const last = next[cycle[cycle.length - 1]];
+			for (let i = cycle.length - 1; i > 0; i--) {
+				next[cycle[i]] = next[cycle[i - 1]];
+			}
+			next[cycle[0]] = last;
+		}
+		s.grid = next;
+		markCellsDirty(cycles.flat());
+	}
+
+	function shiftRight() {
+		shiftGrid([
+			[0, 1, 2],
+			[3, 4, 5],
+			[6, 7, 8],
+		]);
+	}
+
+	function shiftDown() {
+		shiftGrid([
+			[0, 3, 6],
+			[1, 4, 7],
+			[2, 5, 8],
+		]);
+	}
+
 	function reset() {
 		persisted.current = freshState(puzzle);
 		history.length = 0;
@@ -350,6 +381,8 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		swapGridCells,
 		flipHorizontal,
 		flipVertical,
+		shiftRight,
+		shiftDown,
 		reset,
 	};
 }

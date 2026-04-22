@@ -3,6 +3,8 @@
 	import FeedbackDialog from './FeedbackDialog.svelte';
 	import FlipHorizontal2 from 'lucide-svelte/icons/flip-horizontal-2';
 	import FlipVertical2 from 'lucide-svelte/icons/flip-vertical-2';
+	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import ThumbsUp from 'lucide-svelte/icons/thumbs-up';
 	import ThumbsDown from 'lucide-svelte/icons/thumbs-down';
 	import Share2 from 'lucide-svelte/icons/share-2';
@@ -797,6 +799,28 @@
 				>
 					<FlipVertical2 class="h-4 w-4" aria-hidden="true" />
 					<span>flip v</span>
+				</button>
+				<button
+					type="button"
+					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
+					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(1deg);"
+					onclick={() => game.shiftRight()}
+					title="Shift grid right"
+					aria-label="Shift grid right"
+				>
+					<ArrowRight class="h-4 w-4" aria-hidden="true" />
+					<span>shift →</span>
+				</button>
+				<button
+					type="button"
+					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
+					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
+					onclick={() => game.shiftDown()}
+					title="Shift grid down"
+					aria-label="Shift grid down"
+				>
+					<ArrowDown class="h-4 w-4" aria-hidden="true" />
+					<span>shift ↓</span>
 				</button>
 			{/if}
 			<button
