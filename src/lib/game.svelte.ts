@@ -275,15 +275,23 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		s.grid[toIdx] = temp;
 	}
 
+	function isSticky(index: number): boolean {
+		const s = persisted.current;
+		return s.cellChecked[index] && s.grid[index] === puzzle.solution[index].word;
+	}
+
 	function flipGrid(pairs: [number, number][]) {
 		const s = persisted.current;
+		// Filter out pairs where either cell is pinned (checked-correct).
+		const movable = pairs.filter(([a, b]) => !isSticky(a) && !isSticky(b));
+		if (movable.length === 0) return;
 		pushHistory();
 		const next = [...s.grid];
-		for (const [a, b] of pairs) {
+		for (const [a, b] of movable) {
 			[next[a], next[b]] = [next[b], next[a]];
 		}
 		s.grid = next;
-		markCellsDirty(pairs.flat());
+		markCellsDirty(movable.flat());
 	}
 
 	function flipHorizontal() {
@@ -304,17 +312,28 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 
 	function shiftGrid(cycles: number[][]) {
 		const s = persisted.current;
+		// For each cycle, remove sticky indices and only rotate the remaining ones.
+		const allMoved: number[] = [];
 		pushHistory();
 		const next = [...s.grid];
 		for (const cycle of cycles) {
-			const last = next[cycle[cycle.length - 1]];
-			for (let i = cycle.length - 1; i > 0; i--) {
-				next[cycle[i]] = next[cycle[i - 1]];
+			const movable = cycle.filter((i) => !isSticky(i));
+			if (movable.length < 2) continue;
+			const last = next[movable[movable.length - 1]];
+			for (let i = movable.length - 1; i > 0; i--) {
+				next[movable[i]] = next[movable[i - 1]];
 			}
-			next[cycle[0]] = last;
+			next[movable[0]] = last;
+			allMoved.push(...movable);
+		}
+		if (allMoved.length === 0) {
+			// Nothing moved — pop the history entry we just pushed.
+			history.pop();
+			historyVersion++;
+			return;
 		}
 		s.grid = next;
-		markCellsDirty(cycles.flat());
+		markCellsDirty(allMoved);
 	}
 
 	function shiftRight() {

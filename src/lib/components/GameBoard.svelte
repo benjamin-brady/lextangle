@@ -59,6 +59,60 @@
 	let shareFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 	let hasObservedSolvedState = false;
 	let previousSolved = false;
+
+	// FLIP animation: track where each word was so we can animate tiles flying into place.
+	// Maps word → grid index for the previous frame.
+	let prevWordPositions = $state<Map<string, number>>(new Map());
+	// Maps grid index → {dx, dy} offset to animate FROM (inverted delta).
+	let flipOffsets = $state<Map<number, { dx: number; dy: number }>>(new Map());
+	let flipToken = 0;
+
+	// Snapshot current grid positions for FLIP comparison.
+	function snapshotPositions(): Map<string, number> {
+		const map = new Map<string, number>();
+		for (let i = 0; i < 9; i++) {
+			const cell = game.grid[i];
+			if (cell) map.set(cell.word, i);
+		}
+		return map;
+	}
+
+	// Trigger FLIP: call before a grid mutation, then after the reactive update
+	// the $effect will compute deltas and animate.
+	function triggerFlip() {
+		prevWordPositions = snapshotPositions();
+	}
+
+	$effect(() => {
+		// Read the grid to subscribe to changes.
+		const currentGrid = game.grid;
+		if (prevWordPositions.size === 0) return;
+
+		const offsets = new Map<number, { dx: number; dy: number }>();
+		for (let i = 0; i < 9; i++) {
+			const cell = currentGrid[i];
+			if (!cell) continue;
+			const prevIdx = prevWordPositions.get(cell.word);
+			if (prevIdx === undefined || prevIdx === i) continue;
+			// Compute pixel delta from old position to new position.
+			const oldPos = cellPos(prevIdx);
+			const newPos = cellPos(i);
+			offsets.set(i, { dx: oldPos.x - newPos.x, dy: oldPos.y - newPos.y });
+		}
+
+		if (offsets.size > 0) {
+			flipOffsets = offsets;
+			const token = ++flipToken;
+			// After a frame, clear offsets so the transition plays to (0,0).
+			requestAnimationFrame(() => {
+				if (token === flipToken) {
+					flipOffsets = new Map();
+				}
+			});
+		}
+
+		prevWordPositions = new Map();
+	});
 	let solvedLinks = $derived(
 		puzzle.edges.map((edge) => ({
 			from: puzzle.solution[edge.from],
@@ -577,6 +631,7 @@
 			{@const isSwapSource = isDragSource || isSelected}
 			{@const isTapHint = isTapTarget(i) && !isDragSource}
 			{@const isDropTarget = (dragOverIndex === i && !isDragSource) || isTapHint}
+			{@const flip = flipOffsets.get(i)}
 			<div
 				class="absolute flex items-center justify-center {swapAnim.has(i) ? 'tile-swap' : ''}"
 				style="
@@ -584,6 +639,7 @@
 					top: {pos.y}px;
 					width: {SLOT_SIZE}px;
 					height: {SLOT_SIZE}px;
+					{flip ? `transform: translate(${flip.dx}px, ${flip.dy}px);` : 'transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);'}
 				"
 				data-grid-index={i}
 				role="button"
@@ -782,7 +838,7 @@
 					type="button"
 					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
 					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(1.5deg);"
-					onclick={() => game.flipHorizontal()}
+					onclick={() => { triggerFlip(); game.flipHorizontal(); }}
 					title="Flip board horizontally"
 					aria-label="Flip board horizontally"
 				>
@@ -793,7 +849,7 @@
 					type="button"
 					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
 					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1deg);"
-					onclick={() => game.flipVertical()}
+					onclick={() => { triggerFlip(); game.flipVertical(); }}
 					title="Flip board vertically"
 					aria-label="Flip board vertically"
 				>
@@ -804,7 +860,7 @@
 					type="button"
 					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
 					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(1deg);"
-					onclick={() => game.shiftRight()}
+					onclick={() => { triggerFlip(); game.shiftRight(); }}
 					title="Shift grid right"
 					aria-label="Shift grid right"
 				>
@@ -815,7 +871,7 @@
 					type="button"
 					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
 					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
-					onclick={() => game.shiftDown()}
+					onclick={() => { triggerFlip(); game.shiftDown(); }}
 					title="Shift grid down"
 					aria-label="Shift grid down"
 				>
