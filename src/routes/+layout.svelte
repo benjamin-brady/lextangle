@@ -118,7 +118,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="/privacy">privacy</a>
 			</nav>
-			<p class="font-display" style="font-size: 1rem; color: var(--text-muted);">made with ☕ by ben brady</p>
+			<p class="font-display" style="font-size: 1rem; color: var(--text-muted);">made with ☕ by <a class="hover:text-(--crayon-red)" href="https://benjamin-brady.github.io/" target="_blank" rel="noopener noreferrer">ben brady</a></p>
 		</div>
 	</footer>
 </div>
