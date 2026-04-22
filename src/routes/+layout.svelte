@@ -53,7 +53,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 	{/if}
 </svelte:head>
 
-<div class="relative z-10 min-h-dvh flex flex-col items-center text-(--text)">
+<div class="relative min-h-dvh flex flex-col items-center text-(--text)">
 	<!-- Hidden SVG defs for wobble filter + reusable paths -->
 	<svg width="0" height="0" style="position:absolute" aria-hidden="true">
 		<defs>
