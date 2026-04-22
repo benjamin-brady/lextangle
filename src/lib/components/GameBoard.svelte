@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { trackEvent } from '$lib/analytics';
 	import FeedbackDialog from './FeedbackDialog.svelte';
+	import CrossPromoCard from './CrossPromoCard.svelte';
 	import FlipHorizontal2 from 'lucide-svelte/icons/flip-horizontal-2';
 	import FlipVertical2 from 'lucide-svelte/icons/flip-vertical-2';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
@@ -766,6 +767,8 @@
 				{/each}
 			</ul>
 		</section>
+
+		<CrossPromoCard />
 	{/if}
 
 	<!-- Inventory: scattered stickers -->
