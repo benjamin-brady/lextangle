@@ -865,7 +865,7 @@
 					aria-label="Shift grid right"
 				>
 					<ArrowRight class="h-4 w-4" aria-hidden="true" />
-					<span>shift →</span>
+					<span>shift r</span>
 				</button>
 				<button
 					type="button"
@@ -876,7 +876,7 @@
 					aria-label="Shift grid down"
 				>
 					<ArrowDown class="h-4 w-4" aria-hidden="true" />
-					<span>shift ↓</span>
+					<span>shift d</span>
 				</button>
 			{/if}
 			<button
