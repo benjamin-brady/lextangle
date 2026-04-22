@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onDestroy, tick } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
+  import Matter from 'matter-js';
   import { validateLink } from '$lib/game';
   import type { LinkVerdict } from '$lib/types';
-  import { collapse, type TileSpec } from '$lib/physics';
 
   let { startA, startB, target }: { startA: string; startB: string; target: string } = $props();
 
@@ -20,7 +20,36 @@
   let boardWidth = $state(360);
   const H = 680;
   let tileEls: Record<string, HTMLDivElement | null> = $state({});
-  let disposeSim: (() => void) | null = null;
+
+  // --- Live physics (Matter.js) ------------------------------------------
+  type Pt = { x: number; y: number };
+  type TileRec = {
+    body: Matter.Body;
+    word: string;
+    w: number;
+    h: number;
+    // Local-space offsets (in tile coords) used as rope attach points.
+    nearTopOff: Pt;
+    farTopOff: Pt;
+    nearBottomOff: Pt;
+    farBottomOff: Pt;
+    /** Constraints owned by this tile (go upward from it). */
+    incoming: Matter.Constraint[];
+  };
+  type ThreadSegment = {
+    key: string;
+    ceiling: boolean;
+    getEnds: () => { a: Pt; b: Pt } | null;
+  };
+
+  let engine: Matter.Engine | null = null;
+  let world: Matter.World | null = null;
+  let tileRecs: TileRec[] = [];
+  let tilesInSim = 0;
+  let rafId = 0;
+  let lastStep = 0;
+  let threadSegs = $state<ThreadSegment[]>([]);
+  let threadTick = $state(0); // bump each frame so SVG re-reads endpoints
 
   $effect(() => {
     if (!boardEl) return;
@@ -173,11 +202,11 @@
     chain = chain.slice(0, -1);
     verdictPairs = verdictPairs.slice(0, -1);
     error = null;
+    removeLastFromSim();
   }
 
   function reset() {
-    if (disposeSim) disposeSim();
-    disposeSim = null;
+    disposeSim();
     chain = [startA, startB];
     verdictPairs = [];
     inputValue = '';
@@ -202,33 +231,277 @@
 
   async function snap() {
     phase = 'snapped';
-    await tick();
-    if (!boardEl) return;
-    const specs: TileSpec[] = [];
-    const w = tileW;
-    const h = tileH;
-    for (let i = 0; i < chain.length; i++) {
-      const word = chain[i];
-      const el = tileEls[word];
-      if (!el) continue;
-      const c = tileCenter(i);
-      // Hang unravels — each row swings opposite to neighbours
-      const swing = i % 2 === 0 ? -1 : 1;
-      specs.push({
-        el,
-        x: c.x,
-        y: c.y,
-        w,
-        h,
-        vx: swing * (1.2 + i * 0.25),
-        vy: -0.4,
-        angularVelocity: swing * (0.06 + i * 0.012)
-      });
+    // Cut every ceiling anchor (constraints with no bodyA) so the web falls.
+    if (world) {
+      const constraints = Matter.Composite.allConstraints(world);
+      for (const c of constraints) {
+        if (!c.bodyA) Matter.World.remove(world, c);
+      }
+      // Give each tile a small outward kick for dramatic unravel.
+      for (let i = 0; i < tileRecs.length; i++) {
+        const t = tileRecs[i];
+        const swing = i % 2 === 0 ? -1 : 1;
+        Matter.Body.setVelocity(t.body, {
+          x: t.body.velocity.x + swing * (1.2 + i * 0.2),
+          y: t.body.velocity.y - 0.4
+        });
+        Matter.Body.setAngularVelocity(
+          t.body,
+          t.body.angularVelocity + swing * (0.05 + i * 0.01)
+        );
+      }
     }
-    disposeSim = collapse(boardEl, specs);
   }
 
-  onDestroy(() => { if (disposeSim) disposeSim(); });
+  onDestroy(() => disposeSim());
+
+  // --- Physics sim lifecycle ---------------------------------------------
+
+  function rotatedWorld(body: Matter.Body, off: Pt): Pt {
+    const cos = Math.cos(body.angle);
+    const sin = Math.sin(body.angle);
+    return {
+      x: body.position.x + off.x * cos - off.y * sin,
+      y: body.position.y + off.x * sin + off.y * cos
+    };
+  }
+
+  // Local-space offsets on a tile for its four rope attach corners, derived
+  // from whether the tile sits in the left or right column.
+  function tileOffsets(i: number, w: number, h: number) {
+    const isLeft = i % 2 === 0;
+    // "near" = same side as the tile's column, "far" = opposite side.
+    const nearX = isLeft ? -w / 2 + 10 : w / 2 - 10;
+    const farX = isLeft ? w / 2 - 10 : -w / 2 + 10;
+    return {
+      nearTopOff: { x: nearX, y: -h / 2 },
+      farTopOff: { x: farX, y: -h / 2 },
+      nearBottomOff: { x: nearX, y: h / 2 },
+      farBottomOff: { x: farX, y: h / 2 }
+    };
+  }
+
+  function createSim() {
+    if (engine || !boardEl) return;
+    const eng = Matter.Engine.create();
+    eng.gravity.y = 1;
+    eng.constraintIterations = 4;
+    engine = eng;
+    world = eng.world;
+
+    const width = boardWidth;
+    const leftW = Matter.Bodies.rectangle(-30, H / 2, 40, H * 3, { isStatic: true });
+    const rightW = Matter.Bodies.rectangle(width + 30, H / 2, 40, H * 3, { isStatic: true });
+    const floor = Matter.Bodies.rectangle(width / 2, H - LEDGE_H + 25, width * 3, 50, { isStatic: true });
+    Matter.World.add(eng.world, [leftW, rightW, floor]);
+
+    tileRecs = [];
+    tilesInSim = 0;
+    threadSegs = [];
+
+    lastStep = performance.now();
+    const step = (now: number) => {
+      if (!engine) return;
+      const dt = Math.min(now - lastStep, 33);
+      lastStep = now;
+      Matter.Engine.update(engine, dt / 2);
+      Matter.Engine.update(engine, dt / 2);
+      for (const t of tileRecs) {
+        const el = tileEls[t.word];
+        if (el) {
+          el.style.transform = `translate(${t.body.position.x - t.w / 2}px, ${t.body.position.y - t.h / 2}px) rotate(${t.body.angle}rad)`;
+        }
+      }
+      threadTick++;
+      rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+  }
+
+  function disposeSim() {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+    if (world) Matter.World.clear(world, false);
+    if (engine) Matter.Engine.clear(engine);
+    engine = null;
+    world = null;
+    tileRecs = [];
+    tilesInSim = 0;
+    threadSegs = [];
+  }
+
+  function addTileToSim(index: number, word: string) {
+    if (!engine || !world) return;
+    const el = tileEls[word];
+    if (!el) return;
+
+    const w = tileW;
+    const h = tileH;
+    const c = tileCenter(index);
+    const body = Matter.Bodies.rectangle(c.x, c.y, w, h, {
+      restitution: 0.12,
+      friction: 0.6,
+      frictionAir: 0.06,
+      density: 0.003,
+      collisionFilter: { group: -1 }
+    });
+    Matter.World.add(world, body);
+
+    const offs = tileOffsets(index, w, h);
+    const rec: TileRec = {
+      body,
+      word,
+      w,
+      h,
+      ...offs,
+      incoming: []
+    };
+    tileRecs[index] = rec;
+
+    // Build two rope constraints:
+    //  1. "near" rope going up to the same-column grandparent (i-2) or the
+    //     ceiling peg if i < 2.
+    //  2. "far" rope going up to the other-column parent (i-1), or the far
+    //     ceiling peg if i == 0.
+    const anchorStiffness = 0.5;
+    const anchorDamping = 0.18;
+    const rungStiffness = 0.9;
+    const rungDamping = 0.15;
+
+    const nearWorldInit = rotatedWorld(body, rec.nearTopOff);
+    const farWorldInit = rotatedWorld(body, rec.farTopOff);
+
+    const nearC = (() => {
+      if (index >= 2) {
+        const gp = tileRecs[index - 2];
+        const src = rotatedWorld(gp.body, gp.nearBottomOff);
+        const len = Math.max(4, Math.hypot(nearWorldInit.x - src.x, nearWorldInit.y - src.y));
+        return Matter.Constraint.create({
+          bodyA: gp.body,
+          pointA: gp.nearBottomOff,
+          bodyB: body,
+          pointB: rec.nearTopOff,
+          length: len,
+          stiffness: rungStiffness,
+          damping: rungDamping
+        });
+      }
+      // Ceiling attachment (near side of same column).
+      const peg = { x: index % 2 === 0 ? anchorLX : anchorRX, y: ANCHOR_Y + 4 };
+      const len = Math.max(4, Math.hypot(nearWorldInit.x - peg.x, nearWorldInit.y - peg.y));
+      return Matter.Constraint.create({
+        pointA: peg,
+        bodyB: body,
+        pointB: rec.nearTopOff,
+        length: len,
+        stiffness: anchorStiffness,
+        damping: anchorDamping
+      });
+    })();
+
+    const farC = (() => {
+      if (index >= 1) {
+        const parent = tileRecs[index - 1];
+        const src = rotatedWorld(parent.body, parent.farBottomOff);
+        const len = Math.max(4, Math.hypot(farWorldInit.x - src.x, farWorldInit.y - src.y));
+        return Matter.Constraint.create({
+          bodyA: parent.body,
+          pointA: parent.farBottomOff,
+          bodyB: body,
+          pointB: rec.farTopOff,
+          length: len,
+          stiffness: rungStiffness,
+          damping: rungDamping
+        });
+      }
+      // Tile 0 only: far rope to opposite ceiling peg.
+      const peg = { x: anchorRX, y: ANCHOR_Y + 4 };
+      const len = Math.max(4, Math.hypot(farWorldInit.x - peg.x, farWorldInit.y - peg.y));
+      return Matter.Constraint.create({
+        pointA: peg,
+        bodyB: body,
+        pointB: rec.farTopOff,
+        length: len,
+        stiffness: anchorStiffness,
+        damping: anchorDamping
+      });
+    })();
+
+    Matter.World.add(world, [nearC, farC]);
+    rec.incoming = [nearC, farC];
+
+    // Register thread segments (live endpoints) for SVG rendering.
+    threadSegs = [
+      ...threadSegs,
+      {
+        key: `near-${index}`,
+        ceiling: index < 2,
+        getEnds: () => {
+          const cur = tileRecs[index];
+          if (!cur) return null;
+          const end = rotatedWorld(cur.body, cur.nearTopOff);
+          if (index >= 2) {
+            const gp = tileRecs[index - 2];
+            if (!gp) return null;
+            return { a: rotatedWorld(gp.body, gp.nearBottomOff), b: end };
+          }
+          return { a: { x: index % 2 === 0 ? anchorLX : anchorRX, y: ANCHOR_Y + 4 }, b: end };
+        }
+      },
+      {
+        key: `far-${index}`,
+        ceiling: index === 0,
+        getEnds: () => {
+          const cur = tileRecs[index];
+          if (!cur) return null;
+          const end = rotatedWorld(cur.body, cur.farTopOff);
+          if (index >= 1) {
+            const parent = tileRecs[index - 1];
+            if (!parent) return null;
+            return { a: rotatedWorld(parent.body, parent.farBottomOff), b: end };
+          }
+          return { a: { x: anchorRX, y: ANCHOR_Y + 4 }, b: end };
+        }
+      }
+    ];
+
+    tilesInSim = Math.max(tilesInSim, index + 1);
+  }
+
+  function removeLastFromSim() {
+    if (!world) return;
+    const idx = tileRecs.length - 1;
+    if (idx < 2) return; // keep the two seed tiles
+    const rec = tileRecs.pop();
+    if (!rec) return;
+    for (const c of rec.incoming) Matter.World.remove(world, c);
+    Matter.World.remove(world, rec.body);
+    threadSegs = threadSegs.filter((s) => s.key !== `near-${idx}` && s.key !== `far-${idx}`);
+    tilesInSim = tileRecs.length;
+  }
+
+  // Create sim once board mounts and we know its width.
+  $effect(() => {
+    if (!boardEl || boardWidth <= 0) return;
+    if (!engine) createSim();
+  });
+
+  // Sync chain → sim (add newly appended tiles after their DOM node mounts).
+  $effect(() => {
+    const len = chain.length;
+    if (!engine) return;
+    untrack(() => {
+      if (len <= tilesInSim) return;
+      queueMicrotask(async () => {
+        await tick();
+        if (!engine) return;
+        for (let i = tilesInSim; i < chain.length; i++) {
+          if (!tileEls[chain[i]]) return;
+          addTileToSim(i, chain[i]);
+        }
+      });
+    });
+  });
 
   function typeEmoji(t: string | null | undefined): string {
     const m: Record<string, string> = {
@@ -361,25 +634,15 @@
           {/if}
         {/snippet}
 
-        <!-- Draw two threads per tile (same-column grandparent + crossing parent). -->
-        {#each chain as _, i}
-          {@const nt = nearTop(i)}
-          {@const ft = farTop(i)}
-          {#if i >= 2}
-            {@const src = nearBottom(i - 2)}
-            {@render thread(src.x, src.y, nt.x, nt.y, i * 11 + 1, false)}
-          {:else}
-            {@const src = ceilingNear(i)}
-            {@render thread(src.x, src.y, nt.x, nt.y, i * 11 + 1, true)}
-          {/if}
-          {#if i >= 1}
-            {@const src = farBottom(i - 1)}
-            {@render thread(src.x, src.y, ft.x, ft.y, i * 11 + 7, i === 0)}
-          {:else}
-            {@const src = ceilingFar(i)}
-            {@render thread(src.x, src.y, ft.x, ft.y, i * 11 + 7, true)}
-          {/if}
-        {/each}
+        <!-- Draw two threads per tile, using live physics endpoints. -->
+        {#key threadTick}
+          {#each threadSegs as seg (seg.key)}
+            {@const ends = seg.getEnds()}
+            {#if ends}
+              {@render thread(ends.a.x, ends.a.y, ends.b.x, ends.b.y, seg.key.charCodeAt(0) * 7 + seg.key.length, seg.ceiling)}
+            {/if}
+          {/each}
+        {/key}
       {/if}
 
       <!-- Rescue ledge -->
@@ -401,15 +664,12 @@
       </div>
     {/if}
 
-    <!-- Hanging tiles -->
+    <!-- Hanging tiles — positioned at (0,0); physics sim drives transform each frame. -->
     {#each chain as word, i (word)}
-      {@const c = tileCenter(i)}
       <div
         bind:this={tileEls[word]}
         class="absolute flex items-center justify-center gap-1 px-2 border-2 border-(--ink) font-bold text-xs shadow-[2px_2px_0_0_var(--ink)] will-change-transform {tileBg(i, word)}"
-        style={phase === 'snapped'
-          ? `left: 0px; top: 0px; width: ${tileW}px; height: ${tileH}px;`
-          : `left: ${c.x - tileW / 2}px; top: ${c.y - tileH / 2}px; width: ${tileW}px; height: ${tileH}px;`}
+        style="left: 0; top: 0; width: {tileW}px; height: {tileH}px;"
         title={i < 2
           ? `Seed ${i === 0 ? 'A' : 'B'}`
           : `${chain[i - 2]} + ${chain[i - 1]} → ${word}`}
