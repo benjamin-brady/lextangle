@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Patrick+Hand&display=swap');
 @import "tw-animate-css";
 @import "shadcn-svelte/tailwind.css";
 
@@ -38,8 +37,8 @@
 	--red: var(--crayon-red);
 	--radius: 0.625rem;
 	color-scheme: light;
-	font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
-	--font-display: 'Caveat', 'Patrick Hand', cursive;
+	font-family: 'Roboto Serif', Georgia, serif;
+	--font-display: 'Roboto Serif', Georgia, serif;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.145 0 0);
 	--card: oklch(1 0 0);
@@ -76,7 +75,7 @@ body {
 	color: var(--text);
 	margin: 0;
 	min-height: 100dvh;
-	font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
+	font-family: 'Roboto Serif', Georgia, serif;
 	font-size: 1.0625rem;
 	line-height: 1.5;
 }
@@ -295,7 +294,7 @@ body::before {
 }
 
 @theme inline {
-	--font-sans: 'Patrick Hand', 'Comic Sans MS', cursive;
+	--font-sans: 'Roboto Serif', Georgia, serif;
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

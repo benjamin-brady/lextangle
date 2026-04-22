@@ -577,22 +577,6 @@
 />
 
 <div class="flex flex-col items-stretch gap-6 select-none touch-none">
-	<!-- Stats: sticky notes -->
-	<div class="flex items-start justify-center gap-3 px-2">
-		<div class="sticky-note flex-1 text-center" style="background: var(--crayon-yellow); transform: rotate(-2deg);">
-			<p class="font-display leading-none" style="font-size: 1rem; color: rgba(42,42,46,0.75);">checks</p>
-			<p class="font-display font-bold tabular-nums leading-none mt-1" style="font-size: 2.2rem; color: var(--ink-dark);">{game.checks}</p>
-		</div>
-		<div class="sticky-note flex-1 text-center" style="background: var(--crayon-blue); transform: rotate(1.5deg);">
-			<p class="font-display leading-none" style="font-size: 1rem; color: rgba(255,255,255,0.9);">words</p>
-			<p class="font-display font-bold tabular-nums leading-none mt-1" style="font-size: 2.2rem; color: #fff;">{game.correctCount}<span style="opacity: 0.7;">/9</span></p>
-		</div>
-		<div class="sticky-note flex-1 text-center" style="background: var(--crayon-green); transform: rotate(-1deg);">
-			<p class="font-display leading-none" style="font-size: 1rem; color: rgba(255,255,255,0.9);">links</p>
-			<p class="font-display font-bold tabular-nums leading-none mt-1" style="font-size: 2.2rem; color: #fff;">{game.correctEdgeCount}<span style="opacity: 0.7;">/{ADJACENCIES.length}</span></p>
-		</div>
-	</div>
-
 	<!-- Grid -->
 	<div class="relative w-full" style="height: {GRID_H + 18}px;" bind:clientWidth={boardWidth}>
 		<!-- Crayon-squiggle edges -->
@@ -613,10 +597,10 @@
 					d={wavyPath(x1, y1, x2, y2)}
 					fill="none"
 					stroke={edgeColor(a, b)}
-					stroke-width="10"
+					stroke-width="14"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					filter="url(#wobble)"
+					opacity="0.55"
 				/>
 			{/each}
 		</svg>
@@ -817,12 +801,18 @@
 	<div class="flex flex-col gap-4">
 		{#if !game.solved}
 			<button
-				class="crayon-btn crayon-btn-blue w-full"
+				class="crayon-btn crayon-btn-blue w-full relative"
 				style="padding: 16px; font-size: 1.8rem; transform: rotate(-0.5deg);"
 				onclick={handleCheck}
 				disabled={!game.canCheck}
 			>
 				check it!
+				{#if game.checks > 0}
+					<span
+						class="absolute font-display font-bold tabular-nums leading-none"
+						style="top: -14px; right: -12px; background: var(--crayon-yellow); color: var(--ink-dark); font-size: 1.9rem; padding: 6px 14px; border-radius: 2px; transform: rotate(6deg); filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.15));"
+					>{game.checks}</span>
+				{/if}
 			</button>
 		{/if}
 		<div class="flex flex-wrap items-center justify-center gap-2">
