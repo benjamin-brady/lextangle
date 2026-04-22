@@ -693,8 +693,8 @@
 			<span aria-hidden="true" class="absolute" style="top: 40px; right: 14%; font-size: 1.6rem; transform: rotate(22deg); display: inline-block;">🌟</span>
 			<span aria-hidden="true" class="absolute" style="bottom: 8px; left: 32%; font-size: 1.5rem; transform: rotate(-8deg); display: inline-block;">⭐</span>
 			<span aria-hidden="true" class="absolute" style="top: 8px; right: 8%; font-size: 2.2rem;">☀️</span>
-			<p class="font-display font-bold leading-none" style="font-size: 6rem; color: var(--crayon-green); transform: rotate(-3deg); display: inline-block;">nice!</p>
-			<p class="font-display mt-2" style="font-size: 1.25rem; color: var(--text-muted);">solved in {game.checks} {game.checks === 1 ? 'check' : 'checks'}</p>
+			<p class="font-display font-bold leading-none" style="font-size: 5rem; color: var(--crayon-green); transform: rotate(-3deg); display: inline-block;">nice!</p>
+			<p class="font-display mt-2" style="font-size: 1.1rem; color: var(--text-muted);">solved in {game.checks} {game.checks === 1 ? 'check' : 'checks'}</p>
 			<div class="mt-5 flex flex-wrap items-center justify-center gap-3">
 				<button
 					type="button"
@@ -733,13 +733,13 @@
 		</div>
 
 		<section class="px-2 py-3" style="background: rgba(255,253,246,0.7); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.1)); border-radius: 3px;">
-			<h2 class="font-display font-bold mb-1" style="font-size: 2rem; color: var(--ink-dark); transform: rotate(-1deg); display: inline-block;">
+			<h2 class="font-display font-bold mb-1" style="font-size: 1.7rem; color: var(--ink-dark); transform: rotate(-1deg); display: inline-block;">
 				why the links work
 			</h2>
 			<ul class="mt-2" style="background-image: repeating-linear-gradient(0deg, transparent 0 26px, rgba(52,152,219,0.18) 26px 27px);">
 				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
 					<li class="py-2 px-1" style="min-height: 52px;">
-						<p class="font-display font-bold flex items-center gap-1.5 flex-wrap leading-tight" style="font-size: 1.35rem; color: var(--ink-dark);">
+						<p class="font-display font-bold flex items-center gap-1.5 flex-wrap leading-tight" style="font-size: 1.15rem; color: var(--ink-dark);">
 							<span aria-hidden="true" style="font-size: 1.3rem;">{wordEmoji(link.from)}</span>
 							<span>{link.from.word}</span>
 							<span style="color: var(--crayon-red);">→</span>
@@ -768,7 +768,7 @@
 		onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTapInventoryZone(); } }}
 	>
 		{#if game.inventory.length === 0}
-			<p class="self-center font-display" style="font-size: 1.2rem; color: var(--text-muted);">
+			<p class="self-center font-display" style="font-size: 1.05rem; color: var(--text-muted);">
 				{game.solved ? 'all words placed ✨' : 'drag words back here'}
 			</p>
 		{/if}
@@ -790,7 +790,7 @@
 				onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onTapInventory(word); } }}
 			>
 				<span aria-hidden="true" style="font-size: 1.15rem; line-height: 1;">{wordEmoji(word)}</span>
-				<span class="font-display" style="font-size: 1.3rem; line-height: 1; color: var(--ink-dark);">{word.word}</span>
+				<span class="font-display" style="font-size: 1.15rem; line-height: 1; color: var(--ink-dark);">{word.word}</span>
 				{#if invSwapSource}
 					<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: 0.8rem; color: var(--swap-label); bottom: -8px; right: -6px; transform: rotate(-4deg); text-shadow: 0 1px 0 rgba(0,0,0,0.25);">swap</span>
 				{/if}
@@ -802,7 +802,7 @@
 		{#if !game.solved}
 			<button
 				class="crayon-btn crayon-btn-blue w-full relative"
-				style="padding: 16px; font-size: 1.8rem; transform: rotate(-0.5deg);"
+				style="padding: 12px; font-size: 1.5rem; transform: rotate(-0.5deg);"
 				onclick={handleCheck}
 				disabled={!game.canCheck}
 			>
@@ -810,7 +810,7 @@
 				{#if game.checks > 0}
 					<span
 						class="absolute font-display font-bold tabular-nums leading-none"
-						style="top: -14px; right: -12px; background: var(--crayon-yellow); color: var(--ink-dark); font-size: 1.9rem; padding: 6px 14px; border-radius: 2px; transform: rotate(6deg); filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.15));"
+						style="top: -12px; right: -10px; background: var(--crayon-yellow); color: var(--ink-dark); font-size: 1.5rem; padding: 4px 10px; border-radius: 2px; transform: rotate(6deg); filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.15));"
 					>{game.checks}</span>
 				{/if}
 			</button>
@@ -820,8 +820,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
-					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
-					onclick={shareResult}
+					style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
 					aria-label="Share result"
 				>
 					<Share2 class="h-4 w-4" aria-hidden="true" />
@@ -830,7 +829,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
-					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(1.5deg);"
+					style="font-size: 1rem; padding: 6px 10px; transform: rotate(1.5deg);"
 					onclick={() => { triggerFlip(); game.flipHorizontal(); }}
 					title="Flip board horizontally"
 					aria-label="Flip board horizontally"
@@ -841,7 +840,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
-					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1deg);"
+					style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1deg);"
 					onclick={() => { triggerFlip(); game.flipVertical(); }}
 					title="Flip board vertically"
 					aria-label="Flip board vertically"
@@ -852,7 +851,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
-					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(1deg);"
+					style="font-size: 1rem; padding: 6px 10px; transform: rotate(1deg);"
 					onclick={() => { triggerFlip(); game.shiftRight(); }}
 					title="Shift grid right"
 					aria-label="Shift grid right"
@@ -863,7 +862,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
-					style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
+					style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
 					onclick={() => { triggerFlip(); game.shiftDown(); }}
 					title="Shift grid down"
 					aria-label="Shift grid down"
@@ -875,7 +874,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
-				style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(2deg);"
+				style="font-size: 1rem; padding: 6px 10px; transform: rotate(2deg);"
 				onclick={() => game.undo()}
 				disabled={!game.canUndo}
 				aria-label="Undo last move"
@@ -887,7 +886,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-red inline-flex items-center gap-1.5"
-				style="font-size: 1.1rem; padding: 8px 12px; transform: rotate(-1.5deg);"
+				style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
 				onclick={() => game.reset()}
 				aria-label="Reset board"
 			>
@@ -897,7 +896,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5 ml-auto"
-				style="font-size: 1.1rem; padding: 8px 10px; transform: rotate(1.5deg);"
+				style="font-size: 1rem; padding: 6px 8px; transform: rotate(1.5deg);"
 				title="I liked this puzzle"
 				aria-label="Thumbs up"
 				onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
@@ -907,7 +906,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5"
-				style="font-size: 1.1rem; padding: 8px 10px; transform: rotate(-1.5deg);"
+				style="font-size: 1rem; padding: 6px 8px; transform: rotate(-1.5deg);"
 				title="Report a problem with this puzzle"
 				aria-label="Thumbs down"
 				onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}

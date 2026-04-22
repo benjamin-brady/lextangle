@@ -69,17 +69,17 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 	</svg>
 
 	<header class="w-full bg-(--bg-raised)" style="box-shadow: 0 2px 0 rgba(0,0,0,0.12);">
-		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-5 pb-3">
-			<a href="/" class="flex items-baseline gap-2 group">
-				<span class="font-display leading-none relative" style="font-size: 4.5rem; color: var(--ink);">
+		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-3 pb-2">
+			<a href="/" class="flex items-baseline gap-1.5 group">
+				<span class="font-display leading-none relative" style="font-size: 2.8rem; color: var(--ink);">
 					<span>Lex</span><span style="color: var(--crayon-red);">tangle</span>
 					<span
 						class="font-display absolute"
-						style="top: -0.25rem; right: -1.75rem; font-size: 1.15rem; color: var(--paper-cream); background: var(--crayon-purple); padding: 0.1rem 0.5rem 0.05rem; border: 2px solid var(--ink-dark); transform: rotate(8deg); line-height: 1; letter-spacing: 0.05em; box-shadow: 1px 1px 0 0 var(--ink-dark);"
+						style="top: -0.2rem; right: -1.4rem; font-size: 0.75rem; color: var(--paper-cream); background: var(--crayon-purple); padding: 0.05rem 0.35rem 0.02rem; border: 1.5px solid var(--ink-dark); transform: rotate(8deg); line-height: 1; letter-spacing: 0.05em; box-shadow: 1px 1px 0 0 var(--ink-dark);"
 						aria-label="Alpha version"
 					>alpha</span>
 				</span>
-				<span class="font-display leading-none" style="font-size: 2rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{puzzleNumber}</span>
+				<span class="font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{puzzleNumber}</span>
 			</a>
 			<div class="flex items-center gap-2">
 				<ThemeToggle />
@@ -87,11 +87,11 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 			</div>
 		</div>
 		<!-- Double-squiggle underline -->
-		<svg class="block w-full max-w-md mx-auto px-4" height="18" viewBox="0 0 420 18" preserveAspectRatio="none" aria-hidden="true">
+		<svg class="block w-full max-w-md mx-auto px-4" height="14" viewBox="0 0 420 18" preserveAspectRatio="none" aria-hidden="true">
 			<path d="M4 8 Q 30 2, 60 8 T 120 8 T 180 8 T 240 8 T 300 8 T 360 8 T 416 8" fill="none" stroke="var(--crayon-blue)" stroke-width="3" stroke-linecap="round" filter="url(#wobble)" />
 			<path d="M4 14 Q 30 9, 60 14 T 120 14 T 180 14 T 240 14 T 300 14 T 360 14 T 416 14" fill="none" stroke="var(--crayon-red)" stroke-width="2.5" stroke-linecap="round" filter="url(#wobble)" />
 		</svg>
-		<nav class="flex items-center justify-center gap-5 py-2 font-display" style="font-size: 1.5rem;">
+		<nav class="flex items-center justify-center gap-5 py-1.5 font-display" style="font-size: 1.2rem;">
 			<a class="px-2 py-1 hover:text-(--crayon-red) transition-colors" style="color: var(--ink);" href="/">daily</a>
 			<a class="px-2 py-1 hover:text-(--crayon-red) transition-colors" style="color: var(--ink);" href="/practice">practice</a>
 		</nav>
@@ -111,7 +111,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span aria-hidden="true">☕</span>
 				<span>buy me a coffee</span>
 			</a>
-			<nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-display" style="font-size: 1.15rem; color: var(--text-muted);">
+			<nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-display" style="font-size: 1rem; color: var(--text-muted);">
 				<a class="hover:text-(--crayon-red)" href="https://discord.gg/AWfvmFWBcA" target="_blank" rel="noopener noreferrer">discord</a>
 				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="/terms">terms</a>
