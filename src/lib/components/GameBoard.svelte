@@ -887,7 +887,7 @@
 				type="button"
 				class="crayon-btn crayon-btn-red inline-flex items-center gap-1.5"
 				style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
-				onclick={() => game.reset()}
+				onclick={() => { if (confirm('Reset the board? All progress will be lost.')) game.reset(); }}
 				aria-label="Reset board"
 			>
 				<RotateCcw class="h-4 w-4" aria-hidden="true" />
