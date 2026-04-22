@@ -68,7 +68,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 		</defs>
 	</svg>
 
-	<header class="w-full bg-(--bg-raised)" style="filter: drop-shadow(0 2px 0 rgba(0,0,0,0.12));">
+	<header class="w-full bg-(--bg-raised)" style="box-shadow: 0 2px 0 rgba(0,0,0,0.12);">
 		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-5 pb-3">
 			<a href="/" class="flex items-baseline gap-2 group">
 				<span class="font-display leading-none relative" style="font-size: 4.5rem; color: var(--ink);">
