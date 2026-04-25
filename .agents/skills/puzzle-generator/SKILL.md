@@ -391,6 +391,7 @@ One emoji per word. Rules:
 - Prefer a direct, obvious emoji for the intended sense.
 - For abstract concepts (colors, directions, numbers), prefer neutral symbols: `Green` → `🟩`, not `🌿`.
 - Keep emojis distinct within the same board.
+- Reject a word set if two words resolve to the same emoji or same emoji sequence after combining inline `emoji` values with the central `WORD_EMOJIS` map. Do not rely on omission from the puzzle object to hide a duplicate mapped emoji.
 - If a word has multiple senses, choose the emoji that supports the intended clue network.
 - Two-emoji combinations are allowed for compound concepts: `Seahorse` → `🌊🐴`.
 - Do not use more than two emojis per word.
@@ -455,7 +456,7 @@ Launch a subagent via `runSubagent` with the prompt:
 > 7. Before finalizing, hide your own adjacency list and re-solve the word set from scratch. If any non-edge pair is cleaner than the weakest intended edge, reject and rebuild.
 > 8. Minimum 6 A-tier edges, max 2 C-tier, at least 3 distinct relation types (minimum 4 A-tier and up to 4 C-tier for hard boards).
 > 9. At least 2 anchor edges a casual solver can identify in under 10 seconds.
-> 10. Assign one emoji per word.
+> 10. Assign one emoji per word, then check the resolved emojis against `WORD_EMOJIS` plus inline values. If any two words resolve to the same emoji or emoji sequence, replace a word or choose a non-conflicting emoji before finalizing.
 > 11. Include `generation` metadata with `author`, `model`, `provider`, and `generatedAt` values for the agent that produced the puzzle.
 >
 > {Insert any user-specified theme, difficulty, or constraints here.}
@@ -520,6 +521,7 @@ Launch a SEPARATE subagent with the generated puzzle and this prompt:
 > - Any plausible alternate solution from swapping 2-3 words?
 > - Blind pair audit result: any off-grid A-tier pairs? More than 2 off-grid B-tier pairs?
 > - At least 2 obvious anchor edges?
+> - Do all 9 words resolve to distinct emojis after applying `WORD_EMOJIS` plus inline overrides?
 >
 > Return:
 > - A verdict for each edge (PASS / WEAK / REJECT)
@@ -622,6 +624,7 @@ Before presenting or committing a puzzle, verify:
 - [ ] No plausible alternate arrangement.
 - [ ] Blind word-set audit found no off-grid A-tier pair and at most 2 off-grid B-tier pairs.
 - [ ] Each word has a suitable emoji.
+- [ ] All 9 words resolve to distinct emojis after applying `WORD_EMOJIS` plus inline overrides.
 - [ ] Hard puzzles feel fair after reveal, not obscure.
 - [ ] The final result feels like a Lextangle puzzle, not a random word web.
 
@@ -635,4 +638,5 @@ If the user asks to add the puzzle directly:
 - Preserve 2-space indentation and the centralized emoji pattern.
 - New words should either be added to `WORD_EMOJIS` in that file or carry inline `emoji` on the `WordItem`.
 - Do not include inline `emoji` for words already in `WORD_EMOJIS`.
+- Before committing, scan the final board's resolved emojis and replace any word that duplicates another word's emoji.
 - Run `bun run check` after editing.
