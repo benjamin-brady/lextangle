@@ -494,15 +494,31 @@
 		}
 	}
 
-	// Grid positioning helpers — grid fills the column width.
+	// Grid positioning helpers: render in a fixed coordinate system and let CSS
+	// scale it to the available width on the first paint.
+	const BOARD_SIZE = 304;
 	const GAP = 14;
-	let boardWidth = $state(304);
-	const SLOT_SIZE = $derived(Math.max(60, (boardWidth - GAP * 2) / 3));
-	const NODE_SIZE = $derived(SLOT_SIZE * (72 / 92));
-	const NODE_FONT = $derived(Math.max(12, NODE_SIZE * 0.19));
-	const EMOJI_FONT = $derived(Math.max(12, NODE_SIZE * 0.22));
-	const GRID_W = $derived(boardWidth);
-	const GRID_H = $derived(boardWidth);
+	const TILE_EXTRA_HEIGHT = 14;
+	const SLOT_SIZE = (BOARD_SIZE - GAP * 2) / 3;
+	const NODE_SIZE = SLOT_SIZE * (72 / 92);
+	const NODE_FONT = Math.max(12, NODE_SIZE * 0.19);
+	const EMOJI_FONT = Math.max(12, NODE_SIZE * 0.22);
+
+	function boardLength(value: number): string {
+		return `${(value / BOARD_SIZE) * 100}%`;
+	}
+
+	function boardUnit(value: number): string {
+		return `${(value / BOARD_SIZE) * 100}cqw`;
+	}
+
+	function boardFont(value: number): string {
+		return `max(12px, ${boardUnit(value)})`;
+	}
+
+	function slotLength(value: number): string {
+		return `${(value / SLOT_SIZE) * 100}%`;
+	}
 
 	function cellPos(index: number): { x: number; y: number } {
 		const row = Math.floor(index / 3);
@@ -553,12 +569,12 @@
 
 <div class="flex flex-col items-stretch gap-6 select-none touch-none">
 	<!-- Grid -->
-	<div class="relative w-full" style="height: {GRID_H + 18}px;" bind:clientWidth={boardWidth}>
+	<div class="relative w-full" style="padding-bottom: 18px;">
+		<div class="relative aspect-square w-full" style="container-type: inline-size;">
 		<!-- Crayon-squiggle edges -->
 		<svg
-			class="absolute inset-0 pointer-events-none"
-			width={GRID_W}
-			height={GRID_H}
+			class="absolute inset-0 h-full w-full pointer-events-none"
+			viewBox={`0 0 ${BOARD_SIZE} ${BOARD_SIZE}`}
 			style="overflow: visible;"
 		>
 			{#each BOARD_ADJACENCIES as [a, b] (`${a}-${b}`)}
@@ -596,11 +612,11 @@
 			<div
 				class="absolute flex items-center justify-center {swapAnim.has(i) ? 'tile-swap' : ''}"
 				style="
-					left: {pos.x}px;
-					top: {pos.y}px;
-					width: {SLOT_SIZE}px;
-					height: {SLOT_SIZE}px;
-					{flip ? `transform: translate(${flip.dx}px, ${flip.dy}px);` : 'transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);'}
+					left: {boardLength(pos.x)};
+					top: {boardLength(pos.y)};
+					width: {boardLength(SLOT_SIZE)};
+					height: {boardLength(SLOT_SIZE)};
+					{flip ? `transform: translate(${boardUnit(flip.dx)}, ${boardUnit(flip.dy)});` : 'transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);'}
 				"
 				data-grid-index={i}
 				role="button"
@@ -616,8 +632,8 @@
 					<div
 						class="polaroid cursor-grab flex flex-col items-center justify-center active:cursor-grabbing relative {isSelected ? 'tile-wiggle' : ''}"
 						style="
-							width: {NODE_SIZE}px;
-							height: {NODE_SIZE + 14}px;
+							width: {slotLength(NODE_SIZE)};
+							height: {slotLength(NODE_SIZE + TILE_EXTRA_HEIGHT)};
 							transform: rotate({tilt}deg);
 							background: {isDropTarget
 								? '#fce6e1'
@@ -641,25 +657,26 @@
 						ondragend={onDragEnd}
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
-						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {EMOJI_FONT * 1.15}px;">{wordEmoji(cell)}</span>
-						<span class="font-display leading-none mt-1" style="font-size: {NODE_FONT * 1.45}px; color: var(--ink-dark);">{cell.word}</span>
+						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {boardFont(EMOJI_FONT * 1.15)};">{wordEmoji(cell)}</span>
+						<span class="font-display leading-none mt-1" style="font-size: {boardFont(NODE_FONT * 1.45)}; color: var(--ink-dark);">{cell.word}</span>
 						{#if isSwapSource}
-							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {NODE_FONT * 0.95}px; color: var(--swap-label); bottom: 4px; right: 6px; transform: rotate(-4deg); text-shadow: 0 1px 0 rgba(0,0,0,0.25);">swap</span>
+							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {boardFont(NODE_FONT * 0.95)}; color: var(--swap-label); bottom: 4px; right: 6px; transform: rotate(-4deg); text-shadow: 0 1px 0 rgba(0,0,0,0.25);">swap</span>
 						{/if}
 					</div>
 				{:else if isDropTarget}
 					<div
 						class="polaroid"
-						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
+						style="width: {slotLength(NODE_SIZE)}; height: {slotLength(NODE_SIZE + TILE_EXTRA_HEIGHT)}; transform: rotate({tilt}deg); background: #fce6e1; outline: 3px dashed var(--crayon-red); outline-offset: -3px;"
 					></div>
 				{:else}
 					<div
 						class="polaroid"
-						style="width: {NODE_SIZE}px; height: {NODE_SIZE + 14}px; transform: rotate({tilt}deg); background: var(--tile-surface); outline: 3px dashed {nodeOutline(i)}; outline-offset: -3px;"
+						style="width: {slotLength(NODE_SIZE)}; height: {slotLength(NODE_SIZE + TILE_EXTRA_HEIGHT)}; transform: rotate({tilt}deg); background: var(--tile-surface); outline: 3px dashed {nodeOutline(i)}; outline-offset: -3px;"
 					></div>
 				{/if}
 			</div>
 		{/each}
+		</div>
 	</div>
 
 	<!-- Solve state with stickers -->

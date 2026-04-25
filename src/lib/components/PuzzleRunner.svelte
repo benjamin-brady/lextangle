@@ -17,7 +17,7 @@
 <div class="grid gap-4">
 	<header class="grid gap-1 text-center sm:text-left">
 		<p class="text-xs font-bold text-(--text-muted)">{shareLabel}</p>
-		<h1 class="text-2xl font-black leading-tight text-balance text-(--text)">{puzzle.title}</h1>
+		<h1 class="text-2xl font-bold leading-tight text-balance text-(--text)">{puzzle.title}</h1>
 	</header>
 	<GameBoard {game} {puzzle} {shareLabel} {storageId} />
 </div>

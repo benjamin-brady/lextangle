@@ -7,7 +7,7 @@
 </svelte:head>
 
 <article class="prose prose-sm dark:prose-invert max-w-none space-y-4 text-sm leading-relaxed text-(--text)">
-	<h1 class="font-display text-2xl font-black tracking-tight">Terms of Service</h1>
+	<h1 class="font-display text-2xl font-bold">Terms of Service</h1>
 	<p class="text-xs text-(--text-muted)"><strong>Last updated: April 21, 2026</strong></p>
 
 	<p>

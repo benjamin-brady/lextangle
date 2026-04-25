@@ -51,28 +51,32 @@
 <div class="flex flex-col gap-6">
 	<section>
 		<div class="flex items-baseline justify-between border-b border-(--border) pb-2">
-			<h2 class="text-lg font-black tracking-tight">Standard</h2>
-			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{practicePuzzles.length} puzzles</p>
+			<h2 class="text-lg font-bold">Standard</h2>
+			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">
+				{practicePuzzles.filter(({ id }) => isSolved(practiceStorageId(id))).length}/{practicePuzzles.length}
+			</p>
 		</div>
-		<div class="mt-3 grid gap-2 sm:grid-cols-2">
+		<div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
 			{#each practicePuzzles as { id, puzzle } (id)}
 				{@const storageId = practiceStorageId(id)}
+				{@const solved = isSolved(storageId)}
 				<a
 					href={`/practice/${id}`}
-					class="grid gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors hover:border-(--accent)"
-					class:border-(--border)={!isSolved(storageId)}
-					class:bg-(--surface)={!isSolved(storageId)}
-					class:border-(--green)={isSolved(storageId)}
-					class:bg-[color-mix(in_oklab,var(--green)_18%,transparent)]={isSolved(storageId)}
-					aria-label={isSolved(storageId) ? `Puzzle ${id}, ${puzzle.title}, completed` : `Puzzle ${id}, ${puzzle.title}`}
+					class="puzzle-tile group relative flex aspect-square flex-col rounded-lg border bg-(--surface) p-1.5 transition-all hover:border-(--accent) hover:-translate-y-0.5"
+					class:solved
+					aria-label={solved ? `Puzzle ${id}, ${puzzle.title}, completed` : `Puzzle ${id}, ${puzzle.title}`}
 				>
-					<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
-						{#if isSolved(storageId)}
-							<span aria-hidden="true" class="text-(--green)">✓</span>
+					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
+						<span>#{id}</span>
+						{#if solved}
+							<span aria-hidden="true" class="text-(--green) text-[12px] leading-none">✓</span>
 						{/if}
-						#{id}
 					</span>
-					<span class="font-black leading-tight text-(--text)">{puzzle.title}</span>
+					<div class="grid flex-1 grid-cols-3 grid-rows-3 place-items-center gap-px">
+						{#each puzzle.solution as word, i (i)}
+							<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
+						{/each}
+					</div>
 				</a>
 			{/each}
 		</div>
@@ -80,30 +84,44 @@
 
 	<section>
 		<div class="flex items-baseline justify-between border-b border-(--border) pb-2">
-			<h2 class="text-lg font-black tracking-tight">Hard</h2>
-			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{hardPuzzles.length} puzzles</p>
+			<h2 class="text-lg font-bold">Hard</h2>
+			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">
+				{hardPuzzles.filter(({ id }) => isSolved(hardPracticeStorageId(id))).length}/{hardPuzzles.length}
+			</p>
 		</div>
-		<div class="mt-3 grid gap-2 sm:grid-cols-2">
+		<div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
 			{#each hardPuzzles as { id, puzzle } (id)}
 				{@const storageId = hardPracticeStorageId(id)}
+				{@const solved = isSolved(storageId)}
 				<a
 					href={`/practice/hard/${id}`}
-					class="grid gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors hover:border-(--accent)"
-					class:border-(--border)={!isSolved(storageId)}
-					class:bg-(--surface)={!isSolved(storageId)}
-					class:border-(--green)={isSolved(storageId)}
-					class:bg-[color-mix(in_oklab,var(--green)_18%,transparent)]={isSolved(storageId)}
-					aria-label={isSolved(storageId) ? `Hard puzzle ${id}, ${puzzle.title}, completed` : `Hard puzzle ${id}, ${puzzle.title}`}
+					class="puzzle-tile group relative flex aspect-square flex-col rounded-lg border bg-(--surface) p-1.5 transition-all hover:border-(--accent) hover:-translate-y-0.5"
+					class:solved
+					aria-label={solved ? `Hard puzzle ${id}, ${puzzle.title}, completed` : `Hard puzzle ${id}, ${puzzle.title}`}
 				>
-					<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
-						{#if isSolved(storageId)}
-							<span aria-hidden="true" class="text-(--green)">✓</span>
+					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
+						<span>#{id}</span>
+						{#if solved}
+							<span aria-hidden="true" class="text-(--green) text-[12px] leading-none">✓</span>
 						{/if}
-						#{id}
 					</span>
-					<span class="font-black leading-tight text-(--text)">{puzzle.title}</span>
+					<div class="grid flex-1 grid-cols-3 grid-rows-3 place-items-center gap-px">
+						{#each puzzle.solution as word, i (i)}
+							<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
+						{/each}
+					</div>
 				</a>
 			{/each}
 		</div>
 	</section>
 </div>
+
+<style>
+	.puzzle-tile {
+		border-color: var(--border);
+	}
+	.puzzle-tile.solved {
+		border-color: var(--green);
+		background: color-mix(in oklab, var(--green) 14%, var(--surface));
+	}
+</style>
