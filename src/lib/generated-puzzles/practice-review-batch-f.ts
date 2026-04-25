@@ -2,7 +2,7 @@ import type { Puzzle } from '../types';
 
 const CURRENT_GENERATION: NonNullable<Puzzle['generation']> = {
 	author: 'GitHub Copilot',
-	model: 'GitHub Copilot',
+	model: 'openai/gpt-5.5-high',
 	provider: 'github-copilot',
 	generatedAt: '2026-04-25',
 };

@@ -22,7 +22,7 @@ describe('puzzle generation metadata', () => {
 		for (const puzzle of [...latestStandard, ...latestHard]) {
 			expect(puzzle.generation).toMatchObject({
 				author: 'GitHub Copilot',
-				model: 'GitHub Copilot',
+				model: 'openai/gpt-5.5-high',
 				provider: 'github-copilot',
 				generatedAt: '2026-04-25',
 			});
