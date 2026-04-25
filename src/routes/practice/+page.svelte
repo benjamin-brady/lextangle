@@ -120,7 +120,7 @@
 					aria-label={solved ? `Hard puzzle ${id}, ${puzzle.title}, completed${solvedOn ? ` on ${solvedOn}` : ''}` : `Hard puzzle ${id}, ${puzzle.title}`}
 				>
 					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
-						<span>#{id}</span>
+						<span>H{id}</span>
 						{#if solved}
 							<span aria-hidden="true" class="text-(--green) text-[12px] leading-none">✓</span>
 						{/if}
@@ -133,7 +133,7 @@
 								{/each}
 							</div>
 						{:else}
-							<span class="text-[clamp(1.5rem,7vw,2.5rem)] font-bold text-(--text-muted)">#{id}</span>
+							<span class="text-[clamp(1.5rem,7vw,2.5rem)] font-bold text-(--text-muted)">H{id}</span>
 						{/if}
 					</div>
 					<span class="h-3 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">
