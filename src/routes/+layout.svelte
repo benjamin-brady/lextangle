@@ -4,14 +4,13 @@
 	import HowToPlay from '$lib/components/HowToPlay.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { getTodaysPuzzleInfo } from '$lib/puzzles';
 	import { theme, resolveTheme } from '$lib/theme.svelte';
+	import type { Snippet } from 'svelte';
+	import type { LayoutData } from './$types';
 	import { trackPageView } from '../lib/analytics';
 	import '../app.css';
 
-	const { puzzleNumber } = getTodaysPuzzleInfo();
-
-	let { children } = $props();
+	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	const gaMeasurementId = env.PUBLIC_GA_MEASUREMENT_ID ?? '';
 	const gaBootstrapScript = gaMeasurementId
@@ -79,7 +78,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 						aria-label="Alpha version"
 					>alpha</span>
 				</span>
-				<span class="font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{puzzleNumber}</span>
+				<span class="font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{data.dailyPuzzleNumber}</span>
 			</a>
 			<div class="flex items-center gap-2">
 				<ThemeToggle />

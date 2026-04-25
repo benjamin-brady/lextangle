@@ -872,35 +872,6 @@ const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
 
 export const HARD_PRACTICE_PUZZLES: Puzzle[] = BASE_HARD_PRACTICE_PUZZLES;
 
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
-// 2026-04-08 is Daily #1, making 2026-04-10 Daily #3.
-const DAILY_PUZZLE_EPOCH_MS = Date.UTC(2026, 3, 8);
-
-function getDailyPuzzleIndex(timestamp = Date.now()): number {
-  const daysSincePuzzleEpoch =
-    Math.floor(timestamp / MS_PER_DAY) -
-    Math.floor(DAILY_PUZZLE_EPOCH_MS / MS_PER_DAY);
-  return Math.max(0, daysSincePuzzleEpoch);
-}
-
-export function getTodaysPuzzle(): Puzzle {
-  const dailyPuzzleIndex = getDailyPuzzleIndex();
-  return PUZZLES[dailyPuzzleIndex % PUZZLES.length];
-}
-
-export function getTodaysPuzzleInfo(): {
-  puzzle: Puzzle;
-  puzzleNumber: number;
-  cycleIndex: number;
-} {
-  const dailyPuzzleIndex = getDailyPuzzleIndex();
-  return {
-    puzzle: PUZZLES[dailyPuzzleIndex % PUZZLES.length],
-    puzzleNumber: dailyPuzzleIndex + 1,
-    cycleIndex: dailyPuzzleIndex % PUZZLES.length,
-  };
-}
-
 export function getPracticePuzzle(id: number): Puzzle | undefined {
   return PRACTICE_PUZZLES[id - 1];
 }

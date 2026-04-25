@@ -1,13 +1,12 @@
 <script lang="ts">
 	import PuzzleRunner from '$lib/components/PuzzleRunner.svelte';
-	import { getTodaysPuzzleInfo } from '$lib/puzzles';
+	import type { PageData } from './$types';
 
-	const { puzzle, puzzleNumber } = getTodaysPuzzleInfo();
-	const shareLabel = `Daily #${puzzleNumber}`;
+	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="grid gap-4">
-	{#key `daily-${puzzleNumber}`}
-		<PuzzleRunner {puzzle} storageId={`daily-${puzzleNumber}`} {shareLabel} />
+	{#key data.storageId}
+		<PuzzleRunner puzzle={data.puzzle} storageId={data.storageId} shareLabel={data.shareLabel} />
 	{/key}
 </div>

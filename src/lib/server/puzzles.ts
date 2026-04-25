@@ -1,10 +1,6 @@
 import type { Puzzle } from '$lib/types';
-import {
-	PUZZLES,
-	PRACTICE_PUZZLES,
-	HARD_PRACTICE_PUZZLES,
-	getTodaysPuzzle
-} from '$lib/puzzles';
+import { HARD_PRACTICE_PUZZLES, PRACTICE_PUZZLES } from '$lib/puzzles';
+import { getDailyPuzzleByNumber } from '$lib/server/daily-puzzles';
 
 export type ResolvedPuzzle = {
 	puzzle: Puzzle;
@@ -21,7 +17,7 @@ export function resolvePuzzle(storageId: string): ResolvedPuzzle | null {
 	if (dailyMatch) {
 		const n = Number(dailyMatch[1]);
 		if (!Number.isInteger(n) || n < 1) return null;
-		const puzzle = PUZZLES[(n - 1) % PUZZLES.length] ?? getTodaysPuzzle();
+		const puzzle = getDailyPuzzleByNumber(n);
 		return { puzzle, kind: 'daily', canonicalId: storageId };
 	}
 
