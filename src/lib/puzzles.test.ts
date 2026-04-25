@@ -8,6 +8,31 @@ function words(puzzle: Puzzle): string {
 }
 
 describe('puzzle generation metadata', () => {
+	test('gives every playable puzzle a short title', () => {
+		const playablePuzzles = [...PUZZLES, ...PRACTICE_PUZZLES, ...HARD_PRACTICE_PUZZLES];
+
+		expect(playablePuzzles).not.toHaveLength(0);
+
+		for (const puzzle of playablePuzzles) {
+			expect(puzzle.title).toBeDefined();
+			expect(puzzle.title?.trim()).toBe(puzzle.title);
+			expect(puzzle.title?.length).toBeGreaterThan(0);
+			expect(puzzle.title?.length).toBeLessThanOrEqual(32);
+		}
+	});
+
+	test('backfills witty titles for known shipped grids', () => {
+		const posturePuzzle = PUZZLES.find(
+			(puzzle) => words(puzzle) === 'Stand,Up,Hill,Sit,Down,Town,Lie,Low,Land'
+		);
+		const reviewHard = HARD_PRACTICE_PUZZLES.find(
+			(puzzle) => words(puzzle) === 'Check,Rain,Slicker,Mark,Down,Vest,Quill,Feather,Leather'
+		);
+
+		expect(posturePuzzle?.title).toBe('Posture Check');
+		expect(reviewHard?.title).toBe('Marked Downpour');
+	});
+
 	test('ships the April 25 generated batches in live puzzle arrays', () => {
 		expect(PUZZLES.length).toBe(79);
 		expect(PRACTICE_PUZZLES.length).toBe(77);

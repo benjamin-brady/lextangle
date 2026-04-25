@@ -1,13 +1,24 @@
 <script lang="ts">
 	import { loadSolvedGameIds } from '$lib/game-storage';
 	import {
+		getHardPracticePuzzle,
 		getHardPracticePuzzleCount,
+		getPracticePuzzle,
 		getPracticePuzzleCount,
 	} from '$lib/puzzles';
+	import type { Puzzle } from '$lib/types';
 	import { onMount } from 'svelte';
 
-	const practiceIds = Array.from({ length: getPracticePuzzleCount() }, (_, index) => index + 1);
-	const hardIds = Array.from({ length: getHardPracticePuzzleCount() }, (_, index) => index + 1);
+	type PracticeListItem = { id: number; puzzle: Puzzle };
+
+	const practicePuzzles = Array.from({ length: getPracticePuzzleCount() }, (_, index) => {
+		const id = index + 1;
+		return { id, puzzle: getPracticePuzzle(id) };
+	}).filter((item): item is PracticeListItem => item.puzzle !== undefined);
+	const hardPuzzles = Array.from({ length: getHardPracticePuzzleCount() }, (_, index) => {
+		const id = index + 1;
+		return { id, puzzle: getHardPracticePuzzle(id) };
+	}).filter((item): item is PracticeListItem => item.puzzle !== undefined);
 
 	let solvedStorageIds = $state<Set<string>>(new Set());
 
@@ -25,8 +36,8 @@
 
 	onMount(async () => {
 		const storageIds = [
-			...practiceIds.map(practiceStorageId),
-			...hardIds.map(hardPracticeStorageId)
+			...practicePuzzles.map(({ id }) => practiceStorageId(id)),
+			...hardPuzzles.map(({ id }) => hardPracticeStorageId(id))
 		];
 
 		try {
@@ -41,24 +52,27 @@
 	<section>
 		<div class="flex items-baseline justify-between border-b border-(--border) pb-2">
 			<h2 class="text-lg font-black tracking-tight">Standard</h2>
-			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{practiceIds.length} puzzles</p>
+			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{practicePuzzles.length} puzzles</p>
 		</div>
-		<div class="mt-3 flex flex-wrap gap-2">
-			{#each practiceIds as id (id)}
+		<div class="mt-3 grid gap-2 sm:grid-cols-2">
+			{#each practicePuzzles as { id, puzzle } (id)}
 				{@const storageId = practiceStorageId(id)}
 				<a
 					href={`/practice/${id}`}
-					class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-bold transition-colors hover:border-(--accent)"
+					class="grid gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors hover:border-(--accent)"
 					class:border-(--border)={!isSolved(storageId)}
 					class:bg-(--surface)={!isSolved(storageId)}
 					class:border-(--green)={isSolved(storageId)}
 					class:bg-[color-mix(in_oklab,var(--green)_18%,transparent)]={isSolved(storageId)}
-					aria-label={isSolved(storageId) ? `Puzzle ${id}, completed` : `Puzzle ${id}`}
+					aria-label={isSolved(storageId) ? `Puzzle ${id}, ${puzzle.title}, completed` : `Puzzle ${id}, ${puzzle.title}`}
 				>
-					{#if isSolved(storageId)}
-						<span aria-hidden="true" class="text-(--green)">✓</span>
-					{/if}
-					#{id}
+					<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
+						{#if isSolved(storageId)}
+							<span aria-hidden="true" class="text-(--green)">✓</span>
+						{/if}
+						#{id}
+					</span>
+					<span class="font-black leading-tight text-(--text)">{puzzle.title}</span>
 				</a>
 			{/each}
 		</div>
@@ -67,24 +81,27 @@
 	<section>
 		<div class="flex items-baseline justify-between border-b border-(--border) pb-2">
 			<h2 class="text-lg font-black tracking-tight">Hard</h2>
-			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{hardIds.length} puzzles</p>
+			<p class="text-[11px] font-bold uppercase tracking-[0.18em] text-(--text-muted)">{hardPuzzles.length} puzzles</p>
 		</div>
-		<div class="mt-3 flex flex-wrap gap-2">
-			{#each hardIds as id (id)}
+		<div class="mt-3 grid gap-2 sm:grid-cols-2">
+			{#each hardPuzzles as { id, puzzle } (id)}
 				{@const storageId = hardPracticeStorageId(id)}
 				<a
 					href={`/practice/hard/${id}`}
-					class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-bold transition-colors hover:border-(--accent)"
+					class="grid gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors hover:border-(--accent)"
 					class:border-(--border)={!isSolved(storageId)}
 					class:bg-(--surface)={!isSolved(storageId)}
 					class:border-(--green)={isSolved(storageId)}
 					class:bg-[color-mix(in_oklab,var(--green)_18%,transparent)]={isSolved(storageId)}
-					aria-label={isSolved(storageId) ? `Hard puzzle ${id}, completed` : `Hard puzzle ${id}`}
+					aria-label={isSolved(storageId) ? `Hard puzzle ${id}, ${puzzle.title}, completed` : `Hard puzzle ${id}, ${puzzle.title}`}
 				>
-					{#if isSolved(storageId)}
-						<span aria-hidden="true" class="text-(--green)">✓</span>
-					{/if}
-					#{id}
+					<span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
+						{#if isSolved(storageId)}
+							<span aria-hidden="true" class="text-(--green)">✓</span>
+						{/if}
+						#{id}
+					</span>
+					<span class="font-black leading-tight text-(--text)">{puzzle.title}</span>
 				</a>
 			{/each}
 		</div>

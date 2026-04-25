@@ -11,9 +11,10 @@
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
 	import Undo2 from 'lucide-svelte/icons/undo-2';
+	import { buildShareText as buildShareResultText } from '../share-text';
 	import type { GameState } from '../game.svelte';
 	import type { Puzzle, WordItem } from '../types';
-	import { ADJACENCIES } from '../types';
+	import { ADJACENCIES as BOARD_ADJACENCIES } from '../types';
 
 	let { game, shareLabel, puzzle, storageId }: { game: GameState; shareLabel: string; puzzle: Puzzle; storageId: string } = $props();
 
@@ -28,13 +29,6 @@
 	};
 
 	const DRAG_MIME = 'application/x-lextangle-word';
-	const NODE_STATUS_EMOJI = {
-		correct: '🟩',
-		wrong: '🟥',
-		empty: '⬜',
-		unchecked: '⬜'
-	} as const;
-
 	let draggedItem = $state<DragItem | null>(null);
 	let dragOverIndex = $state<number | null>(null);
 	// Tap-to-swap selection. When set, all other valid targets show the drop-target
@@ -323,36 +317,17 @@
 		return true;
 	}
 
-	function shareRows(): string {
-		const statusForShare = (index: number) => {
-			const cell = game.grid[index];
-			if (!cell) return NODE_STATUS_EMOJI.empty;
-			if (!game.isCellChecked(index)) return NODE_STATUS_EMOJI.unchecked;
-			return NODE_STATUS_EMOJI[game.getNodeStatus(index)];
-		};
-		return Array.from({ length: 3 }, (_, rowIndex) => {
-			return Array.from({ length: 3 }, (_, colIndex) => {
-				return statusForShare(rowIndex * 3 + colIndex);
-			}).join('');
-		}).join('\n');
-	}
-
 	function buildShareText() {
-		const statusLine = game.solved
-			? `Solved in ${game.checks} checks`
-			: `${game.correctCount}/9 words, ${game.correctEdgeCount}/${ADJACENCIES.length} links, ${game.checks} checks`;
-
-		const lines = [
-			`Lextangle ${shareLabel}`,
-			statusLine,
-			shareRows()
-		];
-
-		if (typeof window !== 'undefined') {
-			lines.push(window.location.href);
-		}
-
-		return lines.join('\n');
+		return buildShareResultText({
+			puzzle,
+			shareLabel,
+			checks: game.checks,
+			correctWords: game.correctCount,
+			correctLinks: game.correctEdgeCount,
+			solved: game.solved,
+			checkHistory: game.checkHistory,
+			url: typeof window !== 'undefined' ? window.location.href : undefined
+		});
 	}
 
 	function setShareFeedback(message: string) {
@@ -586,7 +561,7 @@
 			height={GRID_H}
 			style="overflow: visible;"
 		>
-			{#each ADJACENCIES as [a, b] (`${a}-${b}`)}
+			{#each BOARD_ADJACENCIES as [a, b] (`${a}-${b}`)}
 				{@const pa = cellPos(a)}
 				{@const pb = cellPos(b)}
 				{@const x1 = pa.x + SLOT_SIZE / 2}
@@ -594,6 +569,7 @@
 				{@const x2 = pb.x + SLOT_SIZE / 2}
 				{@const y2 = pb.y + SLOT_SIZE / 2}
 				<path
+					data-testid="board-edge"
 					d={wavyPath(x1, y1, x2, y2)}
 					fill="none"
 					stroke={edgeColor(a, b)}

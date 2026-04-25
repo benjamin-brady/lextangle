@@ -1,6 +1,6 @@
-import type { Puzzle } from '../types';
+import type { PuzzleDraft } from '../types';
 
-export const HARD_BATCH_A: Puzzle[] = [
+export const HARD_BATCH_A: PuzzleDraft[] = [
 	{
 		solution: [
 			{ word: 'Power', emoji: '⚡' },

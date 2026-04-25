@@ -1,17 +1,17 @@
-import type { Puzzle } from '../types';
+import type { PuzzleDraft } from '../types';
 
-const CURRENT_GENERATION: NonNullable<Puzzle['generation']> = {
+const CURRENT_GENERATION: NonNullable<PuzzleDraft['generation']> = {
   author: 'GitHub Copilot',
   model: 'openai/gpt-5.5-high',
   provider: 'github-copilot',
   generatedAt: '2026-04-25',
 };
 
-function withCurrentGeneration(puzzle: Puzzle): Puzzle {
+function withCurrentGeneration(puzzle: PuzzleDraft): PuzzleDraft {
   return { ...puzzle, generation: CURRENT_GENERATION };
 }
 
-export const APRIL_25_STANDARD_G3: Puzzle[] = [
+export const APRIL_25_STANDARD_G3: PuzzleDraft[] = [
   {
     solution: [
       { word: 'Horse', emoji: '🐎' },

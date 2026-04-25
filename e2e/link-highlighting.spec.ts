@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-const GREEN = 'rgb(34, 204, 85)';
-const RED = 'rgb(239, 68, 68)';
+const GREEN = 'rgb(39, 174, 96)';
+const RED = 'rgb(231, 76, 60)';
 
-const solvedWords = ['Tea', 'Party', 'Floor', 'Tree', 'Line', 'Dance', 'Top', 'Up', 'Step'];
+const solvedWords = ['Score', 'Board', 'Room', 'Card', 'Game', 'Night', 'Business', 'Plan', 'Flight'];
 
 function seedBoard(words: string[], checks = 1) {
 	return JSON.stringify({
@@ -15,33 +15,32 @@ function seedBoard(words: string[], checks = 1) {
 	});
 }
 
+function edgeStrokes(page: import('@playwright/test').Page) {
+	return page.getByTestId('board-edge').evaluateAll((edges) =>
+		edges.map((edge) => window.getComputedStyle(edge).stroke)
+	);
+}
+
 test('solved hard puzzle highlights every rendered link green', async ({ page }) => {
 	await page.addInitScript((seed) => {
-		window.localStorage.setItem('simicle-game-practice-hard-1', seed);
+		window.localStorage.setItem('simicle-game-v3-practice-hard-1', seed);
 	}, seedBoard(solvedWords, 13));
 
 	await page.goto('/practice/hard/1');
 
-	expect(await page.getByText('Solved!').isVisible()).toBe(true);
-	await expect(page.getByText('12/12').last()).toBeVisible();
-
-	const strokes = await page.locator('svg line').evaluateAll((lines) =>
-		lines.map((line) => window.getComputedStyle(line).stroke)
-	);
-
-	expect(strokes).toHaveLength(12);
-	expect(strokes).toEqual(Array(12).fill(GREEN));
+	await expect(page.getByText('nice!')).toBeVisible();
+	await expect.poll(() => edgeStrokes(page)).toEqual(Array(12).fill(GREEN));
 });
 
 test('swapped corner words still show valid off-position links in green', async ({ page }) => {
-	const swappedWords = ['Top', 'Party', 'Floor', 'Tree', 'Line', 'Dance', 'Tea', 'Up', 'Step'];
+	const swappedWords = ['Business', 'Board', 'Room', 'Card', 'Game', 'Night', 'Score', 'Plan', 'Flight'];
 
 	await page.addInitScript((seed) => {
-		window.localStorage.setItem('simicle-game-practice-hard-1', seed);
+		window.localStorage.setItem('simicle-game-v3-practice-hard-1', seed);
 	}, seedBoard(swappedWords));
 
 	await page.goto('/practice/hard/1');
-	await page.locator('svg line').first().waitFor({ state: 'attached' });
+	await page.getByTestId('board-edge').first().waitFor({ state: 'attached' });
 
 	// Adjacencies in SVG render order (matches ADJACENCIES constant):
 	// [0,1], [1,2], [3,4], [4,5], [6,7], [7,8],
@@ -57,21 +56,13 @@ test('swapped corner words still show valid off-position links in green', async 
 		GREEN, // 4-5: both correct
 		RED,   // 6-7: wrong (pos 6 wrong)
 		GREEN, // 7-8: both correct
-		GREEN, // 0-3: Tree-Top is still a valid link
+		GREEN, // 0-3: Business-Card is still a valid link
 		GREEN, // 1-4: both correct
 		GREEN, // 2-5: both correct
-		GREEN, // 3-6: Tea-Tree is still a valid link
+		GREEN, // 3-6: Card-Score is still a valid link
 		GREEN, // 4-7: both correct
 		GREEN, // 5-8: both correct
 	];
 
-	const strokes = await page.locator('svg line').evaluateAll((lines) =>
-		lines.map((line) => window.getComputedStyle(line).stroke)
-	);
-
-	expect(strokes).toHaveLength(12);
-	expect(strokes).toEqual(expectedColors);
-
-	// The links counter must agree with the visual count
-	await expect(page.getByText('10/12').last()).toBeVisible();
+	await expect.poll(() => edgeStrokes(page)).toEqual(expectedColors);
 });

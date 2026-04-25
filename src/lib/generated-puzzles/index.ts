@@ -1,4 +1,4 @@
-import type { Puzzle } from '../types';
+import type { PuzzleDraft } from '../types';
 
 import { HARD_BATCH_A } from './hard-batch-a';
 import { HARD_BATCH_B } from './hard-batch-b';
@@ -14,7 +14,7 @@ export { APRIL_25_STANDARD_G3 } from './april-25-standard-g3';
 export { APRIL_25_STANDARD_G4 } from './april-25-standard-g4';
 export { APRIL_25_STANDARD_G5 } from './april-25-standard-g5';
 
-export const STANDARD_BATCH_EXTRA: Puzzle[] = [
+export const STANDARD_BATCH_EXTRA: PuzzleDraft[] = [
 	{
 		solution: [
 			{ word: 'Night', emoji: '🌙' },
@@ -206,14 +206,14 @@ export const STANDARD_BATCH_EXTRA: Puzzle[] = [
 	},
 ];
 
-export const MERGED_STANDARD_PUZZLES: Puzzle[] = [
+export const MERGED_STANDARD_PUZZLES: PuzzleDraft[] = [
 	...STANDARD_BATCH_A,
 	...STANDARD_BATCH_D,
 	...STANDARD_BATCH_E,
 	...STANDARD_BATCH_EXTRA,
 ];
 
-export const MERGED_HARD_PUZZLES: Puzzle[] = [
+export const MERGED_HARD_PUZZLES: PuzzleDraft[] = [
 	...HARD_BATCH_A,
 	HARD_BATCH_B[0],
 	HARD_BATCH_B[3],

@@ -1,4 +1,4 @@
-import type { Puzzle } from "./types";
+import type { Puzzle, PuzzleDraft } from "./types";
 import {
   APRIL_25_HARD_D,
   APRIL_25_STANDARD_G1,
@@ -92,7 +92,7 @@ const WORD_EMOJIS: Record<string, string> = {
   Water: "💧",
 };
 
-function applyWordEmojis(puzzle: Puzzle): Puzzle {
+function applyWordEmojis(puzzle: PuzzleDraft): PuzzleDraft {
   return {
     ...puzzle,
     solution: puzzle.solution.map((item) => ({
@@ -100,6 +100,104 @@ function applyWordEmojis(puzzle: Puzzle): Puzzle {
       emoji: item.emoji ?? WORD_EMOJIS[item.word] ?? DEFAULT_WORD_EMOJI,
     })),
   };
+}
+
+function puzzleWordsKey(puzzle: PuzzleDraft): string {
+  return puzzle.solution.map(({ word }) => word).join(',');
+}
+
+const PUZZLE_TITLE_BY_WORDS = new Map<string, string>([
+  ['Stand,Up,Hill,Sit,Down,Town,Lie,Low,Land', 'Posture Check'],
+  ['Car,Trunk,Elephant,Race,Suit,Memory,Track,Case,Card', 'Trunk Show'],
+  ['Paper,Chain,Dog,Clip,Mail,Tag,Board,Room,Service', 'Paper Trail Service'],
+  ['Fire,Alarm,Button,Drill,Press,Box,Vice,Bench,Seat', 'Panic Button Workout'],
+  ['Air,Base,Home,Head,Line,Land,Over,Time,Mark', 'Head Over Home Base'],
+  ['Tea,Green,Power,Tree,House,Plant,Line,Party,Food', 'Greenhouse Party Line'],
+  ['Door,Lock,Key,Bell,Chain,Ring,Tower,Guard,Tone', 'Ring the Guard Tower'],
+  ['Tower,Power,Horse,Water,Plant,Food,Gate,House,Dog', 'Powerhouse Dog Paddle'],
+  ['Man,Foot,Locker,Snow,Ball,Room,Board,Game,Escape', 'Locker Room Escape'],
+  ['Sea,Life,Style,Coast,Line,Dance,Clear,Up,Step', 'Coastline Dance Step'],
+  ['Watch,Night,Sleeper,Dog,Guard,Rail,Sea,Coast,Line', 'Night Watch on the Coast'],
+  ['Hotel,Bell,Desk,Mail,Room,Service,Box,Board,Key', 'Bell Desk Mailroom'],
+  ['Guest,Book,Club,Gate,Keeper,Shop,House,Pet,Food', 'Guest House Pet Shop'],
+  ['Cab,Taxi,Stand,Truck,Driver,Bus,Delivery,Route,Stop', 'Metered Route'],
+  ['Market,Town,Square,Food,Hall,Dance,Street,City,Club', 'Market Square Dance'],
+  ['Flower,Pot,Holder,Water,Bottle,Brush,Garden,Hose,Rack', 'Pot Holder Garden Hose'],
+  ['Bus,Driver,Seat,Station,Train,Coach,Rail,Track,Team', 'Team Coach Station'],
+  ['Star,Sun,Day,Moon,Light,Night,Stone,Head,Over', 'Night Light Headstone'],
+  ['Bone,Stone,Work,Tail,Head,Foot,Spin,Pin,Ball', 'Bonehead Tailspin'],
+  ['Foot,Head,Tail,Work,Stone,Bone,Fire,Wall,Dry', 'Dry Stone Footwork'],
+  ['Moon,Light,Night,Stone,Head,Over,Bone,Tail,Coat', 'Moonlight Tailcoat'],
+  ['Spoon,Soup,Crouton,Whisk,Egg,Toast,Flour,Roll,Jam', 'Toast Jam Session'],
+  ['Sea,Green,Signal,Bed,Room,Service,Flower,Show,Business', 'Green Room Business'],
+  ['Air,Port,Authority,Fare,Gate,Toll,Train,Signal,Lane', 'Fare Gate Authority'],
+  ['Stamp,Envelope,Flap,Lamp,Stand,Folder,Plug,Keyboard,Tab', 'Keyboard Folder Flap'],
+  ['Wood,Glue,Tube,Nail,Gun,Caulk,Point,Staple,Strip', 'Glue Gun Point'],
+  ['Shed,Tool,Belt,Door,Hook,Loop,Latch,Lock,Cable', 'Tool Belt Lockup'],
+  ['Tray,Card,Pip,Token,Box,Domino,Bag,Chip,Rack', 'Domino Chip Rack'],
+  ['Sky,Thunder,Shower,Hail,Storm,Rain,Pellet,Snow,Sleet', 'Storm Shower Mix'],
+  ['Caterpillar,Leaf,Vein,Butterfly,Flower,Petal,Bee,Nectar,Pollen', 'Pollinator Lunch Break'],
+  ['Bread,Crumb,Trail,Butter,Knife,Edge,Steak,Sauce,Pan', 'Breadcrumb Steakout'],
+  ['Canal,Ferry,Boat,Harbor,Dock,Crane,Cargo,Ship,Operator', 'Harbor Crane Operator'],
+  ['Farmers,Market,Square,Food,Hall,Dance,Street,City,Club', 'Farmers Market Square Dance'],
+  ['City,Shuttle,Stop,Street,Sign,Traffic,Bike,Lane,Driver', 'Shuttle Stop Traffic'],
+  ['Clock,Radio,Show,Alarm,Line,Dance,Fire,Power,House', 'Alarm Clock Radio Show'],
+  ['Cab,Taxi,Stand,Van,Driver,Bus,Delivery,Route,Stop', 'Van Cab Route'],
+  ['Band,Stand,Microphone,Sheet,Music,Note,Violin,String,Bow', 'Bandstand Bow Notes'],
+  ['Subway,Train,Engine,Police,Station,Fire,Dog,House,Alarm', 'Station House Alarm'],
+  ['Dog,House,Rabbit,Pet,Food,Bowl,Bird,Cage,Seed', 'Pet Food House Call'],
+  ['Seed,Sprout,Stem,Soil,Plant,Leaf,Worm,Garden,Flower', 'Garden Variety Growth'],
+  ['Pencil,Paper,Board,Desk,Book,Mark,Chair,Student,Teacher', 'Teacher Desk Marks'],
+  ['Guitar,String,Bow,Amp,Bass,Violin,Speaker,Drum,Stick', 'String Section Feedback'],
+  ['Chef,Knife,Blade,Cook,Pan,Handle,Stove,Heat,Flame', 'Knife Skills Heat'],
+  ['Stamp,Mail,Route,Envelope,Letter,Carrier,Flap,Bag,Satchel', 'Carrier Bag Letters'],
+  ['Test,Tube,Rack,Lab,Safety,Goggles,Coat,Pocket,Lens', 'Lab Coat Pocket Lens'],
+  ['Paint,Brush,Bristle,Canvas,Frame,Hook,Gallery,Wall,Nail', 'Gallery Wall Nail'],
+  ['Pen,Ink,Cartridge,Paper,Printer,Tray,Desk,Drawer,Handle', 'Paper Jam Drawer'],
+  ['Swing,Chain,Link,Slide,Ladder,Rung,Sandbox,Sand,Castle', 'Playground Chain Link'],
+  ['Moon,Sun,Star,Earth,Planet,Orbit,Tide,Gravity,Pull', 'Planetary Pull'],
+  ['Horse,Shoe,Loop,Saddle,Strap,Belt,Rider,Helmet,Buckle', 'Saddle Strap Buckle'],
+  ['Sewing,Machine,Needle,Thread,Spool,Pin,Yarn,Ball,Point', 'Needle Point Yarn Ball'],
+  ['Mixing,Bowl,Game,Salad,Dressing,Room,Bar,Mirror,Door', 'Mixing Bowl Game Room'],
+  ['Space,Ship,Wheel,Rocket,Fuel,Tank,Fire,Engine,Room', 'Rocket Engine Room'],
+  ['Flower,Pot,Holder,Soil,Plant,Stand,Water,Can,Base', 'Flower Pot Stand'],
+  ['Pasta,Sauce,Pan,Tomato,Soup,Bowl,Chicken,Stock,Pot', 'Soup Stock Pot'],
+  ['Door,Bell,Tower,Fire,Alarm,Light,Station,Radio,Show', 'Alarm Bell Tower'],
+  ['Book,Club,House,Board,Room,Service,Game,Escape,Route', 'Escape Room Service'],
+  ['Door,Lock,Bike,Bell,Chain,Ring,Tower,Guard,Tone', 'Bike Lock Bell Ring'],
+  ['Sun,Flower,Pot,Rain,Garden,Soil,Seed,Plant,Root', 'Garden Root Cause'],
+  ['Mail,Post,Office,Letter,Box,File,Paper,Drawer,Cabinet', 'Post Office Filing'],
+  ['Soup,Spoon,Ladle,Salad,Bowl,Fork,Bread,Plate,Knife', 'Soup Spoon Plate'],
+  ['City,Bus,Stop,Street,Sign,Traffic,Bike,Lane,Driver', 'City Bus Stop Sign'],
+  ['Band,Stand,Microphone,Sheet,Music,Note,Guitar,String,Pick', 'Mic Stand Guitar Pick'],
+  ['Wood,Saw,Blade,Nail,Hammer,Handle,Screw,Driver,Bit', 'Hammer Time Woodshop'],
+  ['River,Ferry,Boat,Harbor,Dock,Crane,Cargo,Ship,Operator', 'River Port Operator'],
+  ['Stone,Wall,Tile,Mason,Trowel,Grout,Chisel,Plaster,Float', 'Stone Mason Float'],
+  ['Blood,Pressure,Gauge,Arm,Cuff,Pump,Pulse,Nurse,Station', 'Pressure Station Pulse'],
+  ['Flour,Dough,Pizza,Bread,Loaf,Pan,Butter,Knife,Handle', 'Butter Knife Handle'],
+  ['Transit,Train,Engine,Police,Station,Fire,Dog,House,Alarm', 'Transit Station Alarm'],
+  ['School,Bus,Route,Desk,Job,Service,Teacher,Aide,Help', 'School Bus Help Desk'],
+  ['Hen,Nest,Egg,Bee,Hive,Honey,Cow,Barn,Milk', 'Barnyard Breakfast'],
+  ['Voice,Mail,Box,Text,Message,Board,Note,Pad,Paper', 'Voice Mail Paper Trail'],
+  ['Score,Board,Room,Card,Game,Night,Business,Plan,Flight', 'Board Game Night Flight'],
+  ['Bag,Tea,Break,Paper,Cup,Coffee,Plate,Cake,Mug', 'Tea Break Cake Walk'],
+  ['Face,Time,Bomb,Card,Show,Dog,Game,Point,Guard', 'Face Time Bomb Squad'],
+  ['Ticket,Zoo,Animal,Gate,Keeper,Book,Front,House,Guest', 'Zookeeper Guest Book'],
+  ['Check,Rain,Slicker,Mark,Down,Vest,Quill,Feather,Leather', 'Marked Downpour'],
+  ['Press,Release,Date,Charge,Notice,Court,Card,Board,Move', 'Press Release Court Move'],
+  ['Police,Horse,Shoe,Stable,Groom,Brush,Race,Track,Rider', 'Mounted Brushwork'],
+  ['Road,Trip,Wire,Stop,Sign,Post,Night,Flight,Path', 'Road Trip Flight Path'],
+  ['Sun,Screen,Door,Moon,Light,Bulb,Night,Flight,Path', 'Screen Door Moonlight'],
+]);
+
+function applyPuzzleTitle(puzzle: PuzzleDraft): Puzzle {
+  const title = puzzle.title ?? PUZZLE_TITLE_BY_WORDS.get(puzzleWordsKey(puzzle));
+
+  if (!title) {
+    throw new Error(`Missing puzzle title for grid: ${puzzleWordsKey(puzzle)}`);
+  }
+
+  return { ...puzzle, title };
 }
 
 const GPT_54_HIGH_GENERATION: NonNullable<Puzzle["generation"]> = {
@@ -130,7 +228,7 @@ const PUZZLE_GENERATION_BY_INDEX = new Map<number, NonNullable<Puzzle["generatio
   [20, CLAUDE_OPUS_4_GENERATION],
 ]);
 
-function applyPuzzleGeneration(puzzle: Puzzle, index: number): Puzzle {
+function applyPuzzleGeneration(puzzle: PuzzleDraft, index: number): PuzzleDraft {
   const generation = PUZZLE_GENERATION_BY_INDEX.get(index);
   return generation ? { ...puzzle, generation } : puzzle;
 }
@@ -737,7 +835,7 @@ export const PUZZLES: Puzzle[] = [
   ...APRIL_25_STANDARD_G3,
   ...APRIL_25_STANDARD_G4,
   ...APRIL_25_STANDARD_G5,
-].map((puzzle, index) => applyWordEmojis(applyPuzzleGeneration(puzzle, index)));
+].map((puzzle, index) => applyPuzzleTitle(applyWordEmojis(applyPuzzleGeneration(puzzle, index))));
 
 const PRACTICE_EXCLUDED_PUZZLE_INDICES = new Set([5, 12]);
 
@@ -745,7 +843,7 @@ export const PRACTICE_PUZZLES: Puzzle[] = [
   ...PUZZLES.filter((_, index) => !PRACTICE_EXCLUDED_PUZZLE_INDICES.has(index)),
 ];
 
-const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
+const BASE_HARD_PRACTICE_PUZZLES: PuzzleDraft[] = [
   {
     solution: [
       { word: "Score", emoji: "🎯" },
@@ -885,7 +983,9 @@ const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
   ...APRIL_25_HARD_D,
 ].map(applyWordEmojis);
 
-export const HARD_PRACTICE_PUZZLES: Puzzle[] = BASE_HARD_PRACTICE_PUZZLES;
+const titledHardPracticePuzzles = BASE_HARD_PRACTICE_PUZZLES.map(applyPuzzleTitle);
+
+export const HARD_PRACTICE_PUZZLES: Puzzle[] = titledHardPracticePuzzles;
 
 export function getPracticePuzzle(id: number): Puzzle | undefined {
   return PRACTICE_PUZZLES[id - 1];

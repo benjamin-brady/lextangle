@@ -1,5 +1,6 @@
 import { PersistedState } from 'runed';
 
+import { createShareCheckSummary, type ShareCheckSummary } from './share-text';
 import type { EdgeStatus, NodeStatus, Puzzle, WordItem } from './types';
 
 interface SavedState {
@@ -8,6 +9,7 @@ interface SavedState {
 	checks: number;
 	cellChecked: boolean[];
 	checkedSnapshot: (string | null)[];
+	checkHistory: ShareCheckSummary[];
 }
 
 // Bump this when the saved-state schema changes or we want to invalidate all
@@ -25,6 +27,7 @@ function freshState(puzzle: Puzzle): SavedState {
 		checks: 0,
 		cellChecked: Array(9).fill(false),
 		checkedSnapshot: Array(9).fill(null),
+		checkHistory: [],
 	};
 }
 
@@ -78,12 +81,28 @@ function isValidSavedState(
 		return false;
 	}
 
+	if (candidate.checkHistory !== undefined && !isValidCheckHistory(candidate.checkHistory)) {
+		return false;
+	}
+
 	const presentWords = [
 		...candidate.grid.filter((word): word is string => typeof word === 'string'),
 		...candidate.inventory,
 	];
 
 	return presentWords.length === expectedWordCount && new Set(presentWords).size === expectedWordCount;
+}
+
+function isValidCheckHistory(history: unknown): history is ShareCheckSummary[] {
+	return Array.isArray(history) && history.every((entry) => {
+		if (typeof entry !== 'object' || entry === null) return false;
+		const candidate = entry as Partial<ShareCheckSummary>;
+		return Array.isArray(candidate.rows) &&
+			candidate.rows.length === 3 &&
+			candidate.rows.every((row) => typeof row === 'string') &&
+			Number.isInteger(candidate.correctLinks) &&
+			(candidate.correctLinks ?? -1) >= 0;
+	});
 }
 
 /**
@@ -119,6 +138,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 			checks: current.checks,
 			cellChecked: [...current.cellChecked],
 			checkedSnapshot: [...current.checkedSnapshot],
+			checkHistory: current.checkHistory ? [...current.checkHistory] : [],
 		});
 		if (history.length > MAX_HISTORY) history.shift();
 		historyVersion++;
@@ -178,6 +198,16 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		s.checks += 1;
 		s.cellChecked = Array(9).fill(true);
 		s.checkedSnapshot = [...s.grid];
+		s.checkHistory = [
+			...(s.checkHistory ?? []),
+			createShareCheckSummary({
+				nodeStatuses: Array.from({ length: 9 }, (_, index) => getNodeStatus(index)),
+				correctLinks: puzzle.edges.reduce(
+					(count, edge) => count + Number(getEdgeStatus(edge.from, edge.to) === 'correct'),
+					0
+				)
+			})
+		];
 		// Checks cannot be undone.
 		history.length = 0;
 		historyVersion++;
@@ -197,6 +227,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		s.cellChecked = prev.cellChecked;
 		s.checkedSnapshot = prev.checkedSnapshot;
 		s.checks = prev.checks;
+		s.checkHistory = prev.checkHistory;
 		historyVersion++;
 	}
 
@@ -376,6 +407,9 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		},
 		get checks() {
 			return persisted.current.checks;
+		},
+		get checkHistory() {
+			return persisted.current.checkHistory ?? [];
 		},
 		get cellChecked() {
 			return persisted.current.cellChecked;

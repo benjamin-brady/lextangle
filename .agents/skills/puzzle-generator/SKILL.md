@@ -23,11 +23,16 @@ This repo stores puzzles in [../../../src/lib/puzzles.ts](../../../src/lib/puzzl
 The data model is defined in [../../../src/lib/types.ts](../../../src/lib/types.ts):
 
 - `generation`: model/provider metadata for how the puzzle was created
+- `title`: witty short title based on the 9 words
 - `solution`: 9 `WordItem`s in row-major grid order
 - `edges`: 12 adjacent links with `from`, `to`, and `clue`
 - `WordItem` can include `emoji`
 
 Emoji are normally applied centrally via the `WORD_EMOJIS` map in [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts). Inline `emoji` on a `WordItem` is only required when the word is not in that map, or when you want to override the map for one board. The file uses 2-space indentation — match it when inserting puzzles.
+
+### Puzzle Titles
+
+Every newly generated puzzle must include a `title` field. Make it witty, short, and grounded in the 9 visible words. Aim for 2–4 words and keep it under 32 characters. Prefer a phrase that hints at multiple board links instead of simply naming one word, for example `Posture Check`, `Greenhouse Party Line`, or `Marked Downpour`.
 
 ### Generation Metadata
 

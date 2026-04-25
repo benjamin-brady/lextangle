@@ -1,6 +1,6 @@
-import type { Puzzle } from '../../types';
+import type { PuzzleDraft } from '../../types';
 
-export const PUZZLE_CATALOG_BACKUP_2026_04_01: Puzzle[] = [
+export const PUZZLE_CATALOG_BACKUP_2026_04_01: PuzzleDraft[] = [
 	{
 		solution: [
 			{ word: 'King' },

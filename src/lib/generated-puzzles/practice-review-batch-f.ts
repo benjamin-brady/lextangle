@@ -1,17 +1,17 @@
-import type { Puzzle } from '../types';
+import type { PuzzleDraft } from '../types';
 
-const CURRENT_GENERATION: NonNullable<Puzzle['generation']> = {
+const CURRENT_GENERATION: NonNullable<PuzzleDraft['generation']> = {
 	author: 'GitHub Copilot',
 	model: 'openai/gpt-5.5-high',
 	provider: 'github-copilot',
 	generatedAt: '2026-04-25',
 };
 
-function withCurrentGeneration(puzzle: Puzzle): Puzzle {
+function withCurrentGeneration(puzzle: PuzzleDraft): PuzzleDraft {
 	return { ...puzzle, generation: CURRENT_GENERATION };
 }
 
-export const REVIEW_STANDARD_BATCH_F: Puzzle[] = [
+export const REVIEW_STANDARD_BATCH_F: PuzzleDraft[] = [
 	{
 		solution: [
 			{ word: 'Spoon', emoji: '🥄' },
@@ -230,7 +230,7 @@ export const REVIEW_STANDARD_BATCH_F: Puzzle[] = [
 	},
 ].map(withCurrentGeneration);
 
-export const REVIEW_HARD_BATCH_C: Puzzle[] = [
+export const REVIEW_HARD_BATCH_C: PuzzleDraft[] = [
 	{
 		solution: [
 			{ word: 'Check', emoji: '✅' },

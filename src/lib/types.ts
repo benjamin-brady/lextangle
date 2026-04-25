@@ -17,12 +17,19 @@ export interface PuzzleGenerationDetails {
 	sourceCommit?: string;
 }
 
-export interface Puzzle {
+export interface PuzzleDraft {
+	/** Witty short title derived from the 9-word grid */
+	title?: string;
 	generation?: PuzzleGenerationDetails;
 	/** 9 words in their correct grid positions (index 0–8, row-major) */
 	solution: WordItem[];
 	/** Edges describing relationships between adjacent cells */
 	edges: Edge[];
+}
+
+export interface Puzzle extends PuzzleDraft {
+	/** Witty short title derived from the 9-word grid */
+	title: string;
 }
 
 /**
