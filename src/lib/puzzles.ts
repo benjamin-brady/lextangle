@@ -1,5 +1,14 @@
 import type { Puzzle } from "./types";
-import { REVIEW_HARD_BATCH_C, REVIEW_STANDARD_BATCH_F } from "./generated-puzzles";
+import {
+  APRIL_25_HARD_D,
+  APRIL_25_STANDARD_G1,
+  APRIL_25_STANDARD_G2,
+  APRIL_25_STANDARD_G3,
+  APRIL_25_STANDARD_G4,
+  APRIL_25_STANDARD_G5,
+  REVIEW_HARD_BATCH_C,
+  REVIEW_STANDARD_BATCH_F,
+} from "./generated-puzzles";
 
 const DEFAULT_WORD_EMOJI = "✨";
 
@@ -723,6 +732,11 @@ export const PUZZLES: Puzzle[] = [
     ],
   },
   ...REVIEW_STANDARD_BATCH_F,
+  ...APRIL_25_STANDARD_G1,
+  ...APRIL_25_STANDARD_G2,
+  ...APRIL_25_STANDARD_G3,
+  ...APRIL_25_STANDARD_G4,
+  ...APRIL_25_STANDARD_G5,
 ].map((puzzle, index) => applyWordEmojis(applyPuzzleGeneration(puzzle, index)));
 
 const PRACTICE_EXCLUDED_PUZZLE_INDICES = new Set([5, 12]);
@@ -868,6 +882,7 @@ const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
     ],
   },
   ...REVIEW_HARD_BATCH_C,
+  ...APRIL_25_HARD_D,
 ].map(applyWordEmojis);
 
 export const HARD_PRACTICE_PUZZLES: Puzzle[] = BASE_HARD_PRACTICE_PUZZLES;

@@ -7,6 +7,12 @@ import { STANDARD_BATCH_D } from './standard-batch-d';
 import { STANDARD_BATCH_E } from './standard-batch-e';
 
 export { REVIEW_HARD_BATCH_C, REVIEW_STANDARD_BATCH_F } from './practice-review-batch-f';
+export { APRIL_25_HARD_D } from './april-25-hard-d';
+export { APRIL_25_STANDARD_G1 } from './april-25-standard-g1';
+export { APRIL_25_STANDARD_G2 } from './april-25-standard-g2';
+export { APRIL_25_STANDARD_G3 } from './april-25-standard-g3';
+export { APRIL_25_STANDARD_G4 } from './april-25-standard-g4';
+export { APRIL_25_STANDARD_G5 } from './april-25-standard-g5';
 
 export const STANDARD_BATCH_EXTRA: Puzzle[] = [
 	{
