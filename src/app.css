@@ -8,6 +8,8 @@
 	/* Crayon Scrapbook palette */
 	--paper-cream: #fbf1dc;
 	--paper-shadow: #ede1c2;
+	--paper-card: rgba(255, 253, 246, 0.7);
+	--paper-card-soft: rgba(255, 253, 246, 0.5);
 	--ink-dark: #2a2a2e;
 	--crayon-red: #e74c3c;
 	--swap-label: #c0392b;
@@ -291,6 +293,8 @@ body::before {
 	--yellow: #f1c40f;
 	--red: #e74c3c;
 	--swap-label: #fbe9a7;
+	--paper-card: rgba(251, 241, 220, 0.08);
+	--paper-card-soft: rgba(251, 241, 220, 0.05);
 	color-scheme: dark;
 }
 

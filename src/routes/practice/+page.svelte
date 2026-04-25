@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { loadSolvedGameIds } from '$lib/game-storage';
+	import { loadSolvedGameTimestamps } from '$lib/game-storage';
 	import {
 		getHardPracticePuzzle,
 		getHardPracticePuzzleCount,
@@ -20,7 +20,9 @@
 		return { id, puzzle: getHardPracticePuzzle(id) };
 	}).filter((item): item is PracticeListItem => item.puzzle !== undefined);
 
-	let solvedStorageIds = $state<Set<string>>(new Set());
+	let solvedAt = $state<Map<string, number>>(new Map());
+
+	const dateFormatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
 
 	function practiceStorageId(id: number): string {
 		return `practice-${id}`;
@@ -31,7 +33,12 @@
 	}
 
 	function isSolved(storageId: string): boolean {
-		return solvedStorageIds.has(storageId);
+		return solvedAt.has(storageId);
+	}
+
+	function solvedDate(storageId: string): string | null {
+		const ts = solvedAt.get(storageId);
+		return ts ? dateFormatter.format(new Date(ts)) : null;
 	}
 
 	onMount(async () => {
@@ -41,9 +48,9 @@
 		];
 
 		try {
-			solvedStorageIds = await loadSolvedGameIds(storageIds);
+			solvedAt = await loadSolvedGameTimestamps(storageIds);
 		} catch {
-			solvedStorageIds = new Set();
+			solvedAt = new Map();
 		}
 	});
 </script>
@@ -60,11 +67,12 @@
 			{#each practicePuzzles as { id, puzzle } (id)}
 				{@const storageId = practiceStorageId(id)}
 				{@const solved = isSolved(storageId)}
+				{@const solvedOn = solvedDate(storageId)}
 				<a
 					href={`/practice/${id}`}
 					class="puzzle-tile group relative flex aspect-square flex-col rounded-lg border bg-(--surface) p-1.5 transition-all hover:border-(--accent) hover:-translate-y-0.5"
 					class:solved
-					aria-label={solved ? `Puzzle ${id}, ${puzzle.title}, completed` : `Puzzle ${id}, ${puzzle.title}`}
+					aria-label={solved ? `Puzzle ${id}, ${puzzle.title}, completed${solvedOn ? ` on ${solvedOn}` : ''}` : `Puzzle ${id}, ${puzzle.title}`}
 				>
 					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
 						<span>#{id}</span>
@@ -77,6 +85,9 @@
 							<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
 						{/each}
 					</div>
+					{#if solvedOn}
+						<span class="mt-0.5 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">{solvedOn}</span>
+					{/if}
 				</a>
 			{/each}
 		</div>
@@ -93,11 +104,12 @@
 			{#each hardPuzzles as { id, puzzle } (id)}
 				{@const storageId = hardPracticeStorageId(id)}
 				{@const solved = isSolved(storageId)}
+				{@const solvedOn = solvedDate(storageId)}
 				<a
 					href={`/practice/hard/${id}`}
 					class="puzzle-tile group relative flex aspect-square flex-col rounded-lg border bg-(--surface) p-1.5 transition-all hover:border-(--accent) hover:-translate-y-0.5"
 					class:solved
-					aria-label={solved ? `Hard puzzle ${id}, ${puzzle.title}, completed` : `Hard puzzle ${id}, ${puzzle.title}`}
+					aria-label={solved ? `Hard puzzle ${id}, ${puzzle.title}, completed${solvedOn ? ` on ${solvedOn}` : ''}` : `Hard puzzle ${id}, ${puzzle.title}`}
 				>
 					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
 						<span>#{id}</span>
@@ -110,6 +122,9 @@
 							<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
 						{/each}
 					</div>
+					{#if solvedOn}
+						<span class="mt-0.5 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">{solvedOn}</span>
+					{/if}
 				</a>
 			{/each}
 		</div>

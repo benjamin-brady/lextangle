@@ -95,18 +95,25 @@ export async function deleteGameRecord(storageId: string): Promise<void> {
 }
 
 export async function loadSolvedGameIds(storageIds: string[]): Promise<Set<string>> {
+	const records = await loadSolvedGameTimestamps(storageIds);
+	return new Set(records.keys());
+}
+
+export async function loadSolvedGameTimestamps(
+	storageIds: string[]
+): Promise<Map<string, number>> {
 	if (typeof indexedDB === 'undefined' || storageIds.length === 0) {
-		return new Set();
+		return new Map();
 	}
 
 	const database = await openDatabase();
 
-	return await new Promise<Set<string>>((resolve, reject) => {
+	return await new Promise<Map<string, number>>((resolve, reject) => {
 		const transaction = database.transaction(STORE_NAME, 'readonly');
 		const store = transaction.objectStore(STORE_NAME);
-		const solvedIds = new Set<string>();
+		const solved = new Map<string, number>();
 
-		transaction.oncomplete = () => resolve(solvedIds);
+		transaction.oncomplete = () => resolve(solved);
 		transaction.onabort = () => reject(transaction.error ?? new Error('IndexedDB read aborted'));
 		transaction.onerror = () => reject(transaction.error ?? new Error('IndexedDB read failed'));
 
@@ -115,7 +122,7 @@ export async function loadSolvedGameIds(storageIds: string[]): Promise<Set<strin
 			request.onsuccess = () => {
 				const record = request.result as PersistedGameRecord<unknown, unknown> | undefined;
 				if (record?.solved) {
-					solvedIds.add(storageId);
+					solved.set(storageId, record.updatedAt);
 				}
 			};
 		}

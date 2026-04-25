@@ -725,14 +725,14 @@
 			{/if}
 		</div>
 
-		<section class="px-2 py-3" style="background: rgba(255,253,246,0.7); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.1)); border-radius: 3px;">
-			<h2 class="font-display font-bold mb-1" style="font-size: 1.7rem; color: var(--ink-dark); transform: rotate(-1deg); display: inline-block;">
+		<section class="px-2 py-3" style="background: var(--paper-card); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.1)); border-radius: 3px;">
+			<h2 class="font-display font-bold mb-1" style="font-size: 1.7rem; color: var(--ink); transform: rotate(-1deg); display: inline-block;">
 				why the links work
 			</h2>
 			<ul class="mt-2" style="background-image: repeating-linear-gradient(0deg, transparent 0 26px, rgba(52,152,219,0.18) 26px 27px);">
 				{#each solvedLinks as link (`${link.from.word}-${link.to.word}`)}
 					<li class="py-2 px-1" style="min-height: 52px;">
-						<p class="font-display font-bold flex items-center gap-1.5 flex-wrap leading-tight" style="font-size: 1.15rem; color: var(--ink-dark);">
+						<p class="font-display font-bold flex items-center gap-1.5 flex-wrap leading-tight" style="font-size: 1.15rem; color: var(--ink);">
 							<span aria-hidden="true" style="font-size: 1.3rem;">{wordEmoji(link.from)}</span>
 							<span>{link.from.word}</span>
 							<span style="color: var(--crayon-red);">→</span>
