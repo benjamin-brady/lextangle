@@ -22,11 +22,30 @@ This repo stores puzzles in [../../../src/lib/puzzles.ts](../../../src/lib/puzzl
 
 The data model is defined in [../../../src/lib/types.ts](../../../src/lib/types.ts):
 
+- `generation`: model/provider metadata for how the puzzle was created
 - `solution`: 9 `WordItem`s in row-major grid order
 - `edges`: 12 adjacent links with `from`, `to`, and `clue`
 - `WordItem` can include `emoji`
 
 Emoji are normally applied centrally via the `WORD_EMOJIS` map in [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts). Inline `emoji` on a `WordItem` is only required when the word is not in that map, or when you want to override the map for one board. The file uses 2-space indentation — match it when inserting puzzles.
+
+### Generation Metadata
+
+Every newly generated puzzle must include generation details in the puzzle data. Use the current agent/runtime values, not placeholders:
+
+```ts
+generation: {
+  author: 'GitHub Copilot',
+  model: 'openai/gpt-5.5-high',
+  provider: 'github-copilot',
+  generatedAt: 'YYYY-MM-DD',
+  sourceCommit: 'optional-short-hash',
+}
+```
+
+Required fields: `author`, `model`, `provider`, and `generatedAt`. Include `sourceCommit` when backfilling metadata from an existing commit or when the generation source commit is known.
+
+For generated batch files, prefer a shared `CURRENT_GENERATION: NonNullable<Puzzle['generation']>` constant plus a helper like `withCurrentGeneration(puzzle)` so every exported puzzle receives the same metadata without duplicating the object. For direct entries in [../../../src/lib/puzzles.ts](../../../src/lib/puzzles.ts), either include `generation` on the puzzle object or extend the existing generation lookup map if the local pattern calls for it.
 
 Grid adjacency is fixed:
 
@@ -432,12 +451,19 @@ Launch a subagent via `runSubagent` with the prompt:
 > 8. Minimum 6 A-tier edges, max 2 C-tier, at least 3 distinct relation types (minimum 4 A-tier and up to 4 C-tier for hard boards).
 > 9. At least 2 anchor edges a casual solver can identify in under 10 seconds.
 > 10. Assign one emoji per word.
+> 11. Include `generation` metadata with `author`, `model`, `provider`, and `generatedAt` values for the agent that produced the puzzle.
 >
 > {Insert any user-specified theme, difficulty, or constraints here.}
 >
 > Return the puzzle in this exact TypeScript format:
 > ```ts
 > {
+>   generation: {
+>     author: 'GitHub Copilot',
+>     model: 'openai/gpt-5.5-high',
+>     provider: 'github-copilot',
+>     generatedAt: 'YYYY-MM-DD',
+>   },
 >   solution: [
 >     { word: 'Word', emoji: '🎯' },
 >     // ... 9 total
