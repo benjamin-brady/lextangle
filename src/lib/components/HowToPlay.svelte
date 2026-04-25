@@ -146,7 +146,7 @@
 <button
 	type="button"
 	class="crayon-btn crayon-btn-cream flex h-10 w-10 items-center justify-center"
-	style="padding: 0; transform: rotate(-3deg); font-size: 1rem;"
+	style="padding: 0; --tilt: -3deg; font-size: 1rem;"
 	onclick={openModal}
 	aria-controls="how-to-play-dialog"
 	aria-expanded={isOpen}
@@ -278,7 +278,7 @@
 						<button
 							type="button"
 							class="crayon-btn crayon-btn-cream ml-auto flex h-8 w-8 items-center justify-center"
-							style="padding: 0; font-size: 1rem; transform: rotate(-4deg);"
+							style="padding: 0; font-size: 1rem; --tilt: -4deg;"
 							onclick={resetTutorial}
 							aria-label="Reset tutorial example"
 							title="Reset"

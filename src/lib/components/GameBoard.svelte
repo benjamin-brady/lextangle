@@ -699,7 +699,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-yellow inline-flex items-center gap-2"
-					style="transform: rotate(-2deg);"
+					style="--tilt: -2deg;"
 					onclick={shareResult}
 					aria-label="Share result"
 				>
@@ -709,7 +709,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-cream"
-					style="transform: rotate(1.5deg);"
+					style="--tilt: 1.5deg;"
 					title="I liked this puzzle"
 					aria-label="Thumbs up"
 					onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
@@ -719,7 +719,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-cream"
-					style="transform: rotate(-1deg);"
+					style="--tilt: -1deg;"
 					title="Report a problem with this puzzle"
 					aria-label="Thumbs down"
 					onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}
@@ -802,7 +802,7 @@
 		{#if !game.solved}
 			<button
 				class="crayon-btn crayon-btn-blue w-full relative"
-				style="padding: 12px; font-size: 1.5rem; transform: rotate(-0.5deg);"
+				style="padding: 12px; font-size: 1.5rem; --tilt: -0.5deg;"
 				onclick={handleCheck}
 				disabled={!game.canCheck}
 			>
@@ -820,7 +820,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
-					style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
+					style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
 					aria-label="Share result"
 				>
 					<Share2 class="h-4 w-4" aria-hidden="true" />
@@ -829,7 +829,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
-					style="font-size: 1rem; padding: 6px 10px; transform: rotate(1.5deg);"
+					style="font-size: 1rem; padding: 6px 10px; --tilt: 1.5deg;"
 					onclick={() => { triggerFlip(); game.flipHorizontal(); }}
 					title="Flip board horizontally"
 					aria-label="Flip board horizontally"
@@ -840,7 +840,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
-					style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1deg);"
+					style="font-size: 1rem; padding: 6px 10px; --tilt: -1deg;"
 					onclick={() => { triggerFlip(); game.flipVertical(); }}
 					title="Flip board vertically"
 					aria-label="Flip board vertically"
@@ -851,7 +851,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
-					style="font-size: 1rem; padding: 6px 10px; transform: rotate(1deg);"
+					style="font-size: 1rem; padding: 6px 10px; --tilt: 1deg;"
 					onclick={() => { triggerFlip(); game.shiftRight(); }}
 					title="Shift grid right"
 					aria-label="Shift grid right"
@@ -862,7 +862,7 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
-					style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
+					style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
 					onclick={() => { triggerFlip(); game.shiftDown(); }}
 					title="Shift grid down"
 					aria-label="Shift grid down"
@@ -874,7 +874,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
-				style="font-size: 1rem; padding: 6px 10px; transform: rotate(2deg);"
+				style="font-size: 1rem; padding: 6px 10px; --tilt: 2deg;"
 				onclick={() => game.undo()}
 				disabled={!game.canUndo}
 				aria-label="Undo last move"
@@ -886,7 +886,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-red inline-flex items-center gap-1.5"
-				style="font-size: 1rem; padding: 6px 10px; transform: rotate(-1.5deg);"
+				style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
 				onclick={() => { if (confirm('Reset the board? All progress will be lost.')) game.reset(); }}
 				aria-label="Reset board"
 			>
@@ -896,7 +896,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5 ml-auto"
-				style="font-size: 1rem; padding: 6px 8px; transform: rotate(1.5deg);"
+				style="font-size: 1rem; padding: 6px 8px; --tilt: 1.5deg;"
 				title="I liked this puzzle"
 				aria-label="Thumbs up"
 				onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
@@ -906,7 +906,7 @@
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5"
-				style="font-size: 1rem; padding: 6px 8px; transform: rotate(-1.5deg);"
+				style="font-size: 1rem; padding: 6px 8px; --tilt: -1.5deg;"
 				title="Report a problem with this puzzle"
 				aria-label="Thumbs down"
 				onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}

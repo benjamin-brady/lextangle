@@ -105,7 +105,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				target="_blank"
 				rel="noopener noreferrer"
 				class="crayon-btn crayon-btn-yellow inline-flex items-center gap-2"
-				style="transform: rotate(-1.5deg);"
+				style="--tilt: -1.5deg;"
 			>
 				<span aria-hidden="true">☕</span>
 				<span>buy me a coffee</span>

@@ -46,7 +46,7 @@
 			</span>
 			<span
 				class="crayon-btn crayon-btn-blue inline-flex items-center gap-1.5 shrink-0"
-				style="font-size: 1.05rem; padding: 6px 10px; transform: rotate(-1.5deg);"
+				style="font-size: 1.05rem; padding: 6px 10px; --tilt: -1.5deg;"
 			>
 				<span>play</span>
 				<ExternalLink class="h-3.5 w-3.5" aria-hidden="true" />

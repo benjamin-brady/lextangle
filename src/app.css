@@ -187,12 +187,13 @@ body::before {
 	outline: 3px dashed var(--ink-dark);
 	outline-offset: -6px;
 	border-radius: 6px;
-	transition: transform 0.08s ease;
+	transition: transform 0.15s ease;
 	filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.18));
+	transform: rotate(var(--tilt, 0deg));
 }
 
-.crayon-btn:hover:not(:disabled) { transform: translate(-1px, -1px); }
-.crayon-btn:active:not(:disabled) { transform: translate(1px, 1px); filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.18)); }
+.crayon-btn:hover:not(:disabled) { transform: rotate(calc(var(--tilt, 0deg) * -1)) translate(-1px, -1px); }
+.crayon-btn:active:not(:disabled) { transform: rotate(calc(var(--tilt, 0deg) * -1)) translate(1px, 1px); filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.18)); }
 .crayon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .crayon-btn-blue { background: var(--crayon-blue); color: #fff; outline-color: #1e6fa8; }
