@@ -10,6 +10,7 @@ interface SavedState {
 	cellChecked: boolean[];
 	checkedSnapshot: (string | null)[];
 	checkHistory: ShareCheckSummary[];
+	solvedAt?: number;
 }
 
 // Bump this when the saved-state schema changes or we want to invalidate all
@@ -18,6 +19,42 @@ const STORAGE_VERSION = 'v3';
 
 function storageKey(storageId: string): string {
 	return `simicle-game-${STORAGE_VERSION}-${storageId}`;
+}
+
+export interface SolvedSummary {
+	solved: boolean;
+	solvedAt: number | null;
+}
+
+/**
+ * Inspect the persisted savedState for a puzzle without instantiating the
+ * full reactive game. Returns whether the puzzle is fully solved and (if
+ * available) the timestamp it was first solved.
+ */
+export function readSolvedSummary(puzzle: Puzzle, storageId: string): SolvedSummary {
+	if (typeof localStorage === 'undefined') return { solved: false, solvedAt: null };
+	const raw = localStorage.getItem(storageKey(storageId));
+	if (!raw) return { solved: false, solvedAt: null };
+	try {
+		const parsed = JSON.parse(raw) as Partial<SavedState> | null;
+		if (!parsed || !Array.isArray(parsed.cellChecked) || !Array.isArray(parsed.grid)) {
+			return { solved: false, solvedAt: null };
+		}
+		const allChecked =
+			parsed.cellChecked.length === puzzle.solution.length &&
+			parsed.cellChecked.every(Boolean);
+		const matchesSolution =
+			parsed.grid.length === puzzle.solution.length &&
+			parsed.grid.every((w, i) => w === puzzle.solution[i].word);
+		const solved = allChecked && matchesSolution;
+		const solvedAt =
+			solved && typeof parsed.solvedAt === 'number' && Number.isFinite(parsed.solvedAt)
+				? parsed.solvedAt
+				: null;
+		return { solved, solvedAt };
+	} catch {
+		return { solved: false, solvedAt: null };
+	}
 }
 
 function freshState(puzzle: Puzzle): SavedState {
@@ -208,6 +245,10 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 				)
 			})
 		];
+		const nowSolved = s.grid.every((w, i) => w !== null && w === puzzle.solution[i].word);
+		if (nowSolved && !s.solvedAt) {
+			s.solvedAt = Date.now();
+		}
 		// Checks cannot be undone.
 		history.length = 0;
 		historyVersion++;

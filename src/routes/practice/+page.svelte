@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { loadSolvedGameTimestamps } from '$lib/game-storage';
+	import { readSolvedSummary } from '$lib/game.svelte';
 	import {
 		getHardPracticePuzzle,
 		getHardPracticePuzzleCount,
@@ -20,7 +20,7 @@
 		return { id, puzzle: getHardPracticePuzzle(id) };
 	}).filter((item): item is PracticeListItem => item.puzzle !== undefined);
 
-	let solvedAt = $state<Map<string, number>>(new Map());
+	let solvedAt = $state<Map<string, number | null>>(new Map());
 
 	const dateFormatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
 
@@ -41,17 +41,19 @@
 		return ts ? dateFormatter.format(new Date(ts)) : null;
 	}
 
-	onMount(async () => {
-		const storageIds = [
-			...practicePuzzles.map(({ id }) => practiceStorageId(id)),
-			...hardPuzzles.map(({ id }) => hardPracticeStorageId(id))
-		];
-
-		try {
-			solvedAt = await loadSolvedGameTimestamps(storageIds);
-		} catch {
-			solvedAt = new Map();
+	onMount(() => {
+		const next = new Map<string, number | null>();
+		for (const { id, puzzle } of practicePuzzles) {
+			const sid = practiceStorageId(id);
+			const summary = readSolvedSummary(puzzle, sid);
+			if (summary.solved) next.set(sid, summary.solvedAt);
 		}
+		for (const { id, puzzle } of hardPuzzles) {
+			const sid = hardPracticeStorageId(id);
+			const summary = readSolvedSummary(puzzle, sid);
+			if (summary.solved) next.set(sid, summary.solvedAt);
+		}
+		solvedAt = next;
 	});
 </script>
 
