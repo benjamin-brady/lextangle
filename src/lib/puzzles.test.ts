@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { HARD_PRACTICE_PUZZLES, PRACTICE_PUZZLES } from './puzzles';
+import { HARD_PRACTICE_PUZZLES, PRACTICE_PUZZLES, PUZZLES } from './puzzles';
 import type { Puzzle } from './types';
 
 function words(puzzle: Puzzle): string {
@@ -9,9 +9,13 @@ function words(puzzle: Puzzle): string {
 
 describe('puzzle generation metadata', () => {
 	test('ships the current review batch with Copilot generation details', () => {
+		const latestMain = PUZZLES.slice(-8);
 		const latestStandard = PRACTICE_PUZZLES.slice(-8);
 		const latestHard = HARD_PRACTICE_PUZZLES.slice(-2);
 
+		expect(latestMain.map(words)).toContain(
+			'Spoon,Soup,Crouton,Whisk,Egg,Toast,Flour,Roll,Jam'
+		);
 		expect(latestStandard.map(words)).toContain(
 			'Spoon,Soup,Crouton,Whisk,Egg,Toast,Flour,Roll,Jam'
 		);
@@ -19,7 +23,7 @@ describe('puzzle generation metadata', () => {
 			'Check,Rain,Slicker,Mark,Down,Vest,Quill,Feather,Leather'
 		);
 
-		for (const puzzle of [...latestStandard, ...latestHard]) {
+		for (const puzzle of [...latestMain, ...latestStandard, ...latestHard]) {
 			expect(puzzle.generation).toMatchObject({
 				author: 'GitHub Copilot',
 				model: 'openai/gpt-5.5-high',

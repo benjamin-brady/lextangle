@@ -722,13 +722,13 @@ export const PUZZLES: Puzzle[] = [
       { from: 5, to: 8, clue: "One braves the weather outside." },
     ],
   },
+  ...REVIEW_STANDARD_BATCH_F,
 ].map((puzzle, index) => applyWordEmojis(applyPuzzleGeneration(puzzle, index)));
 
 const PRACTICE_EXCLUDED_PUZZLE_INDICES = new Set([5, 12]);
 
 export const PRACTICE_PUZZLES: Puzzle[] = [
   ...PUZZLES.filter((_, index) => !PRACTICE_EXCLUDED_PUZZLE_INDICES.has(index)),
-  ...REVIEW_STANDARD_BATCH_F.map(applyWordEmojis),
 ];
 
 const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
@@ -867,12 +867,10 @@ const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
       { from: 5, to: 8, clue: "In the high cab above the yard." },
     ],
   },
+  ...REVIEW_HARD_BATCH_C,
 ].map(applyWordEmojis);
 
-export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
-  ...BASE_HARD_PRACTICE_PUZZLES,
-  ...REVIEW_HARD_BATCH_C.map(applyWordEmojis),
-];
+export const HARD_PRACTICE_PUZZLES: Puzzle[] = BASE_HARD_PRACTICE_PUZZLES;
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 // 2026-04-08 is Daily #1, making 2026-04-10 Daily #3.
