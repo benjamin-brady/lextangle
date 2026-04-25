@@ -9,7 +9,16 @@ export interface Edge {
 	clue: string;
 }
 
+export interface PuzzleGenerationDetails {
+	author: string;
+	model: string;
+	provider?: string;
+	generatedAt: string;
+	sourceCommit?: string;
+}
+
 export interface Puzzle {
+	generation?: PuzzleGenerationDetails;
 	/** 9 words in their correct grid positions (index 0–8, row-major) */
 	solution: WordItem[];
 	/** Edges describing relationships between adjacent cells */

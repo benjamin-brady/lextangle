@@ -6,6 +6,8 @@ import { STANDARD_BATCH_A } from './standard-batch-a';
 import { STANDARD_BATCH_D } from './standard-batch-d';
 import { STANDARD_BATCH_E } from './standard-batch-e';
 
+export { REVIEW_HARD_BATCH_C, REVIEW_STANDARD_BATCH_F } from './practice-review-batch-f';
+
 export const STANDARD_BATCH_EXTRA: Puzzle[] = [
 	{
 		solution: [

@@ -1,4 +1,5 @@
 import type { Puzzle } from "./types";
+import { REVIEW_HARD_BATCH_C, REVIEW_STANDARD_BATCH_F } from "./generated-puzzles";
 
 const DEFAULT_WORD_EMOJI = "✨";
 
@@ -90,6 +91,39 @@ function applyWordEmojis(puzzle: Puzzle): Puzzle {
       emoji: item.emoji ?? WORD_EMOJIS[item.word] ?? DEFAULT_WORD_EMOJI,
     })),
   };
+}
+
+const GPT_54_HIGH_GENERATION: NonNullable<Puzzle["generation"]> = {
+  author: "GitHub Copilot",
+  model: "openai/gpt-5.4-high",
+  provider: "github-copilot",
+  generatedAt: "2026-04-21",
+  sourceCommit: "f3d0bd2",
+};
+
+const CLAUDE_OPUS_4_GENERATION: NonNullable<Puzzle["generation"]> = {
+  author: "GitHub Copilot",
+  model: "claude-opus-4",
+  provider: "github-copilot",
+  generatedAt: "2026-04-21",
+  sourceCommit: "c019d64",
+};
+
+const PUZZLE_GENERATION_BY_INDEX = new Map<number, NonNullable<Puzzle["generation"]>>([
+  [12, GPT_54_HIGH_GENERATION],
+  [13, GPT_54_HIGH_GENERATION],
+  [14, GPT_54_HIGH_GENERATION],
+  [15, GPT_54_HIGH_GENERATION],
+  [16, GPT_54_HIGH_GENERATION],
+  [17, CLAUDE_OPUS_4_GENERATION],
+  [18, CLAUDE_OPUS_4_GENERATION],
+  [19, CLAUDE_OPUS_4_GENERATION],
+  [20, CLAUDE_OPUS_4_GENERATION],
+]);
+
+function applyPuzzleGeneration(puzzle: Puzzle, index: number): Puzzle {
+  const generation = PUZZLE_GENERATION_BY_INDEX.get(index);
+  return generation ? { ...puzzle, generation } : puzzle;
 }
 
 export const PUZZLES: Puzzle[] = [
@@ -688,15 +722,16 @@ export const PUZZLES: Puzzle[] = [
       { from: 5, to: 8, clue: "One braves the weather outside." },
     ],
   },
-].map(applyWordEmojis);
+].map((puzzle, index) => applyWordEmojis(applyPuzzleGeneration(puzzle, index)));
 
 const PRACTICE_EXCLUDED_PUZZLE_INDICES = new Set([5, 12]);
 
-export const PRACTICE_PUZZLES: Puzzle[] = PUZZLES.filter(
-  (_, index) => !PRACTICE_EXCLUDED_PUZZLE_INDICES.has(index)
-);
+export const PRACTICE_PUZZLES: Puzzle[] = [
+  ...PUZZLES.filter((_, index) => !PRACTICE_EXCLUDED_PUZZLE_INDICES.has(index)),
+  ...REVIEW_STANDARD_BATCH_F.map(applyWordEmojis),
+];
 
-export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
+const BASE_HARD_PRACTICE_PUZZLES: Puzzle[] = [
   {
     solution: [
       { word: "Score", emoji: "🎯" },
@@ -833,6 +868,11 @@ export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
     ],
   },
 ].map(applyWordEmojis);
+
+export const HARD_PRACTICE_PUZZLES: Puzzle[] = [
+  ...BASE_HARD_PRACTICE_PUZZLES,
+  ...REVIEW_HARD_BATCH_C.map(applyWordEmojis),
+];
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 // 2026-04-08 is Daily #1, making 2026-04-10 Daily #3.
