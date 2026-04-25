@@ -76,22 +76,26 @@
 					class:solved
 					aria-label={solved ? `Puzzle ${id}, ${puzzle.title}, completed${solvedOn ? ` on ${solvedOn}` : ''}` : `Puzzle ${id}, ${puzzle.title}`}
 				>
-					{#if solved}
-						<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
-							<span>#{id}</span>
+					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
+						<span>#{id}</span>
+						{#if solved}
 							<span aria-hidden="true" class="text-(--green) text-[12px] leading-none">✓</span>
-						</span>
-						<div class="grid flex-1 grid-cols-3 grid-rows-3 place-items-center gap-px">
-							{#each puzzle.solution as word, i (i)}
-								<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
-							{/each}
-						</div>
-						{#if solvedOn}
-							<span class="mt-0.5 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">{solvedOn}</span>
 						{/if}
-					{:else}
-						<span class="flex flex-1 items-center justify-center text-[clamp(1.5rem,7vw,2.5rem)] font-bold text-(--text-muted)">#{id}</span>
-					{/if}
+					</span>
+					<div class="flex flex-1 items-center justify-center">
+						{#if solved}
+							<div class="grid h-full w-full grid-cols-3 grid-rows-3 place-items-center gap-px">
+								{#each puzzle.solution as word, i (i)}
+									<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
+								{/each}
+							</div>
+						{:else}
+							<span class="text-[clamp(1.5rem,7vw,2.5rem)] font-bold text-(--text-muted)">#{id}</span>
+						{/if}
+					</div>
+					<span class="h-3 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">
+						{solvedOn ?? ''}
+					</span>
 				</a>
 			{/each}
 		</div>
@@ -115,22 +119,26 @@
 					class:solved
 					aria-label={solved ? `Hard puzzle ${id}, ${puzzle.title}, completed${solvedOn ? ` on ${solvedOn}` : ''}` : `Hard puzzle ${id}, ${puzzle.title}`}
 				>
-					{#if solved}
-						<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
-							<span>#{id}</span>
+					<span class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-(--text-muted)">
+						<span>#{id}</span>
+						{#if solved}
 							<span aria-hidden="true" class="text-(--green) text-[12px] leading-none">✓</span>
-						</span>
-						<div class="grid flex-1 grid-cols-3 grid-rows-3 place-items-center gap-px">
-							{#each puzzle.solution as word, i (i)}
-								<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
-							{/each}
-						</div>
-						{#if solvedOn}
-							<span class="mt-0.5 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">{solvedOn}</span>
 						{/if}
-					{:else}
-						<span class="flex flex-1 items-center justify-center text-[clamp(1.5rem,7vw,2.5rem)] font-bold text-(--text-muted)">#{id}</span>
-					{/if}
+					</span>
+					<div class="flex flex-1 items-center justify-center">
+						{#if solved}
+							<div class="grid h-full w-full grid-cols-3 grid-rows-3 place-items-center gap-px">
+								{#each puzzle.solution as word, i (i)}
+									<span class="text-[clamp(0.7rem,3vw,1rem)] leading-none" aria-hidden="true">{word.emoji ?? ''}</span>
+								{/each}
+							</div>
+						{:else}
+							<span class="text-[clamp(1.5rem,7vw,2.5rem)] font-bold text-(--text-muted)">#{id}</span>
+						{/if}
+					</div>
+					<span class="h-3 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-(--green)">
+						{solvedOn ?? ''}
+					</span>
 				</a>
 			{/each}
 		</div>
