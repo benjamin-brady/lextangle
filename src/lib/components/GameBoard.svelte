@@ -16,7 +16,19 @@
 	import type { Puzzle, WordItem } from '../types';
 	import { ADJACENCIES as BOARD_ADJACENCIES } from '../types';
 
-	let { game, shareLabel, puzzle, storageId }: { game: GameState; shareLabel: string; puzzle: Puzzle; storageId: string } = $props();
+	let {
+		game,
+		shareLabel,
+		puzzle,
+		storageId,
+		onProgressChange,
+	}: {
+		game: GameState;
+		shareLabel: string;
+		puzzle: Puzzle;
+		storageId: string;
+		onProgressChange?: () => void;
+	} = $props();
 
 	function wordEmoji(word: WordItem): string {
 		return word.emoji ?? '✨';
@@ -361,6 +373,13 @@
 	function handleCheck() {
 		game.check();
 		trackEvent('puzzle_check', baseEventParams());
+		onProgressChange?.();
+	}
+
+	function handleReset() {
+		if (!confirm('Reset the board? All progress will be lost.')) return;
+		game.reset();
+		onProgressChange?.();
 	}
 
 	async function shareResult() {
@@ -412,38 +431,79 @@
 	});
 
 	// Touch drag support
-	let touchDragItem = $state<{ word: WordItem; source: 'inventory' | 'grid'; gridIndex?: number } | null>(null);
+	type TouchDragItem = { word: WordItem; source: 'inventory' | 'grid'; gridIndex?: number };
+	const TOUCH_DRAG_DELAY_MS = 220;
+	const TOUCH_SCROLL_THRESHOLD = 8;
+	let touchDragItem = $state<TouchDragItem | null>(null);
+	let pendingTouchDrag = $state<(TouchDragItem & { x: number; y: number }) | null>(null);
 	let touchGhost = $state<{ x: number; y: number } | null>(null);
+	let touchDragTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function clearPendingTouchDrag() {
+		if (touchDragTimer) {
+			clearTimeout(touchDragTimer);
+			touchDragTimer = null;
+		}
+		pendingTouchDrag = null;
+	}
+
+	function startPendingTouchDrag(e: TouchEvent, item: TouchDragItem) {
+		const touch = e.touches[0];
+		if (!touch) return;
+
+		clearPendingTouchDrag();
+		pendingTouchDrag = { ...item, x: touch.clientX, y: touch.clientY };
+		touchDragTimer = setTimeout(() => {
+			if (!pendingTouchDrag) return;
+
+			touchDragItem = {
+				word: pendingTouchDrag.word,
+				source: pendingTouchDrag.source,
+				gridIndex: pendingTouchDrag.gridIndex,
+			};
+			selected = null;
+			touchGhost = { x: pendingTouchDrag.x, y: pendingTouchDrag.y };
+			pendingTouchDrag = null;
+			touchDragTimer = null;
+		}, TOUCH_DRAG_DELAY_MS);
+	}
 
 	function onTouchStartInventory(e: TouchEvent, word: WordItem) {
-		e.preventDefault();
-		touchDragItem = { word, source: 'inventory' };
-		const touch = e.touches[0];
-		touchGhost = { x: touch.clientX, y: touch.clientY };
+		startPendingTouchDrag(e, { word, source: 'inventory' });
 	}
 
 	function onTouchStartGrid(e: TouchEvent, index: number) {
 		const cell = game.grid[index];
 		if (!cell) return;
-		e.preventDefault();
-		touchDragItem = { word: cell, source: 'grid', gridIndex: index };
-		const touch = e.touches[0];
-		touchGhost = { x: touch.clientX, y: touch.clientY };
+		startPendingTouchDrag(e, { word: cell, source: 'grid', gridIndex: index });
 	}
 
 	function onTouchMove(e: TouchEvent) {
+		const touch = e.touches[0];
+		if (!touch) return;
+
+		if (!touchDragItem && pendingTouchDrag) {
+			const deltaX = touch.clientX - pendingTouchDrag.x;
+			const deltaY = touch.clientY - pendingTouchDrag.y;
+			if (Math.hypot(deltaX, deltaY) > TOUCH_SCROLL_THRESHOLD) {
+				clearPendingTouchDrag();
+			}
+			return;
+		}
+
 		if (!touchDragItem) return;
 		e.preventDefault();
-		const touch = e.touches[0];
 		touchGhost = { x: touch.clientX, y: touch.clientY };
 	}
 
 	function onTouchEnd(e: TouchEvent) {
+		clearPendingTouchDrag();
 		if (!touchDragItem || !touchGhost) {
 			touchDragItem = null;
 			touchGhost = null;
 			return;
 		}
+		e.preventDefault();
 
 		// Find which grid cell or inventory we're over
 		const el = document.elementFromPoint(touchGhost.x, touchGhost.y);
@@ -567,7 +627,7 @@
 	ontouchend={onTouchEnd}
 />
 
-<div class="flex flex-col items-stretch gap-6 select-none touch-none">
+<div class="flex flex-col items-stretch gap-6 select-none">
 	<!-- Grid -->
 	<div class="relative w-full" style="padding-bottom: 18px;">
 		<div class="relative aspect-square w-full" style="container-type: inline-size;">
@@ -880,7 +940,7 @@
 				type="button"
 				class="crayon-btn crayon-btn-red inline-flex items-center gap-1.5"
 				style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
-				onclick={() => { if (confirm('Reset the board? All progress will be lost.')) game.reset(); }}
+				onclick={handleReset}
 				aria-label="Reset board"
 			>
 				<RotateCcw class="h-4 w-4" aria-hidden="true" />
