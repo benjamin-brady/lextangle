@@ -264,7 +264,7 @@ export const APRIL_25_STANDARD_G1: PuzzleDraft[] = [
 			{ word: 'Food', emoji: '🍲' },
 			{ word: 'Bowl', emoji: '🥣' },
 			{ word: 'Bird', emoji: '🐦' },
-			{ word: 'Cage', emoji: '🐦🏠' },
+			{ word: 'Cage', emoji: '🪤' },
 			{ word: 'Seed', emoji: '🌾' },
 		],
 		edges: [

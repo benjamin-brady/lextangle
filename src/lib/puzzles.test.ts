@@ -7,6 +7,14 @@ function words(puzzle: Puzzle): string {
 	return puzzle.solution.map(({ word }) => word).join(',');
 }
 
+const GRAPHEME_SEGMENTER = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+
+function emojiGraphemes(emoji: string): string[] {
+	return [...GRAPHEME_SEGMENTER.segment(emoji)]
+		.map(({ segment }) => segment)
+		.filter((segment) => segment.trim());
+}
+
 describe('puzzle generation metadata', () => {
 	test('gives every playable puzzle a short title', () => {
 		const playablePuzzles = [...PUZZLES, ...PRACTICE_PUZZLES, ...HARD_PRACTICE_PUZZLES];
@@ -105,4 +113,23 @@ describe('puzzle generation metadata', () => {
 			sourceCommit: 'f3d0bd2',
 		});
 	});
-});
+
+	test('uses exactly one emoji glyph per playable puzzle word', () => {
+		const playablePuzzles = [
+			...PUZZLES.map((puzzle) => ({ set: 'daily', puzzle })),
+			...PRACTICE_PUZZLES.map((puzzle) => ({ set: 'practice', puzzle })),
+			...HARD_PRACTICE_PUZZLES.map((puzzle) => ({ set: 'hard', puzzle })),
+		];
+
+		const badEmojiSlots = playablePuzzles.flatMap(({ set, puzzle }) =>
+			puzzle.solution.flatMap(({ word, emoji }) => {
+				const graphemes = emojiGraphemes(emoji ?? '');
+				return graphemes.length === 1
+					? []
+					: [`${set} ${puzzle.title} ${word}: ${emoji ?? '(missing)'}`];
+			})
+		);
+
+		expect(badEmojiSlots).toEqual([]);
+		});
+	});

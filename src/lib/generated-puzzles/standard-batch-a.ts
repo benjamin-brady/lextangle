@@ -142,7 +142,7 @@ export const STANDARD_BATCH_A: PuzzleDraft[] = [
 			{ word: 'Nest', emoji: '🪺' },
 			{ word: 'Egg', emoji: '🥚' },
 			{ word: 'Bee', emoji: '🐝' },
-			{ word: 'Hive', emoji: '🐝🏠' },
+			{ word: 'Hive', emoji: '🐝' },
 			{ word: 'Honey', emoji: '🍯' },
 			{ word: 'Cow', emoji: '🐄' },
 			{ word: 'Barn', emoji: '🏚️' },
@@ -199,7 +199,7 @@ export const STANDARD_BATCH_A: PuzzleDraft[] = [
 			{ word: 'Food', emoji: '🍲' },
 			{ word: 'Bowl', emoji: '🥣' },
 			{ word: 'Bird', emoji: '🐦' },
-			{ word: 'Cage', emoji: '🐦🏠' },
+			{ word: 'Cage', emoji: '🪤' },
 			{ word: 'Seed', emoji: '🌾' },
 		],
 		edges: [

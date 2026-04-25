@@ -234,7 +234,7 @@ export const APRIL_25_STANDARD_G5: PuzzleDraft[] = [
       { word: 'Nest', emoji: '🪺' },
       { word: 'Egg', emoji: '🥚' },
       { word: 'Bee', emoji: '🐝' },
-      { word: 'Hive', emoji: '🐝🏠' },
+      { word: 'Hive', emoji: '🐝' },
       { word: 'Honey', emoji: '🍯' },
       { word: 'Cow', emoji: '🐄' },
       { word: 'Barn', emoji: '🏚️' },
