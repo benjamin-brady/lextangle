@@ -22,29 +22,10 @@ type Payload = {
 	reason?: unknown;
 	comment?: unknown;
 	flaggedEdges?: unknown;
-	turnstileToken?: unknown;
 };
 
 const MAX_COMMENT = 1000;
 const ADJ_SET = new Set(ADJACENCIES.map(([a, b]) => `${a}-${b}`));
-
-async function verifyTurnstile(token: string, secret: string, ip: string | null) {
-	const body = new URLSearchParams();
-	body.set('secret', secret);
-	body.set('response', token);
-	if (ip) body.set('remoteip', ip);
-	const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-		method: 'POST',
-		body
-	});
-	if (!res.ok) return null;
-	return (await res.json()) as {
-		success: boolean;
-		score?: number;
-		action?: string;
-		'error-codes'?: string[];
-	};
-}
 
 async function hashUser(ip: string, ua: string, salt: string) {
 	const data = new TextEncoder().encode(`${ip}|${ua}|${salt}`);
@@ -132,21 +113,8 @@ export const POST: RequestHandler = async ({ request, platform, getClientAddress
 	}
 
 	// Turnstile verify
-	const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
-	const secret = platform.env.TURNSTILE_SECRET_KEY;
-	let tsScore: number | null = null;
-	let tsAction: string | null = null;
-	if (secret) {
-		if (!turnstileToken) {
-			return json({ error: 'turnstile_required' }, { status: 400 });
-		}
-		const verify = await verifyTurnstile(turnstileToken, secret, getClientAddress());
-		if (!verify?.success) {
-			return json({ error: 'turnstile_failed' }, { status: 400 });
-		}
-		tsScore = typeof verify.score === 'number' ? verify.score : null;
-		tsAction = typeof verify.action === 'string' ? verify.action : null;
-	}
+	const tsScore: number | null = null;
+	const tsAction: string | null = null;
 
 	const ip = getClientAddress();
 	const ua = request.headers.get('user-agent') ?? '';

@@ -6,7 +6,6 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Separator } from '$lib/components/ui/separator';
 	import type { Puzzle } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 	import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
@@ -25,7 +24,6 @@
 
 	const DISCORD_URL =
 		env.PUBLIC_DISCORD_INVITE_URL ?? 'https://discord.gg/AWfvmFWBcA';
-	const SITE_KEY = env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
 	const MAX_COMMENT = 1000;
 
 	const REASONS = [
@@ -42,9 +40,6 @@
 	let reason = $state<ReasonValue | ''>('');
 	let comment = $state('');
 	let flaggedEdges = $state<Record<string, boolean>>({});
-	let turnstileToken = $state('');
-	let turnstileEl: HTMLDivElement | null = $state(null);
-	let turnstileWidgetId: string | null = null;
 	let submitting = $state(false);
 	let error = $state('');
 
@@ -66,7 +61,6 @@
 	const canSubmit = $derived.by(() => {
 		if (submitting) return false;
 		if (sentiment === 'down' && !reason) return false;
-		if (SITE_KEY && !turnstileToken) return false;
 		return true;
 	});
 
@@ -74,16 +68,8 @@
 		reason = '';
 		comment = '';
 		flaggedEdges = {};
-		turnstileToken = '';
 		error = '';
 		submitting = false;
-		if (turnstileWidgetId && typeof window !== 'undefined' && window.turnstile) {
-			try {
-				window.turnstile.reset(turnstileWidgetId);
-			} catch {
-				// ignore
-			}
-		}
 	}
 
 	$effect(() => {
@@ -92,65 +78,13 @@
 		}
 	});
 
-	function ensureTurnstileScript() {
-		if (!SITE_KEY || typeof window === 'undefined') return;
-		if (document.getElementById('cf-turnstile-script')) return;
-		const script = document.createElement('script');
-		script.id = 'cf-turnstile-script';
-		script.src =
-			'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-		script.async = true;
-		script.defer = true;
-		document.head.appendChild(script);
-	}
-
-	$effect(() => {
-		if (!open || !SITE_KEY) return;
-		ensureTurnstileScript();
-		let cancelled = false;
-		const tryRender = () => {
-			if (cancelled || !turnstileEl) return;
-			if (!window.turnstile) {
-				window.setTimeout(tryRender, 150);
-				return;
-			}
-			if (turnstileWidgetId) return;
-			turnstileWidgetId = window.turnstile.render(turnstileEl, {
-				sitekey: SITE_KEY,
-				theme: 'dark',
-				callback: (token) => {
-					turnstileToken = token;
-				},
-				'error-callback': () => {
-					turnstileToken = '';
-				},
-				'expired-callback': () => {
-					turnstileToken = '';
-				}
-			});
-		};
-		tryRender();
-		return () => {
-			cancelled = true;
-			if (turnstileWidgetId && window.turnstile) {
-				try {
-					window.turnstile.remove(turnstileWidgetId);
-				} catch {
-					// ignore
-				}
-				turnstileWidgetId = null;
-			}
-		};
-	});
-
 	async function submit() {
 		if (!canSubmit) return;
 		submitting = true;
 		error = '';
 		const payload: Record<string, unknown> = {
 			storageId,
-			sentiment,
-			turnstileToken
+			sentiment
 		};
 		if (sentiment === 'down') {
 			payload.reason = reason;
@@ -293,11 +227,6 @@
 					{comment.length} / {MAX_COMMENT}
 				</div>
 			</div>
-
-			{#if SITE_KEY}
-				<Separator />
-				<div bind:this={turnstileEl} class="flex min-h-[65px] justify-center"></div>
-			{/if}
 
 			{#if error}
 				<p class="text-sm text-destructive">Couldn't send feedback: {error}</p>
