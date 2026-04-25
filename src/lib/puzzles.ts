@@ -1,11 +1,18 @@
 import type { Puzzle, PuzzleDraft } from "./types";
 import {
   APRIL_25_HARD_D,
+  APRIL_25_HARD_E,
+  APRIL_25_HARD_F,
   APRIL_25_STANDARD_G1,
+  APRIL_25_STANDARD_G10,
   APRIL_25_STANDARD_G2,
   APRIL_25_STANDARD_G3,
   APRIL_25_STANDARD_G4,
   APRIL_25_STANDARD_G5,
+  APRIL_25_STANDARD_G6,
+  APRIL_25_STANDARD_G7,
+  APRIL_25_STANDARD_G8,
+  APRIL_25_STANDARD_G9,
   REVIEW_HARD_BATCH_C,
   REVIEW_STANDARD_BATCH_F,
 } from "./generated-puzzles";
@@ -835,6 +842,11 @@ export const PUZZLES: Puzzle[] = [
   ...APRIL_25_STANDARD_G3,
   ...APRIL_25_STANDARD_G4,
   ...APRIL_25_STANDARD_G5,
+  ...APRIL_25_STANDARD_G6,
+  ...APRIL_25_STANDARD_G7,
+  ...APRIL_25_STANDARD_G8,
+  ...APRIL_25_STANDARD_G9,
+  ...APRIL_25_STANDARD_G10,
 ].map((puzzle, index) => applyPuzzleTitle(applyWordEmojis(applyPuzzleGeneration(puzzle, index))));
 
 const PRACTICE_EXCLUDED_PUZZLE_INDICES = new Set([5, 12]);
@@ -981,6 +993,8 @@ const BASE_HARD_PRACTICE_PUZZLES: PuzzleDraft[] = [
   },
   ...REVIEW_HARD_BATCH_C,
   ...APRIL_25_HARD_D,
+  ...APRIL_25_HARD_E,
+  ...APRIL_25_HARD_F,
 ].map(applyWordEmojis);
 
 const titledHardPracticePuzzles = BASE_HARD_PRACTICE_PUZZLES.map(applyPuzzleTitle);

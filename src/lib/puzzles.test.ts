@@ -34,24 +34,24 @@ describe('puzzle generation metadata', () => {
 	});
 
 	test('ships the April 25 generated batches in live puzzle arrays', () => {
-		expect(PUZZLES.length).toBe(79);
-		expect(PRACTICE_PUZZLES.length).toBe(77);
-		expect(HARD_PRACTICE_PUZZLES.length).toBe(22);
+		expect(PUZZLES.length).toBe(129);
+		expect(PRACTICE_PUZZLES.length).toBe(127);
+		expect(HARD_PRACTICE_PUZZLES.length).toBe(42);
 
 		const latestStandard = PUZZLES.slice(-50);
-		const latestHard = HARD_PRACTICE_PUZZLES.slice(-15);
+		const latestHard = HARD_PRACTICE_PUZZLES.slice(-20);
 
 		expect(latestStandard[0] ? words(latestStandard[0]) : '').toBe(
-			'Caterpillar,Leaf,Vein,Butterfly,Flower,Petal,Bee,Nectar,Pollen'
+			'Flour,Dough,Butter,Bread,Slice,Knife,Plate,Dish,Towel'
 		);
 		expect(latestStandard.at(-1) ? words(latestStandard.at(-1)!) : '').toBe(
-			'Voice,Mail,Box,Text,Message,Board,Note,Pad,Paper'
+			'Hammer,Nail,Head,Tool,Box,Driver,Tape,Measure,Mark'
 		);
 		expect(latestHard[0] ? words(latestHard[0]) : '').toBe(
-			'Cab,Taxi,Stand,Truck,Driver,Bus,Delivery,Route,Stop'
+			'Airport,Terminal,Gate,Baggage,Claim,Ticket,Carousel,Belt,Seat'
 		);
 		expect(latestHard.at(-1) ? words(latestHard.at(-1)!) : '').toBe(
-			'Paper,Chain,Dog,Clip,Mail,Tag,Board,Room,Service'
+			'Bus,Operator,Seat,Station,Train,Coach,Rail,Track,Team'
 		);
 
 		for (const puzzle of [...latestStandard, ...latestHard]) {

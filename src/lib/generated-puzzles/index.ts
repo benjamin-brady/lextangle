@@ -8,11 +8,18 @@ import { STANDARD_BATCH_E } from './standard-batch-e';
 
 export { REVIEW_HARD_BATCH_C, REVIEW_STANDARD_BATCH_F } from './practice-review-batch-f';
 export { APRIL_25_HARD_D } from './april-25-hard-d';
+export { APRIL_25_HARD_E } from './april-25-hard-e';
+export { APRIL_25_HARD_F } from './april-25-hard-f';
 export { APRIL_25_STANDARD_G1 } from './april-25-standard-g1';
+export { APRIL_25_STANDARD_G10 } from './april-25-standard-g10';
 export { APRIL_25_STANDARD_G2 } from './april-25-standard-g2';
 export { APRIL_25_STANDARD_G3 } from './april-25-standard-g3';
 export { APRIL_25_STANDARD_G4 } from './april-25-standard-g4';
 export { APRIL_25_STANDARD_G5 } from './april-25-standard-g5';
+export { APRIL_25_STANDARD_G6 } from './april-25-standard-g6';
+export { APRIL_25_STANDARD_G7 } from './april-25-standard-g7';
+export { APRIL_25_STANDARD_G8 } from './april-25-standard-g8';
+export { APRIL_25_STANDARD_G9 } from './april-25-standard-g9';
 
 export const STANDARD_BATCH_EXTRA: PuzzleDraft[] = [
 	{
