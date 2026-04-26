@@ -1027,7 +1027,7 @@
 					{#if menuOpen}
 						<div
 							class="absolute right-0 bottom-full mb-2 z-30 flex flex-col gap-2 p-2 rounded"
-							style="background: var(--paper-card); border: 2px solid var(--ink-dark); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.18)); min-width: 160px;"
+							style="background: var(--bg-raised); border: 2px solid var(--ink-dark); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.18)); min-width: 160px;"
 							role="menu"
 						>
 							<button
