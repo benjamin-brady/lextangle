@@ -211,6 +211,26 @@ body::before {
 		font-size: 0.85rem;
 		outline-offset: -4px;
 	}
+	.site-header-inner {
+		padding-top: 0.25rem;
+		padding-bottom: 0.125rem;
+	}
+	.site-logo {
+		font-size: 1.5rem !important;
+	}
+	.site-logo-badge {
+		font-size: 0.55rem !important;
+		top: -0.15rem !important;
+		right: -1rem !important;
+		padding: 0.02rem 0.25rem !important;
+		border-width: 1px !important;
+	}
+	.site-puzzle-num {
+		font-size: 0.85rem !important;
+	}
+	.site-squiggle {
+		height: 8px;
+	}
 }
 
 /* Inventory chip — scattered sticker */

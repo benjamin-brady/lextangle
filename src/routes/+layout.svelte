@@ -67,18 +67,18 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 		</defs>
 	</svg>
 
-	<header class="w-full bg-(--bg-raised)" style="box-shadow: 0 2px 0 rgba(0,0,0,0.12);">
-		<div class="flex items-end justify-between w-full max-w-md mx-auto px-4 pt-3 pb-2">
+	<header class="w-full bg-(--bg-raised) site-header" style="box-shadow: 0 2px 0 rgba(0,0,0,0.12);">
+		<div class="site-header-inner flex items-end justify-between w-full max-w-md mx-auto px-4 pt-3 pb-2">
 			<a href="/" class="flex items-baseline gap-1.5 group">
-				<span class="font-display leading-none relative" style="font-size: 2.8rem; color: var(--ink);">
+				<span class="site-logo font-display leading-none relative" style="font-size: 2.8rem; color: var(--ink);">
 					<span>Lex</span><span style="color: var(--crayon-red);">tangle</span>
 					<span
-						class="font-display absolute"
+						class="site-logo-badge font-display absolute"
 						style="top: -0.2rem; right: -1.4rem; font-size: 0.75rem; color: var(--paper-cream); background: var(--crayon-purple); padding: 0.05rem 0.35rem 0.02rem; border: 1.5px solid var(--ink-dark); transform: rotate(8deg); line-height: 1; letter-spacing: 0.05em; box-shadow: 1px 1px 0 0 var(--ink-dark);"
 						aria-label="Alpha version"
 					>alpha</span>
 				</span>
-				<span class="font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{data.dailyPuzzleNumber}</span>
+				<span class="site-puzzle-num font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{data.dailyPuzzleNumber}</span>
 			</a>
 			<div class="flex items-center gap-2">
 				<ThemeToggle />
@@ -86,7 +86,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 			</div>
 		</div>
 		<!-- Double-squiggle underline -->
-		<svg class="block w-full max-w-md mx-auto px-4" height="14" viewBox="0 0 420 18" preserveAspectRatio="none" aria-hidden="true">
+		<svg class="site-squiggle block w-full max-w-md mx-auto px-4" height="14" viewBox="0 0 420 18" preserveAspectRatio="none" aria-hidden="true">
 			<path d="M4 8 Q 30 2, 60 8 T 120 8 T 180 8 T 240 8 T 300 8 T 360 8 T 416 8" fill="none" stroke="var(--crayon-blue)" stroke-width="3" stroke-linecap="round" filter="url(#wobble)" />
 			<path d="M4 14 Q 30 9, 60 14 T 120 14 T 180 14 T 240 14 T 300 14 T 360 14 T 416 14" fill="none" stroke="var(--crayon-red)" stroke-width="2.5" stroke-linecap="round" filter="url(#wobble)" />
 		</svg>
