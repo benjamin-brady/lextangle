@@ -12,12 +12,10 @@
 </script>
 
 {#if game}
-	<section
-		class="cross-promo px-3 py-4 mt-2"
-	>
+	<section class="cross-promo mt-2">
 		<h2
-			class="cross-promo-title font-display font-bold mb-2"
-			style="font-size: 1.7rem; transform: rotate(-1deg); display: inline-block;"
+			class="cross-promo-title font-display font-bold mb-2 px-1"
+			style="font-size: 1.5rem; transform: rotate(-1deg); display: inline-block;"
 		>
 			try another game
 		</h2>
@@ -26,7 +24,6 @@
 			target="_blank"
 			rel="noopener noreferrer"
 			class="cross-promo-card flex items-center gap-3 p-3"
-			style="border: 3px solid var(--border-strong); border-radius: 6px; text-decoration: none; transition: transform 0.15s ease;"
 		>
 			<span aria-hidden="true" style="font-size: 2.25rem; line-height: 1;">{game.emoji}</span>
 			<span class="flex-1 min-w-0">
@@ -55,15 +52,15 @@
 {/if}
 
 <style>
-	.cross-promo {
-		background: rgba(255, 253, 246, 0.7);
-		filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.1));
-		border-radius: 3px;
-	}
 	.cross-promo-title { color: var(--ink-dark); }
 	.cross-promo-card {
 		background: var(--tile-surface);
 		color: var(--ink-dark);
+		border: 3px solid var(--border-strong);
+		border-radius: 6px;
+		text-decoration: none;
+		filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.12));
+		transition: transform 0.15s ease;
 	}
 	.cross-promo-name { color: var(--ink-dark); }
 	.cross-promo-tagline { color: var(--text-muted); }
@@ -71,9 +68,6 @@
 		transform: translate(-1px, -1px);
 	}
 
-	:global(.dark) .cross-promo {
-		background: var(--surface);
-	}
 	:global(.dark) .cross-promo-title,
 	:global(.dark) .cross-promo-card,
 	:global(.dark) .cross-promo-name {
