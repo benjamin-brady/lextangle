@@ -14,11 +14,10 @@
 {#if game}
 	<section
 		class="cross-promo px-3 py-4 mt-2"
-		style="background: rgba(255,253,246,0.7); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.1)); border-radius: 3px;"
 	>
 		<h2
-			class="font-display font-bold mb-2"
-			style="font-size: 1.7rem; color: var(--ink-dark); transform: rotate(-1deg); display: inline-block;"
+			class="cross-promo-title font-display font-bold mb-2"
+			style="font-size: 1.7rem; transform: rotate(-1deg); display: inline-block;"
 		>
 			try another game
 		</h2>
@@ -27,19 +26,19 @@
 			target="_blank"
 			rel="noopener noreferrer"
 			class="cross-promo-card flex items-center gap-3 p-3"
-			style="background: var(--tile-surface); border: 3px solid var(--border-strong); border-radius: 6px; text-decoration: none; color: inherit; transition: transform 0.15s ease;"
+			style="border: 3px solid var(--border-strong); border-radius: 6px; text-decoration: none; transition: transform 0.15s ease;"
 		>
 			<span aria-hidden="true" style="font-size: 2.25rem; line-height: 1;">{game.emoji}</span>
 			<span class="flex-1 min-w-0">
 				<span
-					class="font-display font-bold block leading-tight"
-					style="font-size: 1.4rem; color: var(--ink-dark);"
+					class="cross-promo-name font-display font-bold block leading-tight"
+					style="font-size: 1.4rem;"
 				>
 					{game.name}
 				</span>
 				<span
-					class="block leading-snug"
-					style="font-size: 1rem; color: var(--text-muted);"
+					class="cross-promo-tagline block leading-snug"
+					style="font-size: 1rem;"
 				>
 					{game.tagline}
 				</span>
@@ -56,7 +55,34 @@
 {/if}
 
 <style>
+	.cross-promo {
+		background: rgba(255, 253, 246, 0.7);
+		filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.1));
+		border-radius: 3px;
+	}
+	.cross-promo-title { color: var(--ink-dark); }
+	.cross-promo-card {
+		background: var(--tile-surface);
+		color: var(--ink-dark);
+	}
+	.cross-promo-name { color: var(--ink-dark); }
+	.cross-promo-tagline { color: var(--text-muted); }
 	.cross-promo-card:hover {
 		transform: translate(-1px, -1px);
+	}
+
+	:global(.dark) .cross-promo {
+		background: var(--surface);
+	}
+	:global(.dark) .cross-promo-title,
+	:global(.dark) .cross-promo-card,
+	:global(.dark) .cross-promo-name {
+		color: var(--text);
+	}
+	:global(.dark) .cross-promo-card {
+		background: var(--surface-light);
+	}
+	:global(.dark) .cross-promo-tagline {
+		color: var(--text-muted);
 	}
 </style>
