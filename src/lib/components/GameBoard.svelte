@@ -430,6 +430,18 @@
 		hasObservedSolvedState = true;
 	});
 
+	// Attach touchmove as a non-passive window listener so that, once a touch
+	// drag has started, calling preventDefault() actually blocks the page from
+	// scrolling under the user's finger. Svelte's `ontouchmove` on
+	// <svelte:window> registers a passive listener, which silently ignores
+	// preventDefault on touchmove and lets the page scroll while dragging.
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const handler = (e: TouchEvent) => onTouchMove(e);
+		window.addEventListener('touchmove', handler, { passive: false });
+		return () => window.removeEventListener('touchmove', handler);
+	});
+
 	// Touch drag support
 	type TouchDragItem = { word: WordItem; source: 'inventory' | 'grid'; gridIndex?: number };
 	const TOUCH_DRAG_DELAY_MS = 220;
@@ -623,7 +635,6 @@
 </script>
 
 <svelte:window
-	ontouchmove={onTouchMove}
 	ontouchend={onTouchEnd}
 />
 
