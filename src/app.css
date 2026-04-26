@@ -231,6 +231,9 @@ body::before {
 	.site-squiggle {
 		height: 8px;
 	}
+	.puzzle-grid-wrap {
+		max-width: 90%;
+	}
 }
 
 /* Inventory chip — scattered sticker */

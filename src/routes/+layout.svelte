@@ -5,6 +5,8 @@
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { theme, resolveTheme } from '$lib/theme.svelte';
+	import { shareAction } from '$lib/share-action.svelte';
+	import Share2 from 'lucide-svelte/icons/share-2';
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { trackPageView } from '../lib/analytics';
@@ -81,6 +83,18 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span class="site-puzzle-num font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{data.dailyPuzzleNumber}</span>
 			</a>
 			<div class="flex items-center gap-2">
+				{#if shareAction.handler}
+					<button
+						type="button"
+						class="sm:hidden inline-flex items-center justify-center rounded p-2 text-(--ink) hover:text-(--crayon-red) transition-colors"
+						style="background: transparent;"
+						aria-label="Share result"
+						title="Share result"
+						onclick={() => shareAction.handler?.()}
+					>
+						<Share2 class="h-5 w-5" aria-hidden="true" />
+					</button>
+				{/if}
 				<ThemeToggle />
 				<HowToPlay />
 			</div>

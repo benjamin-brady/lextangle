@@ -13,6 +13,8 @@
 	import Undo2 from 'lucide-svelte/icons/undo-2';
 	import Menu from 'lucide-svelte/icons/menu';
 	import { buildShareText as buildShareResultText } from '../share-text';
+	import { shareAction } from '../share-action.svelte';
+	import { onMount } from 'svelte';
 	import type { GameState } from '../game.svelte';
 	import type { Puzzle, WordItem } from '../types';
 	import { ADJACENCIES as BOARD_ADJACENCIES } from '../types';
@@ -387,6 +389,11 @@
 		onProgressChange?.();
 	}
 
+	onMount(() => {
+		shareAction.register(shareResult);
+		return () => shareAction.clear();
+	});
+
 	async function shareResult() {
 		const text = buildShareText();
 		const url = typeof window !== 'undefined' ? window.location.href : undefined;
@@ -664,7 +671,7 @@
 
 <div class="flex flex-col items-stretch gap-6 select-none">
 	<!-- Grid -->
-	<div class="relative w-full" style="padding-bottom: 18px;">
+	<div class="relative w-full puzzle-grid-wrap mx-auto" style="padding-bottom: 18px;">
 		<div class="relative aspect-square w-full" style="container-type: inline-size;">
 		<!-- Crayon-squiggle edges -->
 		<svg
@@ -927,9 +934,10 @@
 			{#if !game.solved}
 				<button
 					type="button"
-					class="crayon-btn crayon-btn-yellow inline-flex items-center gap-1.5"
+					class="crayon-btn crayon-btn-yellow hidden sm:inline-flex items-center gap-1.5"
 					style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
 					aria-label="Share result"
+					onclick={shareResult}
 				>
 					<Share2 class="h-4 w-4" aria-hidden="true" />
 					<span>{shareButtonLabel}</span>
