@@ -506,6 +506,17 @@
 		if (!touchDragItem) return;
 		e.preventDefault();
 		touchGhost = { x: touch.clientX, y: touch.clientY };
+
+		// Mirror the desktop dragOver highlight by hit-testing the element under
+		// the user's finger, so the would-be drop target lights up before drop.
+		const el = document.elementFromPoint(touch.clientX, touch.clientY);
+		const gridCell = el?.closest('[data-grid-index]');
+		if (gridCell) {
+			const idx = Number.parseInt(gridCell.getAttribute('data-grid-index') ?? '', 10);
+			dragOverIndex = Number.isNaN(idx) ? null : idx;
+		} else {
+			dragOverIndex = null;
+		}
 	}
 
 	function onTouchEnd(e: TouchEvent) {
@@ -674,7 +685,8 @@
 			{@const cell = game.grid[i]}
 			{@const tilt = TILT_ANGLES[i]}
 			{@const isDragSource =
-				draggedItem?.source === 'grid' && draggedItem.gridIndex === i}
+				(draggedItem?.source === 'grid' && draggedItem.gridIndex === i) ||
+				(touchDragItem?.source === 'grid' && touchDragItem.gridIndex === i)}
 			{@const isSelected = isSelectedGrid(i)}
 			{@const isSwapSource = isDragSource || isSelected}
 			{@const isTapHint = isTapTarget(i) && !isDragSource}
