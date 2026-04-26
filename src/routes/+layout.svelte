@@ -120,7 +120,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span aria-hidden="true">☕</span>
 				<span>buy me a coffee</span>
 			</a>
-			<nav class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-display" style="font-size: 1rem; color: var(--text-muted);">
+			<nav class="flex flex-nowrap items-center justify-center gap-x-1.5 gap-y-1 font-display whitespace-nowrap" style="font-size: 0.85rem; color: var(--text-muted);">
 				<a class="hover:text-(--crayon-red)" href="/practice">practice</a>
 				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="/faq">faq</a>
