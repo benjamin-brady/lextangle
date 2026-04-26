@@ -11,6 +11,7 @@
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
 	import Undo2 from 'lucide-svelte/icons/undo-2';
+	import Menu from 'lucide-svelte/icons/menu';
 	import { buildShareText as buildShareResultText } from '../share-text';
 	import type { GameState } from '../game.svelte';
 	import type { Puzzle, WordItem } from '../types';
@@ -61,6 +62,7 @@
 		}, 320);
 	}
 	let feedbackOpen = $state(false);
+	let menuOpen = $state(false);
 	let feedbackSentiment = $state<'up' | 'down'>('down');
 	let shareFeedback = $state('');
 	let shareButtonLabel = $state('Share');
@@ -934,7 +936,7 @@
 				</button>
 				<button
 					type="button"
-					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
+					class="crayon-btn crayon-btn-green hidden sm:inline-flex items-center gap-1.5"
 					style="font-size: 1rem; padding: 6px 10px; --tilt: 1.5deg;"
 					onclick={() => { triggerFlip(); game.flipHorizontal(); }}
 					title="Flip board horizontally"
@@ -945,7 +947,7 @@
 				</button>
 				<button
 					type="button"
-					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
+					class="crayon-btn crayon-btn-purple hidden sm:inline-flex items-center gap-1.5"
 					style="font-size: 1rem; padding: 6px 10px; --tilt: -1deg;"
 					onclick={() => { triggerFlip(); game.flipVertical(); }}
 					title="Flip board vertically"
@@ -956,7 +958,7 @@
 				</button>
 				<button
 					type="button"
-					class="crayon-btn crayon-btn-green inline-flex items-center gap-1.5"
+					class="crayon-btn crayon-btn-green hidden sm:inline-flex items-center gap-1.5"
 					style="font-size: 1rem; padding: 6px 10px; --tilt: 1deg;"
 					onclick={() => { triggerFlip(); game.shiftRight(); }}
 					title="Shift grid right"
@@ -967,7 +969,7 @@
 				</button>
 				<button
 					type="button"
-					class="crayon-btn crayon-btn-purple inline-flex items-center gap-1.5"
+					class="crayon-btn crayon-btn-purple hidden sm:inline-flex items-center gap-1.5"
 					style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
 					onclick={() => { triggerFlip(); game.shiftDown(); }}
 					title="Shift grid down"
@@ -991,7 +993,7 @@
 			</button>
 			<button
 				type="button"
-				class="crayon-btn crayon-btn-red inline-flex items-center gap-1.5"
+				class="crayon-btn crayon-btn-red hidden sm:inline-flex items-center gap-1.5"
 				style="font-size: 1rem; padding: 6px 10px; --tilt: -1.5deg;"
 				onclick={handleReset}
 				aria-label="Reset board"
@@ -999,6 +1001,80 @@
 				<RotateCcw class="h-4 w-4" aria-hidden="true" />
 				<span>reset</span>
 			</button>
+			{#if !game.solved}
+				<div class="relative sm:hidden">
+					<button
+						type="button"
+						class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5"
+						style="font-size: 1rem; padding: 6px 10px; --tilt: 1deg;"
+						onclick={() => (menuOpen = !menuOpen)}
+						aria-label="More actions"
+						aria-expanded={menuOpen}
+						title="More actions"
+					>
+						<Menu class="h-4 w-4" aria-hidden="true" />
+						<span>menu</span>
+					</button>
+					{#if menuOpen}
+						<div
+							class="absolute right-0 bottom-full mb-2 z-30 flex flex-col gap-2 p-2 rounded"
+							style="background: var(--paper-card); border: 2px solid var(--ink-dark); filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.18)); min-width: 160px;"
+							role="menu"
+						>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-green inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { triggerFlip(); game.flipHorizontal(); menuOpen = false; }}
+								aria-label="Flip board horizontally"
+							>
+								<FlipHorizontal2 class="h-4 w-4" aria-hidden="true" />
+								<span>flip h</span>
+							</button>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-purple inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { triggerFlip(); game.flipVertical(); menuOpen = false; }}
+								aria-label="Flip board vertically"
+							>
+								<FlipVertical2 class="h-4 w-4" aria-hidden="true" />
+								<span>flip v</span>
+							</button>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-green inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { triggerFlip(); game.shiftRight(); menuOpen = false; }}
+								aria-label="Shift grid right"
+							>
+								<ArrowRight class="h-4 w-4" aria-hidden="true" />
+								<span>shift r</span>
+							</button>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-purple inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { triggerFlip(); game.shiftDown(); menuOpen = false; }}
+								aria-label="Shift grid down"
+							>
+								<ArrowDown class="h-4 w-4" aria-hidden="true" />
+								<span>shift d</span>
+							</button>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-red inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { menuOpen = false; handleReset(); }}
+								aria-label="Reset board"
+							>
+								<RotateCcw class="h-4 w-4" aria-hidden="true" />
+								<span>reset</span>
+							</button>
+						</div>
+					{/if}
+				</div>
+			{/if}
 			<button
 				type="button"
 				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5 ml-auto"

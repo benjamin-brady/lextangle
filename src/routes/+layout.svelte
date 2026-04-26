@@ -90,10 +90,6 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 			<path d="M4 8 Q 30 2, 60 8 T 120 8 T 180 8 T 240 8 T 300 8 T 360 8 T 416 8" fill="none" stroke="var(--crayon-blue)" stroke-width="3" stroke-linecap="round" filter="url(#wobble)" />
 			<path d="M4 14 Q 30 9, 60 14 T 120 14 T 180 14 T 240 14 T 300 14 T 360 14 T 416 14" fill="none" stroke="var(--crayon-red)" stroke-width="2.5" stroke-linecap="round" filter="url(#wobble)" />
 		</svg>
-		<nav class="flex items-center justify-center gap-5 py-1.5 font-display" style="font-size: 1.2rem;">
-			<a class="px-2 py-1 hover:text-(--crayon-red) transition-colors" style="color: var(--ink);" href="/">daily</a>
-			<a class="px-2 py-1 hover:text-(--crayon-red) transition-colors" style="color: var(--ink);" href="/practice">practice</a>
-		</nav>
 	</header>
 	<main class="flex-1 w-full max-w-md mx-auto px-4 py-6">
 		{@render children()}
@@ -104,13 +100,15 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				href="https://ko-fi.com/benbob"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="crayon-btn crayon-btn-yellow inline-flex items-center gap-2"
+				class="crayon-btn crayon-btn-yellow inline-flex items-center gap-2 coffee-btn"
 				style="--tilt: -1.5deg;"
 			>
 				<span aria-hidden="true">☕</span>
 				<span>buy me a coffee</span>
 			</a>
 			<nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-display" style="font-size: 1rem; color: var(--text-muted);">
+				<a class="hover:text-(--crayon-red)" href="/practice">practice</a>
+				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="https://discord.gg/AWfvmFWBcA" target="_blank" rel="noopener noreferrer">discord</a>
 				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="/terms">terms</a>

@@ -205,6 +205,14 @@ body::before {
 .crayon-btn-purple { background: var(--crayon-purple); color: #fff; outline-color: #5e2e75; }
 .crayon-btn-cream { background: #fffdf6; color: var(--ink-dark); outline-color: var(--ink-dark); }
 
+@media (max-width: 640px) {
+	.coffee-btn {
+		padding: 5px 10px;
+		font-size: 0.85rem;
+		outline-offset: -4px;
+	}
+}
+
 /* Inventory chip — scattered sticker */
 .sticker-chip {
 	background: #fffdf6;
