@@ -43,6 +43,7 @@
 	const DRAG_MIME = 'application/x-lextangle-word';
 	let draggedItem = $state<DragItem | null>(null);
 	let dragOverIndex = $state<number | null>(null);
+	let dragOverInventory = $state(false);
 	// Tap-to-swap selection. When set, all other valid targets show the drop-target
 	// style and the selected tile wiggles. Tapping the same tile again clears it.
 	type Selection =
@@ -246,6 +247,7 @@
 	function onDropInventory(e: DragEvent) {
 		e.preventDefault();
 		dragOverIndex = null;
+		dragOverInventory = false;
 		const item = resolveDraggedItem(e);
 		if (!item) return;
 		if (item.source === 'grid' && item.gridIndex !== undefined) {
@@ -257,6 +259,7 @@
 	function onDragEnd() {
 		draggedItem = null;
 		dragOverIndex = null;
+		dragOverInventory = false;
 	}
 
 	// ---- Tap-to-swap -------------------------------------------------------
@@ -511,11 +514,17 @@
 		// the user's finger, so the would-be drop target lights up before drop.
 		const el = document.elementFromPoint(touch.clientX, touch.clientY);
 		const gridCell = el?.closest('[data-grid-index]');
+		const invZone = el?.closest('[data-inventory]');
 		if (gridCell) {
 			const idx = Number.parseInt(gridCell.getAttribute('data-grid-index') ?? '', 10);
 			dragOverIndex = Number.isNaN(idx) ? null : idx;
+			dragOverInventory = false;
+		} else if (invZone && touchDragItem.source === 'grid') {
+			dragOverIndex = null;
+			dragOverInventory = true;
 		} else {
 			dragOverIndex = null;
+			dragOverInventory = false;
 		}
 	}
 
@@ -556,6 +565,8 @@
 
 		touchDragItem = null;
 		touchGhost = null;
+		dragOverIndex = null;
+		dragOverInventory = false;
 	}
 
 	function edgeColor(fromIdx: number, toIdx: number): string {
@@ -837,8 +848,27 @@
 		class="flex min-h-16 flex-wrap justify-center gap-2 p-3"
 		data-inventory
 		role="list"
-		style="background: rgba(255,253,246,0.5); outline: 3px dashed {selected?.source === 'grid' ? 'var(--crayon-red)' : 'var(--border-strong)'}; outline-offset: -6px; border-radius: 6px; cursor: {selected?.source === 'grid' ? 'pointer' : 'default'};"
-		ondragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
+		style="background: {dragOverInventory ? 'rgba(252, 230, 225, 0.85)' : 'rgba(255,253,246,0.5)'}; outline: 3px dashed {dragOverInventory || selected?.source === 'grid' ? 'var(--crayon-red)' : 'var(--border-strong)'}; outline-offset: -6px; border-radius: 6px; cursor: {selected?.source === 'grid' ? 'pointer' : 'default'}; transition: background 0.15s, outline-color 0.15s;"
+		ondragenter={(e) => {
+			if (draggedItem?.source === 'grid') {
+				e.preventDefault();
+				dragOverInventory = true;
+			}
+		}}
+		ondragover={(e) => {
+			if (draggedItem?.source === 'grid') {
+				e.preventDefault();
+				if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+				dragOverInventory = true;
+			}
+		}}
+		ondragleave={(e) => {
+			// Only clear when leaving the zone itself, not when moving onto a child.
+			const related = e.relatedTarget as Node | null;
+			if (!related || !(e.currentTarget as Node).contains(related)) {
+				dragOverInventory = false;
+			}
+		}}
 		ondrop={onDropInventory}
 		onclick={onTapInventoryZone}
 		onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTapInventoryZone(); } }}
