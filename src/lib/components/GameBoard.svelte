@@ -761,7 +761,7 @@
 						ontouchstart={(e) => onTouchStartGrid(e, i)}
 					>
 						<span aria-hidden="true" class="leading-none mt-1" style="font-size: {boardFont(EMOJI_FONT * 1.15)};">{wordEmoji(cell)}</span>
-						<span class="font-display leading-none mt-1" style="font-size: {boardFont(NODE_FONT * 1.45)}; color: var(--ink-dark);">{cell.word}</span>
+						<span class="font-display leading-none mt-1" style="font-size: {boardFont(NODE_FONT * 1.3)}; color: var(--ink-dark);">{cell.word}</span>
 						{#if isSwapSource}
 							<span class="absolute font-display font-bold leading-none pointer-events-none" style="font-size: {boardFont(NODE_FONT * 0.95)}; color: var(--swap-label); bottom: 4px; right: 6px; transform: rotate(-4deg); text-shadow: 0 1px 0 rgba(0,0,0,0.25);">swap</span>
 						{/if}
