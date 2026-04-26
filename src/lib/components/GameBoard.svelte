@@ -851,10 +851,11 @@
 		<CrossPromoCard />
 	{/if}
 
-	<!-- Inventory: scattered stickers -->
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-	<div
-		class="flex min-h-16 flex-wrap justify-center gap-2 p-3"
+	{#if !game.solved}
+		<!-- Inventory: scattered stickers -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<div
+			class="flex min-h-16 flex-wrap justify-center gap-2 p-3"
 		data-inventory
 		role="list"
 		style="background: {dragOverInventory ? 'rgba(252, 230, 225, 0.85)' : 'rgba(255,253,246,0.5)'}; outline: 3px dashed {dragOverInventory || selected?.source === 'grid' ? 'var(--crayon-red)' : 'var(--border-strong)'}; outline-offset: -6px; border-radius: 6px; cursor: {selected?.source === 'grid' ? 'pointer' : 'default'}; transition: background 0.15s, outline-color 0.15s;"
@@ -1105,6 +1106,7 @@
 			</button>
 		</div>
 	</div>
+	{/if}
 
 	{#if shareFeedback && shareFeedback !== 'copied!'}
 		<p class="text-center font-display" style="font-size: 1.15rem; color: var(--text-muted);">{shareFeedback}</p>
