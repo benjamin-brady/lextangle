@@ -106,8 +106,10 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span aria-hidden="true">☕</span>
 				<span>buy me a coffee</span>
 			</a>
-			<nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-display" style="font-size: 1rem; color: var(--text-muted);">
+			<nav class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-display" style="font-size: 1rem; color: var(--text-muted);">
 				<a class="hover:text-(--crayon-red)" href="/practice">practice</a>
+				<span aria-hidden="true">·</span>
+				<a class="hover:text-(--crayon-red)" href="/faq">faq</a>
 				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="https://discord.gg/AWfvmFWBcA" target="_blank" rel="noopener noreferrer">discord</a>
 				<span aria-hidden="true">·</span>
@@ -115,7 +117,6 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span aria-hidden="true">·</span>
 				<a class="hover:text-(--crayon-red)" href="/privacy">privacy</a>
 			</nav>
-			<p class="font-display" style="font-size: 1rem; color: var(--text-muted);">made with ☕ by <a class="hover:text-(--crayon-red)" href="https://benjamin-brady.github.io/" target="_blank" rel="noopener noreferrer">ben brady</a></p>
 		</div>
 	</footer>
 </div>
