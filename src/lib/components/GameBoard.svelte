@@ -6,7 +6,6 @@
 	import FlipVertical2 from 'lucide-svelte/icons/flip-vertical-2';
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
-	import ThumbsUp from 'lucide-svelte/icons/thumbs-up';
 	import ThumbsDown from 'lucide-svelte/icons/thumbs-down';
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
@@ -805,19 +804,9 @@
 				<button
 					type="button"
 					class="crayon-btn crayon-btn-cream"
-					style="--tilt: 1.5deg;"
-					title="I liked this puzzle"
-					aria-label="Thumbs up"
-					onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
-				>
-					<ThumbsUp class="h-5 w-5" aria-hidden="true" />
-				</button>
-				<button
-					type="button"
-					class="crayon-btn crayon-btn-cream"
 					style="--tilt: -1deg;"
 					title="Report a problem with this puzzle"
-					aria-label="Thumbs down"
+					aria-label="Send feedback"
 					onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}
 				>
 					<ThumbsDown class="h-5 w-5" aria-hidden="true" />
@@ -917,7 +906,7 @@
 	<div class="flex flex-col gap-4">
 		{#if !game.solved}
 			<button
-				class="crayon-btn crayon-btn-blue w-full relative"
+				class="crayon-btn crayon-btn-blue w-full relative hidden sm:block"
 				style="padding: 12px; font-size: 1.5rem; --tilt: -0.5deg;"
 				onclick={handleCheck}
 				disabled={!game.canCheck}
@@ -931,7 +920,23 @@
 				{/if}
 			</button>
 		{/if}
-		<div class="flex flex-wrap items-center justify-center gap-2">
+		<div class="flex flex-nowrap sm:flex-wrap items-center justify-center gap-2">
+			{#if !game.solved}
+				<button
+					class="crayon-btn crayon-btn-blue relative flex-1 sm:hidden"
+					style="padding: 10px; font-size: 1.25rem; --tilt: -0.5deg;"
+					onclick={handleCheck}
+					disabled={!game.canCheck}
+				>
+					check it!
+					{#if game.checks > 0}
+						<span
+							class="absolute font-display font-bold tabular-nums leading-none"
+							style="top: -10px; right: -8px; background: var(--crayon-yellow); color: var(--ink-dark); font-size: 1.1rem; padding: 3px 8px; border-radius: 2px; transform: rotate(6deg); filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.15));"
+						>{game.checks}</span>
+					{/if}
+				</button>
+			{/if}
 			{#if !game.solved}
 				<button
 					type="button"
@@ -1080,26 +1085,26 @@
 								<RotateCcw class="h-4 w-4" aria-hidden="true" />
 								<span>reset</span>
 							</button>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-cream inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { menuOpen = false; feedbackSentiment = 'down'; feedbackOpen = true; }}
+								aria-label="Send feedback"
+							>
+								<ThumbsDown class="h-4 w-4" aria-hidden="true" />
+								<span>feedback</span>
+							</button>
 						</div>
 					{/if}
 				</div>
 			{/if}
 			<button
 				type="button"
-				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5 ml-auto"
-				style="font-size: 1rem; padding: 6px 8px; --tilt: 1.5deg;"
-				title="I liked this puzzle"
-				aria-label="Thumbs up"
-				onclick={() => { feedbackSentiment = 'up'; feedbackOpen = true; }}
-			>
-				<ThumbsUp class="h-4 w-4" aria-hidden="true" />
-			</button>
-			<button
-				type="button"
-				class="crayon-btn crayon-btn-cream inline-flex items-center gap-1.5"
+				class="crayon-btn crayon-btn-cream hidden sm:inline-flex items-center gap-1.5"
 				style="font-size: 1rem; padding: 6px 8px; --tilt: -1.5deg;"
 				title="Report a problem with this puzzle"
-				aria-label="Thumbs down"
+				aria-label="Send feedback"
 				onclick={() => { feedbackSentiment = 'down'; feedbackOpen = true; }}
 			>
 				<ThumbsDown class="h-4 w-4" aria-hidden="true" />

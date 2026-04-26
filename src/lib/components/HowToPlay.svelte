@@ -1,9 +1,18 @@
 <script lang="ts">
 	import { Info, RotateCcw, X } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
+	import { onMount } from 'svelte';
 	import { ADJACENCIES } from '../types';
+	import { howToPlayAction } from '../share-action.svelte';
+
+	let { hideTrigger = false }: { hideTrigger?: boolean } = $props();
 
 	let isOpen = $state(false);
+
+	onMount(() => {
+		howToPlayAction.register(() => openModal());
+		return () => howToPlayAction.clear();
+	});
 
 	const TUTORIAL_SOLUTION = ['MOON', 'LIGHT', 'HOUSE', 'ROCK', 'STAR', 'DOG', 'PET', 'FISH', 'CAT'] as const;
 	const TUTORIAL_START = ['CAT', 'LIGHT', 'HOUSE', 'ROCK', 'STAR', 'DOG', 'PET', 'FISH', 'MOON'] as const;
@@ -143,6 +152,7 @@
 
 <svelte:document onkeydown={handleDocumentKeydown} />
 
+{#if !hideTrigger}
 <button
 	type="button"
 	class="crayon-btn crayon-btn-cream flex h-10 w-10 items-center justify-center"
@@ -156,6 +166,7 @@
 >
 	<Info size={18} strokeWidth={2.25} aria-hidden="true" />
 </button>
+{/if}
 
 {#if isOpen}
 	<div class="fixed inset-0 z-50 grid place-items-center p-4 sm:p-6">

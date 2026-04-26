@@ -3,16 +3,20 @@
 	import { env } from '$env/dynamic/public';
 	import HowToPlay from '$lib/components/HowToPlay.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import MobileMenuSheet from '$lib/components/MobileMenuSheet.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { theme, resolveTheme } from '$lib/theme.svelte';
-	import { shareAction } from '$lib/share-action.svelte';
-	import Share2 from 'lucide-svelte/icons/share-2';
+	import { howToPlayAction } from '$lib/share-action.svelte';
+	import Menu from 'lucide-svelte/icons/menu';
+	import Info from 'lucide-svelte/icons/info';
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { trackPageView } from '../lib/analytics';
 	import '../app.css';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+	let mobileMenuOpen = $state(false);
 
 	const gaMeasurementId = env.PUBLIC_GA_MEASUREMENT_ID ?? '';
 	const gaBootstrapScript = gaMeasurementId
@@ -83,20 +87,30 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 				<span class="site-puzzle-num font-display leading-none" style="font-size: 1.3rem; color: var(--crayon-blue); transform: rotate(-6deg); display: inline-block;">#{data.dailyPuzzleNumber}</span>
 			</a>
 			<div class="flex items-center gap-2">
-				{#if shareAction.handler}
+				<button
+					type="button"
+					class="sm:hidden inline-flex items-center justify-center rounded p-2 text-(--ink) hover:text-(--crayon-red) transition-colors"
+					style="background: transparent;"
+					aria-label="Open menu"
+					title="Menu"
+					onclick={() => (mobileMenuOpen = true)}
+				>
+					<Menu class="h-6 w-6" aria-hidden="true" />
+				</button>
+				<div class="hidden sm:flex items-center gap-2">
+					<ThemeToggle />
 					<button
 						type="button"
-						class="sm:hidden inline-flex items-center justify-center rounded p-2 text-(--ink) hover:text-(--crayon-red) transition-colors"
-						style="background: transparent;"
-						aria-label="Share result"
-						title="Share result"
-						onclick={() => shareAction.handler?.()}
+						class="crayon-btn crayon-btn-cream flex h-10 w-10 items-center justify-center"
+						style="padding: 0; --tilt: -3deg; font-size: 1rem;"
+						onclick={() => howToPlayAction.handler?.()}
+						aria-label="How to play"
+						title="How to play"
 					>
-						<Share2 class="h-5 w-5" aria-hidden="true" />
+						<Info size={18} strokeWidth={2.25} aria-hidden="true" />
 					</button>
-				{/if}
-				<ThemeToggle />
-				<HowToPlay />
+				</div>
+				<HowToPlay hideTrigger={true} />
 			</div>
 		</div>
 		<!-- Double-squiggle underline -->
@@ -134,5 +148,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)}, { send_page_view: false });`
 		</div>
 	</footer>
 </div>
+
+<MobileMenuSheet bind:open={mobileMenuOpen} />
 
 <Toaster richColors position="bottom-center" />
