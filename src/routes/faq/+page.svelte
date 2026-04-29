@@ -11,7 +11,7 @@
 
 	<h2 class="font-display text-lg font-bold pt-2">Who made Lextangle?</h2>
 	<p>
-		Lextangle is built by <a class="underline hover:text-(--crayon-red)" href="https://benjamin-brady.github.io/" target="_blank" rel="noopener noreferrer">Ben Brady</a>,
+		Lextangle is built by <a class="underline hover:text-(--crayon-red)" href="https://www.linkedin.com/in/benj-brady/" target="_blank" rel="noopener noreferrer">Ben Brady</a>,
 		a solo developer who also makes <a class="underline hover:text-(--crayon-red)" href="https://redactle.net" target="_blank" rel="noopener noreferrer">Redactle</a>,
 		<a class="underline hover:text-(--crayon-red)" href="https://wildguessr.com" target="_blank" rel="noopener noreferrer">Wild Guessr</a>,
 		and a handful of other word and trivia games. If you want to support the work, the

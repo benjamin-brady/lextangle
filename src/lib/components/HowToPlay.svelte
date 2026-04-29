@@ -342,7 +342,7 @@
 						who made it 🖍️
 					</p>
 					<p style="font-size: 1rem; color: var(--text-muted); line-height: 1.5;">
-						lextangle is a solo project by <a class="font-display font-bold" style="color: var(--crayon-red); text-decoration: underline wavy;" href="https://benjamin-brady.github.io/" target="_blank" rel="noopener noreferrer">ben brady</a>. come say hi on
+						lextangle is a solo project by <a class="font-display font-bold" style="color: var(--crayon-red); text-decoration: underline wavy;" href="https://www.linkedin.com/in/benj-brady/" target="_blank" rel="noopener noreferrer">ben brady</a>. come say hi on
 						<a class="font-display font-bold" style="color: var(--crayon-red); text-decoration: underline wavy;" href="https://discord.gg/AWfvmFWBcA" target="_blank" rel="noopener noreferrer">discord</a>.
 					</p>
 					<p class="mt-2" style="font-size: 1rem; color: var(--text-muted); line-height: 1.5;">
