@@ -1,5 +1,5 @@
 // Cross-promo manifest fetcher for Ben Brady's games network.
-// Public contract: https://benjamin-brady.github.io/games.json
+// Public contract: https://games-manifest.as9aisuhdn.workers.dev/games.json
 
 export type CrossPromoGame = {
 	slug: string;
@@ -25,7 +25,7 @@ type Manifest = {
 	games: CrossPromoGame[];
 };
 
-const MANIFEST_URL = 'https://benjamin-brady.github.io/games.json';
+const MANIFEST_URL = 'https://games-manifest.as9aisuhdn.workers.dev/games.json';
 const CACHE_KEY = 'lextangle:cross-promo:v1';
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1h
 const SELF_SLUG = 'lextangle';
