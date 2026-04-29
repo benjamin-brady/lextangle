@@ -1,5 +1,6 @@
 import { PersistedState } from 'runed';
 
+import { rotateGridClockwise } from './board-transforms';
 import { createShareCheckSummary, type ShareCheckSummary } from './share-text';
 import type { EdgeStatus, NodeStatus, Puzzle, WordItem } from './types';
 
@@ -382,6 +383,16 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		]);
 	}
 
+	function rotateClockwise() {
+		const s = persisted.current;
+		const result = rotateGridClockwise(s.grid, isSticky);
+		if (result.moved.length === 0) return;
+
+		pushHistory();
+		s.grid = result.grid;
+		markCellsDirty(result.moved);
+	}
+
 	function shiftGrid(cycles: number[][]) {
 		const s = persisted.current;
 		// For each cycle, remove sticky indices and only rotate the remaining ones.
@@ -475,6 +486,7 @@ export function createGameState(puzzle: Puzzle, storageId: string) {
 		swapGridCells,
 		flipHorizontal,
 		flipVertical,
+		rotateClockwise,
 		shiftRight,
 		shiftDown,
 		reset,

@@ -8,6 +8,7 @@
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import ThumbsDown from 'lucide-svelte/icons/thumbs-down';
 	import Share2 from 'lucide-svelte/icons/share-2';
+	import RotateCw from 'lucide-svelte/icons/rotate-cw';
 	import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
 	import Undo2 from 'lucide-svelte/icons/undo-2';
 	import Menu from 'lucide-svelte/icons/menu';
@@ -972,6 +973,17 @@
 				</button>
 				<button
 					type="button"
+					class="crayon-btn crayon-btn-yellow hidden sm:inline-flex items-center gap-1.5"
+					style="font-size: 1rem; padding: 6px 10px; --tilt: 1deg;"
+					onclick={() => { triggerFlip(); game.rotateClockwise(); }}
+					title="Rotate board clockwise"
+					aria-label="Rotate board clockwise"
+				>
+					<RotateCw class="h-4 w-4" aria-hidden="true" />
+					<span>rotate cw</span>
+				</button>
+				<button
+					type="button"
 					class="crayon-btn crayon-btn-green hidden sm:inline-flex items-center gap-1.5"
 					style="font-size: 1rem; padding: 6px 10px; --tilt: 1deg;"
 					onclick={() => { triggerFlip(); game.shiftRight(); }}
@@ -1054,6 +1066,16 @@
 							>
 								<FlipVertical2 class="h-4 w-4" aria-hidden="true" />
 								<span>flip v</span>
+							</button>
+							<button
+								type="button"
+								class="crayon-btn crayon-btn-yellow inline-flex items-center justify-start gap-1.5"
+								style="font-size: 1rem; padding: 6px 10px; --tilt: 0deg;"
+								onclick={() => { triggerFlip(); game.rotateClockwise(); menuOpen = false; }}
+								aria-label="Rotate board clockwise"
+							>
+								<RotateCw class="h-4 w-4" aria-hidden="true" />
+								<span>rotate cw</span>
 							</button>
 							<button
 								type="button"
